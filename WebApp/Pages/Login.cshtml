@@ -1,0 +1,19 @@
+﻿@page
+@model WebApp.Pages.LoginModel
+@{
+    ViewBag._Title = "Login";
+}
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="Model.Username" class="form-label"></label>
+        <input asp-for="Model.Username" class="form-control" placeholder="JaneDoe42" autofocus>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Model.Password" class="form-label"></label>
+        <input asp-for="Model.Password" class="form-control">
+    </div>
+    <button class="btn btn-primary">Login</button>
+</form>
