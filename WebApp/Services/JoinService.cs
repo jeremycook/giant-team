@@ -10,18 +10,18 @@ namespace WebApp.Services
     {
         private readonly ILogger<JoinService> logger;
         private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
-        private readonly EncryptionService encryptionService;
+        private readonly HashingService hashingService;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
             IDbContextFactory<GiantTeamDbContext> dbContextFactory,
-            EncryptionService encryptionService,
+            HashingService hashingService,
             ValidationService validationService)
         {
             this.logger = logger;
             this.dbContextFactory = dbContextFactory;
-            this.encryptionService = encryptionService;
+            this.hashingService = hashingService;
             this.validationService = validationService;
         }
 
@@ -39,7 +39,7 @@ namespace WebApp.Services
                 DisplayName = joinDataModel.DisplayName,
                 Email = joinDataModel.Email,
                 Username = joinDataModel.Username,
-                PasswordDigest = encryptionService.HashPlaintext(joinDataModel.Password),
+                PasswordDigest = hashingService.HashPlaintext(joinDataModel.Password),
                 Created = DateTimeOffset.UtcNow,
             };
 

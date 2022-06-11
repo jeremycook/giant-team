@@ -5,18 +5,18 @@ using WebApp.Data;
 
 namespace WebApp.Services
 {
-    public class LoginService
+    public class PasswordAuthenticationService
     {
         private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
-        private readonly EncryptionService encryptionService;
+        private readonly HashingService hashingService;
 
-        public LoginService(IDbContextFactory<GiantTeamDbContext> dbContextFactory, EncryptionService encryptionService)
+        public PasswordAuthenticationService(IDbContextFactory<GiantTeamDbContext> dbContextFactory, HashingService hashingService)
         {
             this.dbContextFactory = dbContextFactory;
-            this.encryptionService = encryptionService;
+            this.hashingService = hashingService;
         }
 
-        public async Task<ClaimsPrincipal> LoginAsync(LoginDataModel loginDataModel)
+        public async Task<ClaimsPrincipal> AuthenticateAsync(LoginDataModel loginDataModel)
         {
             using var db = await dbContextFactory.CreateDbContextAsync();
 
@@ -25,11 +25,11 @@ namespace WebApp.Services
 
             if (user is not null &&
                 !string.IsNullOrEmpty(user.PasswordDigest) &&
-                encryptionService.VerifyHashedPlaintext(user.PasswordDigest, loginDataModel.Password))
+                hashingService.VerifyHashedPlaintext(user.PasswordDigest, loginDataModel.Password))
             {
                 // TODO: Log authentication success
 
-                var dbPassword = encryptionService.RandomPassword();
+                var dbPassword = hashingService.RandomPassword();
 
                 // Set password
                 await db.SetUserPasswordAsync(user.UsernameLowercase, dbPassword, DateTimeOffset.UtcNow.AddDays(1));

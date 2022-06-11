@@ -1,54 +1,38 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 
 namespace WebApp.Services
 {
+    [Obsolete("Experimental")]
     public class EncryptionService
     {
         public EncryptionService(IOptions<EncryptionOptions> options)
         {
-            this.options = options;
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+            else if (
+                options.Value.Key is null ||
+                options.Value.Key.Length < 16 ||
+                options.Value.Key.All(val => val == byte.MinValue))
+            {
+                throw new ArgumentNullException(nameof(options), $"The {nameof(EncryptionOptions.Key)} property cannot be null, must be at least 16 bytes long, and cannot contain all 0.");
+            }
+
+            key = options.Value.Key;
         }
 
-        private static readonly object stubUser = new();
-        private static readonly PasswordHasher<object> passwordHasher = new();
-        private readonly IOptions<EncryptionOptions> options;
-
-        public byte[] RandomBytes(int numberOfBytes)
-        {
-            return RandomNumberGenerator.GetBytes(numberOfBytes);
-        }
-
-        public string RandomPassword()
-        {
-            byte[] bytes = RandomNumberGenerator.GetBytes(16);
-            return Base64UrlEncode(bytes);
-        }
-
-        private static string Base64UrlEncode(byte[] bytes)
-        {
-            return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-        }
-
-        public string HashPlaintext(string plaintext)
-        {
-            return passwordHasher.HashPassword(stubUser, plaintext);
-        }
-
-        public bool VerifyHashedPlaintext(string? hashtext, string plaintext)
-        {
-            return passwordHasher.VerifyHashedPassword(stubUser, hashtext, plaintext) != PasswordVerificationResult.Failed;
-        }
+        private readonly byte[] key;
 
         public byte[] Encrypt(string plaintext)
         {
-            return EncryptStringToBytesAes(plaintext, options.Value.Key);
+            return EncryptStringToBytesAes(plaintext, key);
         }
 
         public string Decrypt(byte[] ciphertext)
         {
-            return DecryptStringFromBytesAes(ciphertext, options.Value.Key);
+            return DecryptStringFromBytesAes(ciphertext, key);
         }
 
         static byte[] EncryptStringToBytesAes(string plaintext, byte[] key)
@@ -109,9 +93,9 @@ namespace WebApp.Services
                 ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 
                 // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(message))
-                using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                using (MemoryStream msDecrypt = new(message))
+                using (CryptoStream csDecrypt = new(msDecrypt, decryptor, CryptoStreamMode.Read))
+                using (StreamReader srDecrypt = new(csDecrypt))
                 {
 
                     // Read the decrypted bytes from the decrypting stream

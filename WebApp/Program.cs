@@ -73,10 +73,10 @@ namespace WebApp
                 options.UseSnakeCaseNamingConvention().UseNpgsql(connection);
             });
 
-            services.AddScoped<EncryptionService>();
+            services.AddScoped<HashingService>();
             services.AddScoped<ValidationService>();
             services.AddScoped<JoinService>();
-            services.AddScoped<LoginService>();
+            services.AddScoped<PasswordAuthenticationService>();
 
             // Configure the HTTP request pipeline.
             var app = builder.Build();

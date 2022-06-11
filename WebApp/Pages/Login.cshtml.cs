@@ -17,13 +17,13 @@ namespace WebApp.Pages
         {
         }
 
-        public async Task<ActionResult> OnPost([FromServices] LoginService loginService)
+        public async Task<ActionResult> OnPost([FromServices] PasswordAuthenticationService passwordAuthenticationService)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var principal = await loginService.LoginAsync(new LoginDataModel
+                    var principal = await passwordAuthenticationService.AuthenticateAsync(new LoginDataModel
                     {
                         Username = Model.Username,
                         Password = Model.Password,
