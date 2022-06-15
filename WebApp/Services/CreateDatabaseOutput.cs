@@ -1,6 +1,6 @@
 ﻿namespace WebApp.Services
 {
-    public class CreateDatabaseDataModel
+    public class CreateDatabaseOutput
     {
         public string DatabaseName { get; set; } = null!;
     }

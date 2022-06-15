@@ -73,10 +73,14 @@ namespace WebApp
                 options.UseSnakeCaseNamingConvention().UseNpgsql(connection);
             });
 
-            services.AddScoped<HashingService>();
-            services.AddScoped<ValidationService>();
-            services.AddScoped<JoinService>();
-            services.AddScoped<PasswordAuthenticationService>();
+            foreach (Type type in from t in typeof(Program).Assembly.ExportedTypes
+                                  where
+                                      t.Namespace!.EndsWith(".Services") &&
+                                      t.Name.EndsWith("Service")
+                                  select t)
+            {
+                services.AddScoped(type);
+            }
 
             // Configure the HTTP request pipeline.
             var app = builder.Build();
@@ -98,7 +102,7 @@ namespace WebApp
                 Database database = new();
                 EntityFrameworkDatabaseContributor.Singleton.Contribute(database, gt.Model, "gt");
                 ObjectDatabaseScriptsContributor.Singleton.Contribute(database, "./Data/Scripts");
-                
+
                 PgDatabaseScripter scripter = new();
                 string sql = scripter.Script(database);
 
