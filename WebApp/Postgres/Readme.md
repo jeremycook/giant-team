@@ -22,11 +22,18 @@ Npgsql is the .NET client library that talks to PostgreSQL.
 
 ## Trusted authentication on Windows
 
-Enable local, trusted authentication by adding the following line above other lines in pg_hba.conf. Add a user to the database that matches your Windows username. **The casing of the user and computer names matter.*
+Enable local, trusted authentication by adding the following line above other lines in **pg_hba.conf**. Add a user to the database that matches your Windows username. **The casing of the user and computer names matter.**
 
 ```
-# SSPI local connections **casing of user and computer names matter**
-host    all             John          127.0.0.1/32            sspi include_realm=0 krb_realm=MY-COMPUTER
+# SSPI local connections (casing matters)
+host    all             MyUsername          127.0.0.1/32                sspi include_realm=0 krb_realm=MY-DESKTOP
+host    all             MyUsername          ::1/128                     sspi include_realm=0 krb_realm=MY-DESKTOP
 ```
 
-> **TIP!** The pg_hba.conf is commonly located in a folder like "C:\Program Files\PostgreSQL\13\data".
+> **TIP!** The pg_hba.conf is commonly located in a folder like "C:\Program Files\PostgreSQL\14\data" where the number is the major version you have installed.
+
+Display your username and computer name with this Windows command.
+
+```cmd
+echo %username% %computername%
+```
