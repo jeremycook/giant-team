@@ -1,0 +1,77 @@
+﻿.flow-designer {
+}
+
+.flow-canvas {
+    background: #eee;
+    border: 1px solid;
+    border-radius: 5px;
+    padding: 10px;
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    overflow: auto;
+}
+
+.flow-node {
+    border: 1px solid;
+    border-radius: 5px;
+    position: absolute;
+    padding: 10px;
+    background: #fffe;
+    width: 200px;
+    box-shadow: 0 5px 5px #0001;
+}
+
+.flow-node-header {
+    font-weight: bold;
+    border-bottom: 1px solid;
+    cursor: grab;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.flow-node.is-moving .flow-node-header {
+    cursor: grabbing;
+}
+
+.flow-node-port {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.flow-node-port-EventPort {
+    clear: right;
+    float: right;
+}
+
+.flow-node-port-OutputPort {
+    clear: right;
+    float: right;
+}
+
+.flow-node-port-ListenPort {
+    clear: left;
+    float: left;
+}
+
+.flow-node-port-InputPort {
+    clear: left;
+    float: left;
+}
+
+.flow-node-port > button {
+    background: none;
+    border: none;
+    padding: unset;
+}
+
+    .flow-node-port > button:focus {
+        color: red;
+    }
+
+.flow-menu {
+}

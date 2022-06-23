@@ -3,3 +3,4 @@ obj/
 bin/
 .vs/
 *.csproj.user
+node_modules/
