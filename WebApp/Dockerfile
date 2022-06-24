@@ -6,8 +6,8 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-RUN sudo apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+RUN apt-get install -y nodejs
 WORKDIR /src
 COPY ["WebApp/WebApp.csproj", "WebApp/"]
 RUN dotnet restore "WebApp/WebApp.csproj"
