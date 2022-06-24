@@ -92,7 +92,7 @@
     }
 
 .blueprint-port-icon {
-    color: blue;
+    color: rgb(var(--blueprint-primary-rgb));
 }
 
 .blueprint-port-kind-Source {

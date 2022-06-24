@@ -248,11 +248,11 @@ export function embed(selector: string) {
 
         const sourceNode = findNode(sourceNodeId);
         const sourcePort = findPort(sourceNode, sourcePortName);
-        const sourceOffset = calculatePortOffset(sourceNode, sourcePort);
+        const sourceOffset = calculatePortOffset(sourceNode, sourcePort, "Source");
 
         const targetNode = findNode(targetNodeId);
         const targetPort = findPort(targetNode, targetPortName);
-        const targetOffset = calculatePortOffset(targetNode, targetPort);
+        const targetOffset = calculatePortOffset(targetNode, targetPort, "Target");
 
         const connection = <SVGLineElement>e("line.blueprint-connection", {
             onclick: e => {
@@ -268,14 +268,14 @@ export function embed(selector: string) {
         svg.appendChild(connection)
 
         sourceNode.addEventListener("mousemove", e => {
-            const offset = calculatePortOffset(sourceNode, sourcePort);
+            const offset = calculatePortOffset(sourceNode, sourcePort, "Source");
 
             connection.setAttribute("x1", offset.left.toFixed());
             connection.setAttribute("y1", offset.top.toFixed());
         })
 
         targetNode.addEventListener("mousemove", e => {
-            const offset = calculatePortOffset(targetNode, targetPort);
+            const offset = calculatePortOffset(targetNode, targetPort, "Target");
 
             connection.setAttribute("x2", offset.left.toFixed());
             connection.setAttribute("y2", offset.top.toFixed());
@@ -290,9 +290,9 @@ export function embed(selector: string) {
         return <HTMLElement>node.querySelector(`[blueprint-port-name="${portName}"] button`);
     }
 
-    function calculatePortOffset(node: HTMLElement, port: HTMLElement) {
+    function calculatePortOffset(node: HTMLElement, port: HTMLElement, kind: "Source" | "Target") {
         return {
-            left: node.offsetLeft + port.offsetLeft + (port.clientWidth / 2),
+            left: node.offsetLeft + (kind == "Source" ? node.clientWidth : 0),
             top: node.offsetTop + port.offsetTop + (port.clientHeight / 2)
         };
     }

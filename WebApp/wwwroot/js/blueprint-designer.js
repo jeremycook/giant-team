@@ -139,10 +139,10 @@ export function embed(selector) {
         const { sourceNodeId, sourcePortName, targetNodeId, targetPortName } = edge;
         const sourceNode = findNode(sourceNodeId);
         const sourcePort = findPort(sourceNode, sourcePortName);
-        const sourceOffset = calculatePortOffset(sourceNode, sourcePort);
+        const sourceOffset = calculatePortOffset(sourceNode, sourcePort, "Source");
         const targetNode = findNode(targetNodeId);
         const targetPort = findPort(targetNode, targetPortName);
-        const targetOffset = calculatePortOffset(targetNode, targetPort);
+        const targetOffset = calculatePortOffset(targetNode, targetPort, "Target");
         const connection = e("line.blueprint-connection", {
             onclick: e => {
                 connection.remove();
@@ -155,12 +155,12 @@ export function embed(selector) {
         });
         svg.appendChild(connection);
         sourceNode.addEventListener("mousemove", e => {
-            const offset = calculatePortOffset(sourceNode, sourcePort);
+            const offset = calculatePortOffset(sourceNode, sourcePort, "Source");
             connection.setAttribute("x1", offset.left.toFixed());
             connection.setAttribute("y1", offset.top.toFixed());
         });
         targetNode.addEventListener("mousemove", e => {
-            const offset = calculatePortOffset(targetNode, targetPort);
+            const offset = calculatePortOffset(targetNode, targetPort, "Target");
             connection.setAttribute("x2", offset.left.toFixed());
             connection.setAttribute("y2", offset.top.toFixed());
         });
@@ -171,9 +171,9 @@ export function embed(selector) {
     function findPort(node, portName) {
         return node.querySelector(`[blueprint-port-name="${portName}"] button`);
     }
-    function calculatePortOffset(node, port) {
+    function calculatePortOffset(node, port, kind) {
         return {
-            left: node.offsetLeft + port.offsetLeft + (port.clientWidth / 2),
+            left: node.offsetLeft + (kind == "Source" ? node.clientWidth : 0),
             top: node.offsetTop + port.offsetTop + (port.clientHeight / 2)
         };
     }
