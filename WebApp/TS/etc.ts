@@ -69,7 +69,7 @@ export function e(tag: string, ...data:
                         element.setAttribute(name, val);
                     }
                     else if (typeof val === "function") {
-                        (<any>element)[name] = val;
+                        element.addEventListener(name.substr(2), val);
                     }
                     else {
                         throw `The "${name}" attribute of type "${typeof val}" is not supported.`;

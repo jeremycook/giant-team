@@ -1,17 +1,9 @@
-﻿#blueprint-designer {
-    background: #eee;
-    border: 1px solid;
-    border-top-left-radius: 5px;
-    width: 100%;
-    height: 70vh;
-    overflow: auto
-}
-
-.blueprint-designer {
+﻿.blueprint-designer {
     position: relative;
     width: 5000px;
     height: 5000px;
     overflow: auto;
+    --blueprint-primary-rgb: var(--bs-primary-rgb, 13,110,253);
 }
 
 .blueprint-template-picker {
@@ -29,6 +21,18 @@
         display: block;
     }
 
+    .blueprint-template-picker button {
+        display: block;
+        background: none;
+        border: none;
+        padding: unset;
+        color: rgb(var(--blueprint-primary-rgb));
+    }
+
+        .blueprint-template-picker button:hover {
+            color: rgba(var(--blueprint-primary-rgb),.8);
+        }
+
 .blueprint-svg-container {
     pointer-events: none;
     position: absolute;
@@ -39,6 +43,11 @@
 .blueprint-svg {
     width: 100%;
     height: 100%;
+}
+
+.blueprint-connection {
+    cursor: pointer;
+    pointer-events: all;
 }
 
 .blueprint-canvas {
@@ -76,6 +85,12 @@
     clear: both;
 }
 
+    .blueprint-port button {
+        background: none;
+        border: none;
+        padding: unset;
+    }
+
 .blueprint-port-icon {
     color: blue;
 }
@@ -89,11 +104,7 @@
     float: left;
 }
 
-.blueprint-port > button {
-    background: none;
-    border: none;
-    padding: unset;
-}
-
-.blueprint-menu {
+.blueprint-connection {
+    stroke: rgb(var(--blueprint-primary-rgb));
+    stroke-width: 2;
 }

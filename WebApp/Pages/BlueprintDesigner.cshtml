@@ -1,8 +1,12 @@
 ﻿@page
 @{
     ViewBag._Title = "Blueprint Designer";
+    string root = Url.Content("~/").TrimStart('/');
 }
 
 <div id="blueprint-designer"></div>
 
-<script type="module" src="~/js/blueprint-designer.js"></script>
+<script type="module">
+    import { embed } from "@root/js/blueprint-designer.js";
+    embed("#blueprint-designer");
+</script>
