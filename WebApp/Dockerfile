@@ -14,6 +14,7 @@ RUN dotnet restore "WebApp/WebApp.csproj"
 COPY . .
 WORKDIR "/src/WebApp"
 RUN npm install
+RUN rm -r wwwroot/js/*
 RUN dotnet build "WebApp.csproj" -c Release -o /app/build
 
 FROM build AS publish
