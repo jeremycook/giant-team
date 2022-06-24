@@ -13,6 +13,7 @@ COPY ["WebApp/WebApp.csproj", "WebApp/"]
 RUN dotnet restore "WebApp/WebApp.csproj"
 COPY . .
 WORKDIR "/src/WebApp"
+RUN npm install
 RUN dotnet build "WebApp.csproj" -c Release -o /app/build
 
 FROM build AS publish
