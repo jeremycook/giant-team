@@ -12,7 +12,7 @@ export function e(tag: string, ...data:
         (string | Node)[] |
         { ["style"]: { [key: string]: string } } |
         { [key: string]: string | EventListener | { [key: string]: string } }
-    )[]): Node {
+    )[]): Element {
     const tagNameMatch = /^[a-z][a-z-]*/i.exec(tag);
 
     const tagName = tagNameMatch !== null ? tagNameMatch[0] : "div";

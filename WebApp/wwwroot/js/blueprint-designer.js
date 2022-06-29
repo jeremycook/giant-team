@@ -47,7 +47,10 @@ export function embed(selector) {
     const nodes = new Map();
     const edges = new ObservableSet();
     function toggleTemplatePicker(ev) {
-        if (ev.detail > 1) {
+        if (ev.currentTarget !== ev.target) {
+            return;
+        }
+        if (!templatePicker.classList.contains("active")) {
             ev.preventDefault();
             templatePicker.style.left = (ev.offsetX) + "px";
             templatePicker.style.top = (ev.offsetY) + "px";
@@ -65,18 +68,24 @@ export function embed(selector) {
             ports: nodeTemplate.ports.map(port => Object.assign({}, port))
         };
         nodes.set(nodeData.id, nodeData);
-        canvas.appendChild(e(".blueprint-node", {
+        const node = e(".blueprint-node", {
             style: {
                 left: `${templatePicker.offsetLeft}px`,
                 top: `${templatePicker.offsetTop}px`,
             },
             "blueprint-node-id": nodeData.id,
-        }, e(".blueprint-node-header", { onmousedown: startDrag }, nodeTemplate.label ?? nodeTemplate.type), nodeTemplate.ports.map(port => {
+        }, e(".blueprint-node-header", { onmousedown: startDrag }, nodeTemplate.label ?? nodeTemplate.type, e("button.blueprint-node-remove", "×", {
+            onclick: () => {
+                node.remove();
+                nodes.delete(nodeData.id);
+            }
+        })), nodeTemplate.ports.map(port => {
             const portType = templates.portTypes[port.type];
             return e(`.blueprint-port.blueprint-port-type-${port.type}.blueprint-port-category-${portType.category}.blueprint-port-kind-${portType.kind}`, { "blueprint-port-name": port.name }, portType.kind == "Source" ?
                 [port.label ?? port.name, " ", e("button.blueprint-port-icon", portType.icon, { onclick: connectPorts })] :
                 [e("button.blueprint-port-icon", portType.icon, { onclick: connectPorts }), " ", port.label ?? port.name]);
-        })));
+        }));
+        canvas.appendChild(node);
     }
     function randomText() {
         return (Number.MAX_SAFE_INTEGER * Math.random()).toFixed();
@@ -88,23 +97,24 @@ export function embed(selector) {
         node.classList.add("is-moving");
         let x0 = ev.clientX;
         let y0 = ev.clientY;
-        document.onmouseup = stopDrag;
-        document.onmousemove = dragging;
+        designer.onmouseup = stopDrag;
+        designer.onmousemove = dragging;
         function dragging(ev) {
             ev.preventDefault();
             const xDelta = ev.clientX - x0;
             const yDelta = ev.clientY - y0;
             x0 = ev.clientX;
             y0 = ev.clientY;
-            const newX = Math.max(0, node.offsetLeft + xDelta);
-            const newY = Math.max(0, node.offsetTop + yDelta);
+            const newX = Math.min(designer.clientWidth - 10, Math.max(0, node.offsetLeft + xDelta));
+            const newY = Math.min(designer.clientHeight - 10, Math.max(0, node.offsetTop + yDelta));
             node.style.left = newX + "px";
             node.style.top = newY + "px";
         }
         function stopDrag() {
+            ev.preventDefault();
             node.classList.remove("is-moving");
-            document.onmouseup = null;
-            document.onmousemove = null;
+            designer.onmouseup = null;
+            designer.onmousemove = null;
         }
     }
     ;
@@ -185,7 +195,7 @@ export function embed(selector) {
     }, e("div", node.label ?? node.type))));
     const svg = e("svg.blueprint-svg");
     const canvas = e(".blueprint-canvas", {
-        onmousedown: toggleTemplatePicker
+        onclick: toggleTemplatePicker
     });
     const designer = e(".blueprint-designer", canvas, e(".blueprint-svg-container", svg), templatePicker);
     document

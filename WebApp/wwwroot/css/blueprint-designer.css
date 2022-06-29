@@ -6,6 +6,12 @@
     --blueprint-primary-rgb: var(--bs-primary-rgb, 13,110,253);
 }
 
+    .blueprint-designer button {
+        background: none;
+        border: none;
+        padding: unset;
+    }
+
 .blueprint-template-picker {
     display: none;
     border: 1px solid;
@@ -77,6 +83,10 @@
     white-space: nowrap;
 }
 
+.blueprint-node-remove {
+    float: right;
+}
+
 .blueprint-node.is-moving .blueprint-node-header {
     cursor: grabbing;
 }
@@ -84,12 +94,6 @@
 .blueprint-port {
     clear: both;
 }
-
-    .blueprint-port button {
-        background: none;
-        border: none;
-        padding: unset;
-    }
 
 .blueprint-port-icon {
     color: rgb(var(--blueprint-primary-rgb));
