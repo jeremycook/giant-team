@@ -1,0 +1,19 @@
+﻿@page "{DatabaseName}/{SchemaName}.{TableName}"
+@model ImportModel
+@{
+    ViewBag._Title = $"{Model.DatabaseName}/{Model.SchemaName}.{Model.TableName}";
+}
+
+<div class="container">
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label asp-for="Input.DataFile" class="form-label"></label>
+            <input asp-for="Input.DataFile" class="form-control" autofocus>
+        </div>
+        <button class="btn btn-primary">Import Data</button>
+    </form>
+
+</div>
