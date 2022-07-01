@@ -10,26 +10,36 @@ namespace WebApp.Pages
     [AllowAnonymous]
     public class LoginModel : PageModel
     {
-        [BindProperty]
-        public InputModel Model { get; set; } = new();
+        [FromQuery]
+        public string? ReturnUrl { get; set; }
 
-        public void OnGet()
+        [BindProperty]
+        public FormModel Form { get; set; } = new();
+
+        public void OnGet(string? username = null)
         {
+            Form.Username = username!;
         }
 
-        public async Task<ActionResult> OnPost([FromServices] PasswordAuthenticationService passwordAuthenticationService)
+        public async Task<ActionResult> OnPost(
+            [FromServices] PasswordAuthenticationService passwordAuthenticationService)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var principal = await passwordAuthenticationService.AuthenticateAsync(new LoginDataModel
+                    var principal = await passwordAuthenticationService.AuthenticateAsync(new PasswordAuthenticationInput
                     {
-                        Username = Model.Username,
-                        Password = Model.Password,
+                        Username = Form.Username,
+                        Password = Form.Password,
                     });
 
-                    return SignIn(principal, new() { RedirectUri = Url.Content("~/") }, CookieAuthenticationDefaults.AuthenticationScheme);
+                    return SignIn(principal, new()
+                    {
+                        RedirectUri = Url.IsLocalUrl(ReturnUrl) ?
+                            ReturnUrl :
+                            Url.Content("~/")
+                    }, CookieAuthenticationDefaults.AuthenticationScheme);
                 }
                 catch (ValidationException ex)
                 {
@@ -40,7 +50,7 @@ namespace WebApp.Pages
             return Page();
         }
 
-        public class InputModel
+        public class FormModel
         {
             [RegularExpression("^[A-Za-z][A-Za-z0-9]*$")]
             [StringLength(100, MinimumLength = 3)]

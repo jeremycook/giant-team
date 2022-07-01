@@ -22,6 +22,8 @@ namespace WebApp
             // Add services to the container.
             var services = builder.Services;
 
+            services.AddHttpContextAccessor();
+
             services
                 .AddAuthentication(options =>
                 {

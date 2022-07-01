@@ -8,13 +8,13 @@ namespace WebApp.Services
     {
         private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
         private readonly ValidationService validationService;
-        private readonly IdentityService identityService;
+        private readonly SessionService sessionService;
 
-        public CreateDatabaseService(IDbContextFactory<GiantTeamDbContext> dbContextFactory, ValidationService validationService, IdentityService identityService)
+        public CreateDatabaseService(IDbContextFactory<GiantTeamDbContext> dbContextFactory, ValidationService validationService, SessionService sessionService)
         {
             this.dbContextFactory = dbContextFactory;
             this.validationService = validationService;
-            this.identityService = identityService;
+            this.sessionService = sessionService;
         }
 
         public async Task<CreateDatabaseOutput> CreateDatabase(CreateDatabaseInput model)

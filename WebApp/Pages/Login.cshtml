@@ -8,12 +8,13 @@
 
 <form method="post">
     <div class="mb-3">
-        <label asp-for="Model.Username" class="form-label"></label>
-        <input asp-for="Model.Username" class="form-control" placeholder="JaneDoe42" autofocus>
+        <label asp-for="Form.Username" class="form-label"></label>
+        <input asp-for="Form.Username" class="form-control" placeholder="JaneDoe42" autofocus>
     </div>
     <div class="mb-3">
-        <label asp-for="Model.Password" class="form-label"></label>
-        <input asp-for="Model.Password" class="form-control">
+        <label asp-for="Form.Password" class="form-label"></label>
+        <input asp-for="Form.Password" class="form-control">
     </div>
     <button class="btn btn-primary">Login</button>
+    <a class="btn btn-outline-primary" asp-page="Join" asp-route-returnUrl="@Model.ReturnUrl">Join</a>
 </form>

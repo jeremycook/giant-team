@@ -1,7 +1,7 @@
 ﻿@page "{DatabaseName}/{SchemaName}.{TableName}"
 @model ImportModel
 @{
-    ViewBag._Title = $"{Model.DatabaseName}/{Model.SchemaName}.{Model.TableName}";
+    ViewBag._Title = $"Import into {Model.DatabaseName}/{Model.SchemaName}.{Model.TableName}";
 }
 
 <div class="container">
@@ -10,8 +10,8 @@
 
     <form method="post" enctype="multipart/form-data">
         <div class="mb-3">
-            <label asp-for="Input.DataFile" class="form-label"></label>
-            <input asp-for="Input.DataFile" class="form-control" autofocus>
+            <label asp-for="Form.DataFiles" class="form-label"></label>
+            <input asp-for="Form.DataFiles" class="form-control" multiple autofocus>
         </div>
         <button class="btn btn-primary">Import Data</button>
     </form>

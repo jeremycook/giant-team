@@ -9,8 +9,11 @@ namespace WebApp.Pages
     [AllowAnonymous]
     public class JoinModel : PageModel
     {
+        [FromQuery]
+        public string? ReturnUrl { get; set; }
+
         [BindProperty]
-        public InputModel Model { get; set; } = new();
+        public FormModel Form { get; set; } = new();
 
         public void OnGet()
         {
@@ -24,14 +27,15 @@ namespace WebApp.Pages
                 {
                     await joinService.JoinAsync(new JoinDataModel
                     {
-                        DisplayName = Model.DisplayName,
-                        Email = Model.Email,
-                        Username = Model.Username,
-                        Password = Model.Password,
+                        DisplayName = Form.DisplayName,
+                        Email = Form.Email,
+                        Username = Form.Username,
+                        Password = Form.Password,
                     });
 
                     // TODO: Success message
-                    return RedirectToPage("Login", routeValues: new { username = Model.Username });
+
+                    return RedirectToPage("Login", routeValues: new { username = Form.Username, returnUrl = ReturnUrl });
                 }
                 catch (ValidationException ex)
                 {
@@ -42,7 +46,7 @@ namespace WebApp.Pages
             return Page();
         }
 
-        public class InputModel
+        public class FormModel
         {
             [StringLength(100, MinimumLength = 3)]
             public string DisplayName { get; set; } = default!;

@@ -1,0 +1,19 @@
+﻿@using System.Text.Json
+@{
+    var libs = new[]
+    {
+        "@amcharts/amcharts5",
+        "chart.js",
+        "chart.js/auto",
+        "chartjs-adapter-date-fns",
+        "chartjs-adapter-luxon",
+        "date-fns",
+        "date-fns/locale",
+        "luxon",
+    };
+    var importmap = new
+    {
+        imports = libs.ToDictionary(lib => lib, lib => $"https://cdn.skypack.dev/{lib}")
+    };
+}
+<script type="importmap">@Json.Serialize(importmap)</script>

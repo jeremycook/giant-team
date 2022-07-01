@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace WebApp.Data
 {
     [Index(nameof(UsernameLowercase), IsUnique = true)]
+    [Index(nameof(DatabaseUsername), IsUnique = true)]
     public class User
     {
         [Key]
@@ -28,6 +29,8 @@ namespace WebApp.Data
         public string Email { get; set; } = null!;
 
         public bool EmailConfirmed { get; set; }
+
+        public string DatabaseUsername { get; set; } = null!;
 
         public DateTimeOffset Created { get; set; }
     }

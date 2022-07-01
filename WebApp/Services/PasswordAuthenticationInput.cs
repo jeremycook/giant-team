@@ -2,7 +2,7 @@
 
 namespace WebApp.Services
 {
-    public class LoginDataModel
+    public class PasswordAuthenticationInput
     {
         [RegularExpression("^[A-Za-z][A-Za-z0-9]*$")]
         [StringLength(50, MinimumLength = 3)]
