@@ -19,9 +19,63 @@ p {
     margin-bottom: 1rem;
 }
 
+table {
+    border-spacing: 0;
+}
+
+    table th {
+        font-weight: bold;
+        text-align: center;
+    }
+
+    table.table {
+        border: 1px solid hsl(var(--light-primary));
+    }
+
+        table.table thead th {
+            border-bottom: 2px solid hsl(var(--light-primary));
+            padding: 2px;
+        }
+
+        table.table td {
+            border-bottom: 1px solid hsl(var(--light-primary));
+        }
+
+td[data-type] {
+    padding: 0;
+}
+
+td[data-type="integer"],
+td[data-type="date"] {
+    text-align: right;
+}
+
+td[data-type] > [data-content] {
+    height: calc(4px + 1em);
+    overflow: hidden;
+}
+
+button {
+    background: hsla(var(--light-primary),.9);
+    border: 2px solid hsl(var(--light-primary));
+    border-radius: 2px;
+    box-shadow: hsla(var(--light-primary),.5) 0 .05rem .1rem .1rem;
+    color: hsl(var(--light-bg));
+    cursor: pointer;
+    padding: .25rem 1rem;
+}
+
+    button:hover, button:focus {
+        background: hsla(var(--light-primary),.8);
+    }
+
+    button:active {
+        box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem inset;
+    }
+
 .dark {
     color: hsl(var(--dark-text));
-    background-color: hsl(var(--dark-bg));
+    background: hsl(var(--dark-bg));
 }
 
     .dark a {
@@ -34,27 +88,22 @@ p {
         }
 
     .dark button {
-        cursor: pointer;
         color: hsl(var(--dark-bg));
-        border: 2px solid hsl(var(--dark-primary));
-        border-radius: 2px;
+        border-color: hsl(var(--dark-primary));
         background: hsla(var(--dark-primary),.9);
-        padding: .25rem 1rem;
         box-shadow: hsla(var(--dark-primary),.5) 0 .05rem .1rem .1rem;
     }
 
         .dark button:hover, .dark button:focus {
             background: hsla(var(--dark-primary),.8);
-            outline: none;
         }
 
         .dark button:active {
-            box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem inset;
         }
 
 .light {
     color: hsl(var(--light-text));
-    background-color: hsl(var(--light-bg));
+    background: hsl(var(--light-bg));
 }
 
     .light a {
@@ -67,13 +116,10 @@ p {
         }
 
     .light button {
-        cursor: pointer;
-        color: hsl(var(--light-bg));
-        border: 2px solid hsl(var(--light-primary));
-        border-radius: 2px;
         background: hsla(var(--light-primary),.9);
-        padding: .25rem 1rem;
+        border-color: hsl(var(--light-primary));
         box-shadow: hsla(var(--light-primary),.5) 0 .05rem .1rem .1rem;
+        color: hsl(var(--light-bg));
     }
 
         .light button:hover, .light button:focus {
@@ -81,11 +127,14 @@ p {
         }
 
         .light button:active {
-            box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem inset;
         }
 
 .container {
 }
+
+    .container > :last-child {
+        margin-bottom: 0;
+    }
 
 body {
 }
