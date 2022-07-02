@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebApp.Pages.Databases
+namespace WebApp.Pages.Data
 {
     public class DetailsModel : PageModel
     {

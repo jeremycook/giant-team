@@ -10,7 +10,7 @@ using WebApp.Helpers;
 using WebApp.Postgres;
 using WebApp.Services;
 
-namespace WebApp.Pages.Databases
+namespace WebApp.Pages.Data
 {
     [Authorize]
     public class ImportModel : PageModel

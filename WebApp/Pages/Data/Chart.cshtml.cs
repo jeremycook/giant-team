@@ -10,7 +10,7 @@ using WebApp.Charting;
 using WebApp.Postgres;
 using WebApp.Services;
 
-namespace WebApp.Pages.Databases
+namespace WebApp.Pages.Data
 {
     [Authorize]
     public class ChartModel : PageModel

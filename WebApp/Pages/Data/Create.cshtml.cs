@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using WebApp.Services;
 
-namespace WebApp.Pages.Databases
+namespace WebApp.Pages.Data
 {
     public class CreateModel : PageModel
     {
