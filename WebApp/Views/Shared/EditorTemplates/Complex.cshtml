@@ -1,0 +1,39 @@
+﻿@foreach (var prop in ViewData.ModelExplorer.Properties.OrderBy(o => o.Metadata.Order))
+{
+    if (!prop.Metadata.ShowForEdit ||
+        prop.Metadata.Name == null)
+    {
+        continue;
+    }
+    var name = prop.Metadata.Name;
+    if (prop.Metadata.IsComplexType &&
+        ViewData.ModelExplorer.Properties.Any(p => p.Metadata.Name == name + "Id"))
+    {
+        // Skip reference properties that have a corresponding value property.
+        continue;
+    }
+    if (prop.Metadata.IsComplexType || prop.Metadata.IsCollectionType)
+    {
+        <fieldset>
+            <legend>@Html.DisplayName(name)</legend>
+            @if (prop.Metadata.Description is string Description)
+            {
+                <p class="field-description">@Description</p>
+            }
+            @Html.ValidationMessage(name)
+            @Html.Editor(name)
+        </fieldset>
+    }
+    else
+    {
+        <div class="field">
+            <label for="@Html.Id(name)">@Html.DisplayName(name)</label>
+            @Html.Editor(name)
+            @Html.ValidationMessage(name)
+            @if (prop.Metadata.Description is string Description)
+            {
+                <span class="field-description">@Description</span>
+            }
+        </div>
+    }
+}

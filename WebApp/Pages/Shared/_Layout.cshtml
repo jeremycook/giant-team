@@ -1,7 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Http.Extensions
 @{
-    string root = Url.Content("~/").TrimStart('/');
-    string? title = ViewData["_Title"]?.ToString() ?? "Giant Team";
+    const string siteName = "Giant Team";
+    string title = ViewData["_Title"]?.ToString() ?? siteName;
+    string currentUrl = Context.Request.GetEncodedPathAndQuery();
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -12,35 +13,34 @@
     <partial name="_Importmap" />
     <link rel="stylesheet" href="~/css/blueprint-designer.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script type="module" src="~/js/site.js" asp-append-version="true"></script>
 </head>
-<body>
+<body class="dark">
 
-    <nav id="site-navbar" class="dark">
-        <a href="~/" title="Home">🏡</a>
-        @if (Context.Request.Path.HasValue)
-        {
-            <h1><a href="@this.Context.Request.GetEncodedPathAndQuery()">@title</a></h1>
-        }
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            <a asp-area="" asp-page="/Logout">Logout</a>
-        }
-        else
-        {
-            <a asp-area="" asp-page="/Login">Login</a>
-            <a asp-area="" asp-page="/Join">Join</a>
-        }
+    <nav id="site-navbar">
+        <div class="container w-xl">
+            <a href="~/" title="Home">🏡</a>
+            <h1><a href="@currentUrl">@title</a></h1>
+            @if (User.Identity!.IsAuthenticated)
+            {
+                <a asp-page="/Profile" asp-area="" title="My profile">🧑</a>
+            }
+            else
+            {
+                <a asp-page="/Login" asp-area="" asp-route-returnUrl="@currentUrl" title="Login or join">🧑</a>
+            }
+        </div>
     </nav>
 
     <main id="site-main" class="light" role="main">
-        <div class="container">
+        <div class="container w-xl">
             @RenderBody()
         </div>
     </main>
 
     <footer id="site-footer">
-        <div class="container">
-            &copy; 2022 - Giant Team - <a asp-area="" asp-page="/Privacy">Privacy</a>
+        <div class="container w-xl">
+            &copy; 2022 - @siteName - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
 

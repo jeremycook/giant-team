@@ -4,28 +4,27 @@
     ViewBag._Title = "Join";
 }
 
-<div asp-validation-summary="All" class="text-danger"></div>
+<div asp-validation-summary="All"></div>
 
-<form method="post">
-    <div class="mb-3">
-        <label asp-for="Form.DisplayName" class="form-label">Display Name</label>
-        <input asp-for="Form.DisplayName" class="form-control" autofocus>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Form.Email" class="form-label"></label>
-        <input asp-for="Form.Email" class="form-control" placeholder="name@example.com">
-    </div>
-    <div class="mb-3">
-        <label asp-for="Form.Username" class="form-label"></label>
-        <input asp-for="Form.Username" class="form-control" placeholder="JaneDoe42">
-    </div>
-    <div class="mb-3">
-        <label asp-for="Form.Password" class="form-label"></label>
-        <input asp-for="Form.Password" class="form-control">
-    </div>
-    <div class="mb-3">
-        <label asp-for="Form.PasswordConfirmation" class="form-label">Password Confirmation</label>
-        <input asp-for="Form.PasswordConfirmation" class="form-control">
-    </div>
-    <button class="btn btn-primary">Join Now!</button>
+<form method="post" class="container w-md" data-autofocus="#@Html.IdFor(m => m.Form.Name)">
+    <fieldset>
+        <legend>Join</legend>
+        @Html.EditorFor(m => m.Form, "Complex")
+        <div class="field">
+            <div></div>
+            <div>
+                <button>Join Now!</button>
+                <a class="button" asp-page="Login" asp-route-returnUrl="@Model.ReturnUrl">Login</a>
+            </div>
+        </div>
+    </fieldset>
 </form>
+
+<script type="module">
+    const nameInput = document.getElementById("Form_Name");
+    const usernameInput = document.getElementById("Form_Username");
+    nameInput.addEventListener("blur", e => {
+        const username = nameInput.value.replace(/[^A-Za-z0-9]+/gi, "");
+        usernameInput.value = username;
+    })
+</script>

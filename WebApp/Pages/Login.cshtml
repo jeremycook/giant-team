@@ -2,19 +2,27 @@
 @model WebApp.Pages.LoginModel
 @{
     ViewBag._Title = "Login";
+    var autofocusId = Model.Form.Username is null ?
+        Html.IdFor(m => m.Form.Username) :
+        Html.IdFor(m => m.Form.Password);
 }
 
-<div asp-validation-summary="All" class="text-danger"></div>
+<div class="container w-md">
 
-<form method="post">
-    <div class="mb-3">
-        <label asp-for="Form.Username" class="form-label"></label>
-        <input asp-for="Form.Username" class="form-control" placeholder="JaneDoe42" autofocus>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Form.Password" class="form-label"></label>
-        <input asp-for="Form.Password" class="form-control">
-    </div>
-    <button class="btn btn-primary">Login</button>
-    <a class="btn btn-outline-primary" asp-page="Join" asp-route-returnUrl="@Model.ReturnUrl">Join</a>
-</form>
+    <div asp-validation-summary="All"></div>
+
+    <form method="post" data-autofocus="#@autofocusId">
+        <fieldset>
+            <legend>Login</legend>
+            @Html.EditorFor(m => m.Form, "Complex")
+            <div class="field">
+                <div></div>
+                <div>
+                    <button>Login</button>
+                    <a class="button" asp-page="Join" asp-route-returnUrl="@Model.ReturnUrl">Join</a>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+
+</div>

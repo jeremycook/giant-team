@@ -1,20 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using WebApp.Data;
-using WebApp.Helpers;
 
 namespace WebApp.Services
 {
     public class PasswordAuthenticationService
     {
         private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
-        private readonly HashingService hashingService;
+        private readonly IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions;
 
-        public PasswordAuthenticationService(IDbContextFactory<GiantTeamDbContext> dbContextFactory, HashingService hashingService)
+        public PasswordAuthenticationService(
+            IDbContextFactory<GiantTeamDbContext> dbContextFactory,
+            IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions)
         {
             this.dbContextFactory = dbContextFactory;
-            this.hashingService = hashingService;
+            this.cookieAuthenticationOptions = cookieAuthenticationOptions;
         }
 
         public async Task<ClaimsPrincipal> AuthenticateAsync(PasswordAuthenticationInput input)
@@ -22,27 +25,28 @@ namespace WebApp.Services
             using var db = await dbContextFactory.CreateDbContextAsync();
 
             var user = await db.Users
-                .SingleOrDefaultAsync(o => o.UsernameLowercase == input.Username.ToLower());
+                .SingleOrDefaultAsync(o => o.Username == input.Username.ToLower());
 
             if (user is not null &&
                 !string.IsNullOrEmpty(user.PasswordDigest) &&
-                hashingService.VerifyHashedPlaintext(user.PasswordDigest, input.Password))
+                HashingHelper.VerifyHashedPlaintext(user.PasswordDigest, input.Password))
             {
                 // TODO: Log authentication success
 
-                // Set password
-                var dbPassword = hashingService.RandomPassword();
-                await db.SetUserPasswordAsync(user.DatabaseUsername, dbPassword, DateTimeOffset.UtcNow.AddDays(1));
+                // TODO: Capture or create a free slot instead of always using slot 1.
+                int databaseSlot = 1;
+                string databasePassword = PasswordHelper.Base64Url();
+                // Match the lifespan of the database password to that of the cookie authentication ticket
+                DateTimeOffset databasePasswordValidUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
 
-                // Create identity
-                ClaimsIdentity identity = new(authenticationType: "password", nameType: ClaimsHelper.Types.Username, roleType: ClaimsHelper.Types.Role);
-                identity.AddClaim(new(ClaimsHelper.Types.Sub, user.UserId.ToString()));
-                identity.AddClaim(new(ClaimsHelper.Types.Username, user.Username));
-                identity.AddClaim(new(ClaimsHelper.Types.DisplayName, user.DisplayName));
-                identity.AddClaim(new(ClaimsHelper.Types.DatabaseUsername, user.DatabaseUsername));
-                identity.AddClaim(new(ClaimsHelper.Types.DatabasePassword, dbPassword));
+                // Create session user
+                SessionUser sessionUser = new(user, databaseSlot, databasePassword, databasePasswordValidUntil);
 
-                var principal = new ClaimsPrincipal(identity);
+                // Set database passwords
+                await db.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil);
+
+                // Create principal
+                ClaimsPrincipal principal = new(sessionUser.CreateIdentity());
 
                 return principal;
             }
@@ -52,5 +56,6 @@ namespace WebApp.Services
                 throw new ValidationException($"The username or password is incorrect.");
             }
         }
+
     }
 }

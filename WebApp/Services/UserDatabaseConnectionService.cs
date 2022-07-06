@@ -15,12 +15,12 @@ namespace WebApp.Services
 
         public NpgsqlConnection CreateConnection(string database)
         {
-            var user = sessionService.User;
+            SessionUser user = sessionService.User;
 
             NpgsqlConnectionStringBuilder connectionStringBuilder = new(userConnectionString)
             {
                 Database = database,
-                Username = user.DatabaseUsername,
+                Username = UserHelper.DQL(user.DatabaseUsername, user.DatabaseSlot),
                 Password = user.DatabasePassword,
             };
 

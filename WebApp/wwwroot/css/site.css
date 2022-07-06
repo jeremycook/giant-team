@@ -1,22 +1,43 @@
 :root {
     --font-size: 16px;
     --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    --dark-bg: 188,100%,10%;
-    --dark-text: 0,0%,90%;
-    --dark-primary: 188,100%,42%;
-    --light-bg: 0,0%,100%;
-    --light-text: 0,0%,0%;
-    --light-primary: 188,100%,42%;
+    --bg: 0,0%,100%;
+    --text: 0,0%,0%;
+    --primary: 188,100%,42%;
+    --danger: 0,50%,50%;
+}
+
+.dark {
+    --bg: 188,100%,10%;
+    --text: 0,0%,95%;
+    --primary: 188,100%,42%;
+}
+
+.light {
+    --bg: 0,0%,100%;
+    --text: 0,0%,0%;
+    --primary: 188,100%,42%;
+}
+
+.dark, .light {
+    background-color: hsl(var(--bg));
+    color: hsl(var(--text));
+    border-color: hsl(var(--primary));
 }
 
 * {
     font: var(--font-size) var(--font-family);
     padding: 0;
     margin: 0;
+    outline-color: hsl(var(--primary));
 }
 
 p {
     margin-bottom: 1rem;
+}
+
+ul, ol {
+    padding-left: 40px;
 }
 
 table {
@@ -29,16 +50,16 @@ table {
     }
 
     table.table {
-        border: 1px solid hsl(var(--light-primary));
+        border: 1px solid hsl(var(--primary));
     }
 
         table.table thead th {
-            border-bottom: 2px solid hsl(var(--light-primary));
+            border-bottom: 2px solid hsl(var(--primary));
             padding: 2px;
         }
 
         table.table td {
-            border-bottom: 1px solid hsl(var(--light-primary));
+            border-bottom: 1px solid hsl(var(--primary));
         }
 
 td[data-type] {
@@ -55,81 +76,136 @@ td[data-type] > [data-content] {
     overflow: hidden;
 }
 
+a {
+    color: hsl(var(--primary));
+}
+
+    a:hover, a:active, a:focus {
+        opacity: .9;
+        text-decoration: none;
+    }
+
 button {
-    background: hsla(var(--light-primary),.9);
-    border: 2px solid hsl(var(--light-primary));
+    background: hsla(var(--primary),.9);
+    border: 2px solid hsl(var(--primary));
     border-radius: 2px;
-    box-shadow: hsla(var(--light-primary),.5) 0 .05rem .1rem .1rem;
-    color: hsl(var(--light-bg));
+    box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem;
+    color: hsl(var(--bg));
     cursor: pointer;
     padding: .25rem 1rem;
 }
 
     button:hover, button:focus {
-        background: hsla(var(--light-primary),.8);
+        background: hsla(var(--primary),.8);
     }
 
     button:active {
         box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem inset;
     }
 
-.dark {
-    color: hsl(var(--dark-text));
-    background: hsl(var(--dark-bg));
+.button {
+    background: hsla(var(--bg),.9);
+    border: 2px solid hsl(var(--primary));
+    border-radius: 4px;
+    box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem;
+    color: hsl(var(--primary));
+    cursor: pointer;
+    padding: .25rem 1rem;
+    text-decoration: none;
 }
 
-    .dark a {
-        color: hsl(var(--dark-primary));
+    .button:hover, .button:focus {
+        background: hsla(var(--primary),.8);
+        color: hsla(var(--bg),.8);
     }
 
-        .dark a:hover, .dark a:active, .dark a:focus {
-            opacity: .9;
-            text-decoration: none;
-        }
-
-    .dark button {
-        color: hsl(var(--dark-bg));
-        border-color: hsl(var(--dark-primary));
-        background: hsla(var(--dark-primary),.9);
-        box-shadow: hsla(var(--dark-primary),.5) 0 .05rem .1rem .1rem;
+    .button:active {
+        box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem inset;
     }
 
-        .dark button:hover, .dark button:focus {
-            background: hsla(var(--dark-primary),.8);
-        }
-
-        .dark button:active {
-        }
-
-.light {
-    color: hsl(var(--light-text));
-    background: hsl(var(--light-bg));
+.validation-summary-errors {
+    color: hsl(var(--danger));
+    margin-bottom: 1rem;
 }
 
-    .light a {
-        color: hsl(var(--light-primary));
+.validation-summary-valid {
+    display: none;
+}
+
+.field-validation-error {
+    color: hsl(var(--danger));
+}
+
+fieldset {
+    border: none;
+    margin-bottom: 1rem;
+}
+
+legend {
+    display: block;
+    width: 100%;
+    font-weight: bold;
+    padding-bottom: .5rem;
+    border-bottom: 2px solid hsl(var(--primary));
+    margin-bottom: .5rem;
+    text-align: center;
+}
+
+label {
+    cursor: pointer;
+}
+
+input {
+    border: none;
+    border-bottom: 1px solid hsl(var(--primary));
+    border-radius: 2px;
+    box-shadow: hsla(0,0%,0%,.2) 0 .05rem .1rem inset;
+    padding: 0 2px;
+}
+
+    input:focus {
+        outline-color: hsl(var(--primary));
     }
 
-        .light a:hover, .light a:active, .light a:focus {
-            opacity: .9;
-            text-decoration: none;
-        }
+.field {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-column-gap: 1rem;
+    margin-bottom: .5rem;
+}
 
-    .light button {
-        background: hsla(var(--light-primary),.9);
-        border-color: hsl(var(--light-primary));
-        box-shadow: hsla(var(--light-primary),.5) 0 .05rem .1rem .1rem;
-        color: hsl(var(--light-bg));
+    .field > label {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: right;
     }
 
-        .light button:hover, .light button:focus {
-            background: hsla(var(--light-primary),.8);
-        }
+    .field > input {
+    }
 
-        .light button:active {
-        }
+    .field .field-validation-error {
+        grid-column-start: 2;
+    }
+
+.bg {
+    background: hsl(var(--bg));
+}
+
+.w-xl {
+    max-width: 1280px;
+}
+
+.w-md {
+    max-width: 640px;
+}
+
+.w-xl {
+    max-width: 1280px;
+}
 
 .container {
+    margin: 0 auto;
 }
 
     .container > :last-child {
@@ -137,14 +213,18 @@ button {
     }
 
 body {
+    background-color: hsl(var(--bg));
 }
 
 #site-navbar {
-    display: flex;
 }
 
+    #site-navbar > :first-child:last-child {
+        display: flex;
+    }
+
     #site-navbar a {
-        color: hsl(var(--dark-text));
+        color: hsl(var(--text));
         display: block;
         padding: 1rem;
         text-decoration: none;
@@ -160,9 +240,10 @@ body {
         }
 
 #site-main {
+    background-color: hsl(var(--bg));
     box-shadow: hsla(0,0%,0%,.5) 0 .1rem .2rem;
-    color: hsl(var(--light-text));
     padding: 1rem;
+    min-height: 50vh;
 }
 
 #site-footer {

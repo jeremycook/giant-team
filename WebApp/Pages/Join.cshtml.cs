@@ -27,7 +27,7 @@ namespace WebApp.Pages
                 {
                     await joinService.JoinAsync(new JoinDataModel
                     {
-                        DisplayName = Form.DisplayName,
+                        Name = Form.Name,
                         Email = Form.Email,
                         Username = Form.Username,
                         Password = Form.Password,
@@ -46,23 +46,9 @@ namespace WebApp.Pages
             return Page();
         }
 
-        public class FormModel
+        public class FormModel : JoinDataModel
         {
-            [StringLength(100, MinimumLength = 3)]
-            public string DisplayName { get; set; } = default!;
-
-            [EmailAddress]
-            [StringLength(200, MinimumLength = 3)]
-            public string Email { get; set; } = default!;
-
-            [RegularExpression("^[A-Za-z][A-Za-z0-9]*$")]
-            [StringLength(100, MinimumLength = 3)]
-            public string Username { get; set; } = default!;
-
-            [DataType(DataType.Password)]
-            [StringLength(100, MinimumLength = 10)]
-            public string Password { get; set; } = default!;
-
+            [Display(Order = 10001)]
             [DataType(DataType.Password)]
             [Compare(nameof(Password))]
             public string PasswordConfirmation { get; set; } = default!;

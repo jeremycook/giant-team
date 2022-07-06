@@ -34,11 +34,11 @@ namespace WebApp.Pages
                         Password = Form.Password,
                     });
 
-                    return SignIn(principal, new()
+                    return SignIn(principal, new Microsoft.AspNetCore.Authentication.AuthenticationProperties()
                     {
                         RedirectUri = Url.IsLocalUrl(ReturnUrl) ?
                             ReturnUrl :
-                            Url.Content("~/")
+                            Url.Page("Profile"),
                     }, CookieAuthenticationDefaults.AuthenticationScheme);
                 }
                 catch (ValidationException ex)

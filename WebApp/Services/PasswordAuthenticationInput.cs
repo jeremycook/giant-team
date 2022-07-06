@@ -4,7 +4,6 @@ namespace WebApp.Services
 {
     public class PasswordAuthenticationInput
     {
-        [RegularExpression("^[A-Za-z][A-Za-z0-9]*$")]
         [StringLength(50, MinimumLength = 3)]
         public string Username { get; set; } = default!;
 

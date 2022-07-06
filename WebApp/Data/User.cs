@@ -1,26 +1,27 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using WebApp.Postgres;
 
 namespace WebApp.Data
 {
-    [Index(nameof(UsernameLowercase), IsUnique = true)]
-    [Index(nameof(DatabaseUsername), IsUnique = true)]
+    [Index(nameof(Username), IsUnique = true)]
     public class User
     {
         [Key]
         public Guid UserId { get; set; }
 
         [StringLength(100)]
-        public string DisplayName { get; set; } = null!;
+        public string Name { get; set; } = null!;
 
-        [RegularExpression("^[A-Za-z][A-Za-z0-9]*$", ErrorMessage = "The {0} field must start with a letter. The first letter can be followed by letters and numbers.")]
-        [StringLength(100, MinimumLength = 3)]
-        public string Username { get; set; } = null!;
+        [StringLength(50, MinimumLength = 3)]
+        public string DisplayUsername { get; set; } = null!;
 
         /// <summary>
-        /// The lowercase form of <see cref="Username"/>.
+        /// The lowercase form of <see cref="DisplayUsername"/>.
         /// </summary>
-        public string UsernameLowercase { get => Username?.ToLower()!; private set { } }
+        [PgIdentifier]
+        [StringLength(50, MinimumLength = 3)]
+        public string Username { get => DisplayUsername?.ToLower()!; private set { } }
 
         public string PasswordDigest { get; set; } = null!;
 
@@ -28,9 +29,7 @@ namespace WebApp.Data
         [StringLength(200)]
         public string Email { get; set; } = null!;
 
-        public bool EmailConfirmed { get; set; }
-
-        public string DatabaseUsername { get; set; } = null!;
+        public bool EmailVerified { get; set; }
 
         public DateTimeOffset Created { get; set; }
     }

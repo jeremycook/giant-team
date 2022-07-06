@@ -10,18 +10,15 @@ namespace WebApp.Services
     {
         private readonly ILogger<JoinService> logger;
         private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
-        private readonly HashingService hashingService;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
             IDbContextFactory<GiantTeamDbContext> dbContextFactory,
-            HashingService hashingService,
             ValidationService validationService)
         {
             this.logger = logger;
             this.dbContextFactory = dbContextFactory;
-            this.hashingService = hashingService;
             this.validationService = validationService;
         }
 
@@ -36,11 +33,10 @@ namespace WebApp.Services
 
             User user = new()
             {
-                DisplayName = joinDataModel.DisplayName,
+                Name = joinDataModel.Name,
                 Email = joinDataModel.Email,
-                Username = joinDataModel.Username,
-                PasswordDigest = hashingService.HashPlaintext(joinDataModel.Password),
-                DatabaseUsername = "u:" + hashingService.RandomPassword(),
+                DisplayUsername = joinDataModel.Username,
+                PasswordDigest = HashingHelper.HashPlaintext(joinDataModel.Password),
                 Created = DateTimeOffset.UtcNow,
             };
 
@@ -50,30 +46,24 @@ namespace WebApp.Services
                 // Create database user
                 try
                 {
-                    await db.Database.ExecuteSqlRawAsync($@"CREATE USER {PgQuote.Identifier(user.DatabaseUsername)} WITH
-LOGIN
-NOSUPERUSER
-NOCREATEDB
-NOCREATEROLE
-NOREPLICATION
-ADMIN CURRENT_USER;");
+                    await db.CreateDatabaseUserRolesAsync(user);
                 }
                 catch (PostgresException ex) when (ex.SqlState == "42710")
                 {
-                    logger.LogWarning(ex, "Suppressed exception creating database user {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                    throw new ValidationException($"The username \"{user.DatabaseUsername}\" already exists.", ex);
+                    logger.LogWarning(ex, "Suppressed exception creating database users named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                    throw new ValidationException($"The username \"{user.DisplayUsername}\" already exists.", ex);
                 }
 
+                // Create application user
                 try
                 {
-                    // Create application user
                     db.Users.Add(user);
                     await db.SaveChangesAsync();
                 }
                 catch (DbUpdateException ex)
                 {
-                    logger.LogWarning(ex, "Suppressed exception creating application user {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                    throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
+                    logger.LogWarning(ex, "Suppressed exception creating application user named \"{DisplayUsername}\" {ExceptionType}: {ExceptionMessage}", user.DisplayUsername, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                    throw new ValidationException($"The username \"{user.DisplayUsername}\" already exists.", ex);
                 }
 
                 await tx.CommitAsync();

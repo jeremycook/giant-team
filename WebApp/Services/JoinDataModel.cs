@@ -4,11 +4,11 @@ namespace WebApp.Services
 {
     public class JoinDataModel
     {
-        [StringLength(50, MinimumLength = 3)]
-        public string DisplayName { get; set; } = default!;
+        [StringLength(100, MinimumLength = 3)]
+        public string Name { get; set; } = default!;
 
         [EmailAddress]
-        [StringLength(150, MinimumLength = 3)]
+        [StringLength(200, MinimumLength = 3)]
         public string Email { get; set; } = default!;
 
         [RegularExpression("^[A-Za-z][A-Za-z0-9]*$")]
@@ -16,6 +16,7 @@ namespace WebApp.Services
         public string Username { get; set; } = default!;
 
         [StringLength(100, MinimumLength = 10)]
+        [DataType(DataType.Password)]
         public string Password { get; set; } = default!;
     }
 }
