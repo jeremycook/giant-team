@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using WebApp.Data;
-using WebApp.Helpers;
 
 namespace WebApp.Services
 {

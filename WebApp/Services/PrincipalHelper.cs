@@ -1,4 +1,4 @@
-﻿namespace WebApp.Helpers
+﻿namespace WebApp.Services
 {
     public static class PrincipalHelper
     {

@@ -6,7 +6,6 @@ using Npgsql;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text;
-using WebApp.Helpers;
 using WebApp.Postgres;
 using WebApp.Services;
 
