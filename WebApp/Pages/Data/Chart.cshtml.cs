@@ -33,11 +33,11 @@ namespace WebApp.Pages.Data
         }
 
         public async Task<ActionResult> OnGet(
-            [FromServices] UserDatabaseConnectionService databaseConnectionService)
+            [FromServices] DatabaseConnectionService databaseConnectionService)
         {
             try
             {
-                using NpgsqlConnection connection = databaseConnectionService.CreateConnection(DatabaseName);
+                using NpgsqlConnection connection = databaseConnectionService.CreateQueryConnection(DatabaseName);
                 await connection.OpenAsync();
 
                 string select = $@"SELECT * FROM {PgQuote.Identifier(SchemaName, TableName)}";

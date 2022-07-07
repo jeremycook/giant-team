@@ -1,6 +1,7 @@
 ﻿@page "{DatabaseName}/{SchemaName}.{TableName}"
 @model SheetModel
 @using System.Text.Json
+@using Npgsql.Schema
 @{
     ViewBag._Title = $"{Model.DatabaseName} / {Model.SchemaName}.{Model.TableName}";
 }
@@ -20,7 +21,7 @@
             <tr data-record>
                 @for (int i = 0; i < Model.Columns.Count; i++)
                 {
-                    var column = Model.Columns[i];
+                    NpgsqlDbColumn column = Model.Columns[i];
                     object? value = record[i];
                     <td data-type="@column.DataTypeName"><div data-content>@value</div></td>
                 }

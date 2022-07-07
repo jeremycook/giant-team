@@ -4,7 +4,7 @@ using WebApp.Postgres;
 
 namespace WebApp.Data
 {
-    [Index(nameof(Username), IsUnique = true)]
+    [Index(nameof(UsernameNormalized), IsUnique = true)]
     public class User
     {
         [Key]
@@ -13,15 +13,16 @@ namespace WebApp.Data
         [StringLength(100)]
         public string Name { get; set; } = null!;
 
+        [PgLaxIdentifier]
         [StringLength(50, MinimumLength = 3)]
-        public string DisplayUsername { get; set; } = null!;
+        public string Username { get; set; } = null!;
 
         /// <summary>
-        /// The lowercase form of <see cref="DisplayUsername"/>.
+        /// The lowercase form of <see cref="Username"/>.
         /// </summary>
-        [PgIdentifier]
+        [PgStrictIdentifier]
         [StringLength(50, MinimumLength = 3)]
-        public string Username { get => DisplayUsername?.ToLower()!; private set { } }
+        public string UsernameNormalized { get => Username?.ToLowerInvariant()!; private set { } }
 
         public string PasswordDigest { get; set; } = null!;
 

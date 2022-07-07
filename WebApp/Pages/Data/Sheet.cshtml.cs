@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Npgsql;
 using Npgsql.Schema;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Data;
-using WebApp.Charting;
 using WebApp.Postgres;
 using WebApp.Services;
 
@@ -26,14 +23,14 @@ namespace WebApp.Pages.Data
 
         public List<NpgsqlDbColumn> Columns { get; } = new();
 
-        public List<object[]> Records { get; } = new();
+        public List<object?[]> Records { get; } = new();
 
         public async Task<ActionResult> OnGet(
-            [FromServices] UserDatabaseConnectionService databaseConnectionService)
+            [FromServices] DatabaseConnectionService databaseConnectionService)
         {
             try
             {
-                using NpgsqlConnection connection = databaseConnectionService.CreateConnection(DatabaseName);
+                using NpgsqlConnection connection = databaseConnectionService.CreateQueryConnection(DatabaseName);
                 await connection.OpenAsync();
 
                 string select = $@"SELECT * FROM {PgQuote.Identifier(SchemaName, TableName)}";
@@ -46,8 +43,8 @@ namespace WebApp.Pages.Data
                 while (await reader.ReadAsync())
                 {
                     int i = -1;
-                    var record = new object[Columns.Count];
-                    foreach (var column in Columns)
+                    object?[] record = new object?[Columns.Count];
+                    foreach (NpgsqlDbColumn column in Columns)
                     {
                         i++;
                         object? value = reader[i];

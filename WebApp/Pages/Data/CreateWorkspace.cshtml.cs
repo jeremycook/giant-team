@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
@@ -6,24 +5,24 @@ using WebApp.Services;
 
 namespace WebApp.Pages.Data
 {
-    public class CreateModel : PageModel
+    public class CreateWorkspaceModel : PageModel
     {
         [BindProperty]
-        public CreateDatabaseInput Model { get; set; } = new();
+        public CreateWorkspaceInput Model { get; set; } = new();
 
         public void OnGet()
         {
         }
 
-        public async Task<ActionResult> OnPost([FromServices] CreateDatabaseService databaseService)
+        public async Task<ActionResult> OnPost([FromServices] CreateWorkspaceService databaseService)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var database = await databaseService.CreateDatabase(Model);
+                    await databaseService.CreateWorkspaceAsync(Model);
 
-                    return RedirectToPage("Details", new { DatabaseName = database.DatabaseName });
+                    return RedirectToPage("Workspace", new { WorkspaceId = Model.WorkspaceName });
                 }
                 catch (ValidationException ex)
                 {

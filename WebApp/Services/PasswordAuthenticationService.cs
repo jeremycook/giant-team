@@ -25,7 +25,7 @@ namespace WebApp.Services
             using var db = await dbContextFactory.CreateDbContextAsync();
 
             var user = await db.Users
-                .SingleOrDefaultAsync(o => o.Username == input.Username.ToLower());
+                .SingleOrDefaultAsync(o => o.UsernameNormalized == input.Username.ToLower());
 
             if (user is not null &&
                 !string.IsNullOrEmpty(user.PasswordDigest) &&

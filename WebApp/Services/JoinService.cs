@@ -35,7 +35,7 @@ namespace WebApp.Services
             {
                 Name = joinDataModel.Name,
                 Email = joinDataModel.Email,
-                DisplayUsername = joinDataModel.Username,
+                Username = joinDataModel.Username,
                 PasswordDigest = HashingHelper.HashPlaintext(joinDataModel.Password),
                 Created = DateTimeOffset.UtcNow,
             };
@@ -50,8 +50,8 @@ namespace WebApp.Services
                 }
                 catch (PostgresException ex) when (ex.SqlState == "42710")
                 {
-                    logger.LogWarning(ex, "Suppressed exception creating database users named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                    throw new ValidationException($"The username \"{user.DisplayUsername}\" already exists.", ex);
+                    logger.LogWarning(ex, "Suppressed exception creating database users named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.UsernameNormalized, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                    throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
                 }
 
                 // Create application user
@@ -62,8 +62,8 @@ namespace WebApp.Services
                 }
                 catch (DbUpdateException ex)
                 {
-                    logger.LogWarning(ex, "Suppressed exception creating application user named \"{DisplayUsername}\" {ExceptionType}: {ExceptionMessage}", user.DisplayUsername, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                    throw new ValidationException($"The username \"{user.DisplayUsername}\" already exists.", ex);
+                    logger.LogWarning(ex, "Suppressed exception creating application user named \"{DisplayUsername}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                    throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
                 }
 
                 await tx.CommitAsync();

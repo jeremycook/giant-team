@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WebApp.Pages.Data
 {
-    public class DetailsModel : PageModel
+    public class WorkspaceModel : PageModel
     {
         [FromRoute]
-        public string DatabaseName { get; set; } = null!;
+        public string WorkspaceId { get; set; } = null!;
 
         //[BindProperty]
         //public CreateDatabaseInput Model { get; set; } = new();

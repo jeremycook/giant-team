@@ -1,7 +1,7 @@
-﻿@page "{DatabaseName}"
-@model DetailsModel
+﻿@page "{WorkspaceId}"
+@model WorkspaceModel
 @{
-    ViewBag._Title = $"Database: {Model.DatabaseName}";
+    ViewBag._Title = $"Workspace: {Model.WorkspaceId}";
 }
 
 <div asp-validation-summary="All" class="text-danger"></div>

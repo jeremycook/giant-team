@@ -38,7 +38,7 @@ namespace WebApp.Pages.Data
 
         public async Task<ActionResult> OnPost(
             [FromServices] ILogger<ImportModel> logger,
-            [FromServices] UserDatabaseConnectionService databaseConnectionService)
+            [FromServices] DatabaseConnectionService databaseConnectionService)
         {
             if (ModelState.IsValid)
             {
@@ -71,38 +71,50 @@ namespace WebApp.Pages.Data
                                 }
                             }
 
-                            using NpgsqlConnection connection = databaseConnectionService.CreateConnection(DatabaseName);
-                            await connection.OpenAsync();
-
-                            var schema = await connection.QueryAsync<(string column_name, string data_type, bool is_nullable)>(
-    @"SELECT
+                            Dictionary<string, (string column_name, string data_type, bool is_nullable)> columnMap;
+                            using (NpgsqlConnection queryConnection = databaseConnectionService.CreateQueryConnection(DatabaseName))
+                            {
+                                var schema = await queryConnection.QueryAsync<(string column_name, string data_type, bool is_nullable)>(
+@"SELECT
     column_name,
     data_type,
     (CASE is_nullable WHEN 'YES' THEN true ELSE false END) AS is_nullable
 from information_schema.columns
 where table_catalog = @DatabaseName
 and table_schema = @SchemaName
-and table_name = @TableName", new { DatabaseName, SchemaName, TableName });
+and table_name = @TableName",
+new
+{
+    DatabaseName,
+    SchemaName,
+    TableName
+});
 
-                            var columnMap = schema.ToDictionary(o => o.column_name);
+                                columnMap = schema.ToDictionary(o => o.column_name);
+                            }
 
-                            string sql =
-    $@"INSERT INTO {PgQuote.Identifier(SchemaName, TableName)} ({string.Join(",", fieldNames.Select(PgQuote.Identifier))})
+                            using (NpgsqlConnection manipulateConnection = databaseConnectionService.CreateQueryConnection(DatabaseName))
+                            {
+                                string insertSql =
+$@"INSERT INTO {PgQuote.Identifier(SchemaName, TableName)} ({string.Join(",", fieldNames.Select(PgQuote.Identifier))})
 SELECT {string.Join(",", fieldNames.Select((name, i) => "p" + i + "::" + columnMap[name].data_type + " AS " + PgQuote.Identifier(name)))} 
 FROM unnest({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => "@p" + i))}) as data ({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => "p" + i))})";
 
-                            NpgsqlCommand command = new(sql, connection);
-                            for (int i = 0; i < fieldNames.Count; i++)
-                            {
-                                var name = fieldNames[i];
-                                var (_, _, is_nullable) = columnMap[name];
+                                NpgsqlCommand command = new(insertSql, manipulateConnection);
+                                for (int i = 0; i < fieldNames.Count; i++)
+                                {
+                                    var name = fieldNames[i];
+                                    var (_, _, is_nullable) = columnMap[name];
 
-                                string?[] value = records.Select(r => r[i].Length == 0 && is_nullable ? null : r[i]).ToArray();
-                                command.Parameters.AddWithValue("p" + i, value);
+                                    string?[] value = records.Select(r => r[i].Length == 0 && is_nullable ? null : r[i]).ToArray();
+                                    command.Parameters.AddWithValue("p" + i, value);
+                                }
+
+                                logger.LogInformation("Execute non-query: {CommandText}", insertSql);
+
+                                await manipulateConnection.OpenAsync();
+                                await command.ExecuteNonQueryAsync();
                             }
-
-                            logger.LogInformation("Execute non-query: {CommandText}", sql);
-                            await command.ExecuteNonQueryAsync();
 
                             return RedirectToPage("Import", new { DatabaseName, SchemaName, TableName });
                         }

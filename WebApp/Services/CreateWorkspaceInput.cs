@@ -3,10 +3,10 @@ using WebApp.Postgres;
 
 namespace WebApp.Services
 {
-    public class CreateDatabaseInput
+    public class CreateWorkspaceInput
     {
-        [PgIdentifier]
+        [PgLaxIdentifier]
         [StringLength(25)]
-        public string DatabaseName { get; set; } = null!;
+        public string WorkspaceName { get; set; } = null!;
     }
 }

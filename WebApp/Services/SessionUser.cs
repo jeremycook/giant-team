@@ -54,12 +54,12 @@ namespace WebApp.Services
         public SessionUser(User user, int databaseSlot, string databasePassword, DateTimeOffset databasePasswordValidUntil)
         {
             Sub = user.UserId.ToString();
-            Username = user.DisplayUsername;
+            Username = user.Username;
             Name = user.Name;
             Email = user.Email;
             EmailVerified = user.EmailVerified;
 
-            DatabaseUsername = user.Username;
+            DatabaseUsername = user.UsernameNormalized;
             DatabaseSlot = databaseSlot;
             DatabasePassword = databasePassword;
             DatabasePasswordValidUntil = databasePasswordValidUntil;
@@ -88,6 +88,12 @@ namespace WebApp.Services
 
             return identity;
         }
+
+        private Guid? _userId;
+
+        public Guid UserId => _userId ??= Guid.Parse(Sub);
+
+        // Common
 
         public string Sub { get; }
         public string Username { get; }

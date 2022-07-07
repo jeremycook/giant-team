@@ -88,7 +88,9 @@ namespace WebApp
 
             services.AddAuthorization(options =>
             {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                // Require all users to be authenticated, except for Razor Pages,
+                // controllers, or action methods with an authorization attribute.
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
             });
@@ -111,7 +113,10 @@ namespace WebApp
                     connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
                 }
 
-                options.UseSnakeCaseNamingConvention().UseNpgsql(connection);
+                options
+                .UseSnakeCaseNamingConvention()
+                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
+                .UseNpgsql(connection);
             });
             services.AddDataProtection().PersistKeysToDbContext<AspDbContext>();
 
@@ -125,7 +130,10 @@ namespace WebApp
                     connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
                 }
 
-                options.UseSnakeCaseNamingConvention().UseNpgsql(connection);
+                options
+                .UseSnakeCaseNamingConvention()
+                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
+                .UseNpgsql(connection);
             });
 
             foreach (Type type in from t in typeof(Program).Assembly.ExportedTypes

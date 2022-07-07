@@ -1,0 +1,15 @@
+﻿@page
+@model WebApp.Pages.Data.CreateWorkspaceModel
+@{
+    ViewBag._Title = "Create a Workspace";
+}
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="Model.WorkspaceName" class="form-label"></label>
+        <input asp-for="Model.WorkspaceName" class="form-control" autofocus>
+    </div>
+    <button>Create It</button>
+</form>
