@@ -1,9 +1,9 @@
-﻿@page "{DatabaseName}/{SchemaName}.{TableName}"
+﻿@page "{DatabaseName}/{SchemaName}/{TableName}"
 @model SheetModel
 @using System.Text.Json
 @using Npgsql.Schema
 @{
-    ViewBag._Title = $"{Model.DatabaseName} / {Model.SchemaName}.{Model.TableName}";
+    ViewBag._Title = $"{Model.DatabaseName} / {Model.SchemaName} / {Model.TableName}";
 }
 
 <table class="table table-inline" data-table>

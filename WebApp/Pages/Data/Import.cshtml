@@ -1,19 +1,38 @@
-﻿@page "{DatabaseName}/{SchemaName}.{TableName}"
+﻿@page "{WorkspaceId}"
 @model ImportModel
 @{
-    ViewBag._Title = $"Import into {Model.DatabaseName}/{Model.SchemaName}.{Model.TableName}";
+    ViewBag._Title = $"Import into {Model.WorkspaceId}";
 }
 
-<div class="container">
+<div class="container w-md">
 
     <div asp-validation-summary="All" class="text-danger"></div>
 
     <form method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label asp-for="Form.DataFiles" class="form-label"></label>
-            <input asp-for="Form.DataFiles" class="form-control" multiple autofocus>
-        </div>
-        <button>Import Data</button>
+        <fieldset>
+            <legend>Import Form</legend>
+
+            <div class="field">
+                <label asp-for="ExistingTable"></label>
+                <select asp-for="ExistingTable" asp-items="Model.ExistingTableOptions" autofocus>
+                    <option value="">Create a New Table</option>
+                </select>
+            </div>
+            <div class="field">
+                <label asp-for="NewTableName"></label>
+                <input asp-for="NewTableName">
+            </div>
+            <div class="field">
+                <label asp-for="DataFiles"></label>
+                <input asp-for="DataFiles" multiple>
+            </div>
+            <div class="field">
+                <div></div>
+                <div>
+                    <button>Import Data</button>
+                </div>
+            </div>
+        </fieldset>
     </form>
 
 </div>

@@ -16,13 +16,41 @@ namespace WebApp.Postgres
 
             foreach (var schema in database.Schemas.Values)
             {
+                if (schema.Owner is not null)
+                {
+                    script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
+                }
+
                 // Create missing schema
                 // https://www.postgresql.org/docs/current/sql-createschema.html
                 script.AppendLine($@"CREATE SCHEMA IF NOT EXISTS {Identifier(schema.Name)};");
                 script.AppendLine();
 
+                // Apply privileges
+                foreach (var privilege in schema.Privileges)
+                {
+                    script.AppendLine($@"GRANT {privilege.Privileges} ON SCHEMA {Identifier(schema.Name)} TO {Identifier(privilege.Grantee)};");
+                }
+                script.AppendLine();
+
+                // Apply default privileges
+                foreach (var privilege in schema.DefaultPrivileges)
+                {
+                    script.AppendLine($@"ALTER DEFAULT PRIVILEGES IN SCHEMA {Identifier(schema.Name)} GRANT {privilege.Privileges} ON {privilege.ObjectType} TO {Identifier(privilege.Grantee)};");
+                }
+                script.AppendLine();
+
                 foreach (var table in schema.Tables.Values)
                 {
+                    if (table.Owner is not null)
+                    {
+                        script.AppendLine($"SET ROLE {Identifier(table.Owner)};");
+                    }
+                    else if (schema.Owner is not null)
+                    {
+                        script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
+                    }
+
                     // Create missing table
                     // https://www.postgresql.org/docs/current/sql-createtable.html
                     IEnumerable<string> tableParts;
@@ -43,6 +71,7 @@ namespace WebApp.Postgres
                     {
                         tableParts = Enumerable.Empty<string>();
                     }
+                    string? tableOwner = table.Owner ?? schema.Owner;
                     script.AppendLine($@"CREATE TABLE IF NOT EXISTS {Identifier(schema.Name, table.Name)} ({string.Join(", ", tableParts)});");
                     script.AppendLine();
 
