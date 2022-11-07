@@ -162,17 +162,17 @@ namespace WebApp
 
             {
                 var gtDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<GiantTeamDbContext>>();
-                using var gt = gtDbContextFactory.CreateDbContext();
+                using var giantTeamDbContext = gtDbContextFactory.CreateDbContext();
 
                 Database database = new();
-                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, gt.Model, "gt");
+                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, giantTeamDbContext.Model, GiantTeamDbContext.DefaultSchema);
                 ObjectDatabaseScriptsContributor.Singleton.Contribute(database, "./Data/Scripts");
 
                 PgDatabaseScripter scripter = new();
                 string sql = scripter.Script(database);
 
-                gt.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
-                gt.Database.ExecuteSqlRaw(sql);
+                giantTeamDbContext.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
+                giantTeamDbContext.Database.ExecuteSqlRaw(sql);
             }
 
             {

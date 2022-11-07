@@ -7,6 +7,9 @@ namespace WebApp.Data
 {
     public class GiantTeamDbContext : DbContext
     {
+        /// <summary>
+        /// "gt"
+        /// </summary>
         public static string DefaultSchema { get; } = "gt";
 
         public GiantTeamDbContext(DbContextOptions<GiantTeamDbContext> options)
