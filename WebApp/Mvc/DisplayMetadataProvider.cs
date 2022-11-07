@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 
-namespace WebApp.Asp
+namespace WebApp.Mvc
 {
     public class DisplayMetadataProvider : IDisplayMetadataProvider
     {
