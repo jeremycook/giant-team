@@ -88,8 +88,9 @@ namespace WebApp
 
             services.AddAuthorization(options =>
             {
-                // Require all users to be authenticated, except for Razor Pages,
-                // controllers, or action methods with an authorization attribute.
+                // Use the fallback policy to require all users to be authenticated
+                // except when accessing Razor Pages, controllers or action methods
+                // with an authorization or anonymous attribute.
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
