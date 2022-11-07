@@ -2,7 +2,6 @@
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
 using WebApp.Data;
-using WebApp.Postgres;
 
 namespace WebApp.Services
 {

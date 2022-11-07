@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApp.Postgres
+namespace GiantTeam.Postgres
 {
     /// <summary>
     /// Requires that the field only contain letters, numbers, underscores, dashes and spaces.

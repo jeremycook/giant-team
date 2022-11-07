@@ -1,7 +1,7 @@
 ﻿using Dapper;
+using GiantTeam.Postgres;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Data;
-using WebApp.Postgres;
 
 namespace WebApp.Services
 {

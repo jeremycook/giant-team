@@ -1,6 +1,6 @@
-﻿using Humanizer;
+﻿using GiantTeam.Postgres;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using WebApp.Postgres;
 using WebApp.Services;
 
 namespace WebApp.Data

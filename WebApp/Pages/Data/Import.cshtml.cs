@@ -9,8 +9,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text;
 using GiantTeam.DatabaseModel;
-using WebApp.Postgres;
 using WebApp.Services;
+using GiantTeam.Postgres;
 
 namespace WebApp.Pages.Data
 {

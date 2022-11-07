@@ -1,3 +1,4 @@
+using GiantTeam.Postgres;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -7,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using WebApp.Charting;
-using WebApp.Postgres;
 using WebApp.Services;
 
 namespace WebApp.Pages.Data

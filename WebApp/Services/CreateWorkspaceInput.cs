@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using WebApp.Postgres;
+﻿using GiantTeam.Postgres;
+using System.ComponentModel.DataAnnotations;
 
 namespace WebApp.Services
 {

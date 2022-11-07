@@ -1,6 +1,7 @@
 using GiantTeam.DatabaseModel;
 using GiantTeam.DataProtection;
 using GiantTeam.EntityFramework;
+using GiantTeam.Postgres;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -8,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Security.Claims;
 using WebApp.Data;
-using WebApp.Postgres;
 using WebApp.Services;
 
 namespace WebApp

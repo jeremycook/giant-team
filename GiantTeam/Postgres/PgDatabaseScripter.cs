@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using GiantTeam.DatabaseModel;
-using static WebApp.Postgres.PgQuote;
+using static GiantTeam.Postgres.PgQuote;
 
-namespace WebApp.Postgres
+namespace GiantTeam.Postgres
 {
     public class PgDatabaseScripter
     {

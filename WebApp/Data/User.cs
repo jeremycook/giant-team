@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GiantTeam.Postgres;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using WebApp.Postgres;
 
 namespace WebApp.Data
 {

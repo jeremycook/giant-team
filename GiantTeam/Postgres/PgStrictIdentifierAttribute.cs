@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApp.Postgres
+namespace GiantTeam.Postgres
 {
     /// <summary>
     /// Requires that the field starts with a lowercase letter, and may be followed by lowercase letters, numbers and underscores.

@@ -1,4 +1,4 @@
-﻿namespace WebApp.Postgres;
+﻿namespace GiantTeam.Postgres;
 
 public static class PgQuote
 {

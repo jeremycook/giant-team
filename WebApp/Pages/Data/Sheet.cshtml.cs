@@ -1,10 +1,10 @@
+using GiantTeam.Postgres;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Npgsql;
 using Npgsql.Schema;
 using System.ComponentModel.DataAnnotations;
-using WebApp.Postgres;
 using WebApp.Services;
 
 namespace WebApp.Pages.Data
