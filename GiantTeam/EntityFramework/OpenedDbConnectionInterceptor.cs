@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Data.Common;
 
-namespace WebApp.EntityFramework
+namespace GiantTeam.EntityFramework
 {
     /// <summary>
     /// Executes the provided SQL when the connection is opened.

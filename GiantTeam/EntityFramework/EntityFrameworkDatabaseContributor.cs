@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using GiantTeam.DatabaseModel;
 
-namespace WebApp.EntityFramework;
+namespace GiantTeam.EntityFramework;
 
 public class EntityFrameworkDatabaseContributor
 {
