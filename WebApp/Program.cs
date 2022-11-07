@@ -97,10 +97,6 @@ namespace WebApp
                     .Build();
             });
 
-            services.Configure<MvcOptions>(options =>
-            {
-                options.ModelMetadataDetailsProviders.Add(new DisplayMetadataProvider());
-            });
             services.AddRazorPages();
 
             services.Configure<EncryptionOptions>(configuration.GetSection("Encryption"));
