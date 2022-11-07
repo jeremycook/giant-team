@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace WebApp.DatabaseModel;
+namespace GiantTeam.DatabaseModel;
 
 public class Column
 {

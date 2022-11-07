@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace WebApp.DatabaseModel;
+namespace GiantTeam.DatabaseModel;
 
 public class Schema
 {

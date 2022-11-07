@@ -1,7 +1,6 @@
-﻿using WebApp.DatabaseModel;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
-namespace WebApp.DatabaseModel;
+namespace GiantTeam.DatabaseModel;
 
 public class Database
 {

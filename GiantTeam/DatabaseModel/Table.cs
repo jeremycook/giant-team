@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using WebApp.DatabaseModel;
 
-namespace WebApp.DatabaseModel;
+namespace GiantTeam.DatabaseModel;
 
 public class Table
 {

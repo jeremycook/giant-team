@@ -8,7 +8,7 @@ using Npgsql;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text;
-using WebApp.DatabaseModel;
+using GiantTeam.DatabaseModel;
 using WebApp.Postgres;
 using WebApp.Services;
 

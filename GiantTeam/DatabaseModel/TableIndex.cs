@@ -1,4 +1,4 @@
-﻿namespace WebApp.DatabaseModel;
+﻿namespace GiantTeam.DatabaseModel;
 
 public class TableIndex
 {

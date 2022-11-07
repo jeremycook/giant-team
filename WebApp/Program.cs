@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Security.Claims;
 using WebApp.Data;
-using WebApp.DatabaseModel;
+using GiantTeam.DatabaseModel;
 using WebApp.EntityFramework;
 using WebApp.Postgres;
 using WebApp.Services;
@@ -110,7 +110,6 @@ namespace WebApp
                 }
 
                 options
-                .UseSnakeCaseNamingConvention()
                 .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
                 .UseNpgsql(connection);
             });
@@ -127,7 +126,6 @@ namespace WebApp
                 }
 
                 options
-                .UseSnakeCaseNamingConvention()
                 .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
                 .UseNpgsql(connection);
             });
