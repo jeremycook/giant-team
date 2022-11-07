@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace WebApp.Asp
+namespace WebApp.DataProtection
 {
     public class DataProtectionDbContext : DbContext, IDataProtectionKeyContext
     {
