@@ -156,6 +156,7 @@ namespace WebApp
             {
                 app.UseExceptionHandler("/Error");
                 //app.UseHsts();
+                app.UseHttpsRedirection();
             }
 
             {
@@ -186,7 +187,6 @@ namespace WebApp
                 asp.Database.ExecuteSqlRaw(sql);
             }
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
