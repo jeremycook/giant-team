@@ -1,15 +1,13 @@
+using GiantTeam.DataProtection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Security.Claims;
 using WebApp.Data;
 using WebApp.DatabaseModel;
-using WebApp.DataProtection;
 using WebApp.EntityFramework;
-using WebApp.Mvc;
 using WebApp.Postgres;
 using WebApp.Services;
 
@@ -103,12 +101,12 @@ namespace WebApp
 
             services.AddDbContext<DataProtectionDbContext>(options =>
             {
-                string connectionString = configuration.GetConnectionString("Main");
+                string connectionString = configuration.GetConnectionString("DataProtection");
                 NpgsqlConnection connection = new(connectionString);
 
-                if (configuration.GetSection("ConnectionStrings:MainCaCertificate").Get<string>() is string connectionCaCertificateText)
+                if (configuration.GetSection("ConnectionStrings:DataProtectionCaCertificate").Get<string>() is string caCertificate)
                 {
-                    connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
+                    connection.ConfigureCaCertificateValidation(caCertificate);
                 }
 
                 options
