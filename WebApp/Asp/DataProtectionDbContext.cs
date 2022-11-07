@@ -3,11 +3,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace WebApp.Asp
 {
-    public class AspDbContext : DbContext, IDataProtectionKeyContext
+    public class DataProtectionDbContext : DbContext, IDataProtectionKeyContext
     {
-        public static string DefaultSchema { get; } = "asp";
+        /// <summary>
+        /// "dp"
+        /// </summary>
+        public static string DefaultSchema { get; } = "dp";
 
-        public AspDbContext(DbContextOptions<AspDbContext> options)
+        public DataProtectionDbContext(DbContextOptions<DataProtectionDbContext> options)
             : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

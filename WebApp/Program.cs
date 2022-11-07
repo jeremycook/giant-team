@@ -104,7 +104,7 @@ namespace WebApp
 
             services.Configure<EncryptionOptions>(configuration.GetSection("Encryption"));
 
-            services.AddDbContext<AspDbContext>(options =>
+            services.AddDbContext<DataProtectionDbContext>(options =>
             {
                 string connectionString = configuration.GetConnectionString("Main");
                 NpgsqlConnection connection = new(connectionString);
@@ -119,7 +119,7 @@ namespace WebApp
                 .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
                 .UseNpgsql(connection);
             });
-            services.AddDataProtection().PersistKeysToDbContext<AspDbContext>();
+            services.AddDataProtection().PersistKeysToDbContext<DataProtectionDbContext>();
 
             services.AddPooledDbContextFactory<GiantTeamDbContext>(options =>
             {
@@ -177,15 +177,15 @@ namespace WebApp
 
             {
                 using var scope = app.Services.CreateScope();
-                var asp = scope.ServiceProvider.GetRequiredService<AspDbContext>();
+                var dataProtectionDbContext = scope.ServiceProvider.GetRequiredService<DataProtectionDbContext>();
 
                 Database database = new();
-                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, asp.Model, AspDbContext.DefaultSchema);
+                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, dataProtectionDbContext.Model, DataProtectionDbContext.DefaultSchema);
                 PgDatabaseScripter scripter = new();
                 string sql = scripter.Script(database);
 
-                asp.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
-                asp.Database.ExecuteSqlRaw(sql);
+                dataProtectionDbContext.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
+                dataProtectionDbContext.Database.ExecuteSqlRaw(sql);
             }
 
             app.UseStaticFiles();
