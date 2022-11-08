@@ -23,6 +23,8 @@ namespace WebApp
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
             else
             {
@@ -66,7 +68,7 @@ namespace WebApp
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapRazorPages();
+            app.MapControllers();
 
             app.Run();
         }

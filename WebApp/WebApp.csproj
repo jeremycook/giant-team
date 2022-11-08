@@ -17,10 +17,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GiantTeam.Asp.UI\GiantTeam.Asp.UI.csproj" />
     <ProjectReference Include="..\GiantTeam.Asp\GiantTeam.Asp.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings.json" /></VisualStudio></ProjectExtensions>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 
 </Project>

@@ -1,11 +1,11 @@
 ﻿using GiantTeam.Asp;
-using GiantTeam.Asp.UI;
 using GiantTeam.Data;
 using GiantTeam.Services;
 using GiantTeam.Startup;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 
 namespace WebApp
@@ -14,8 +14,7 @@ namespace WebApp
     {
         public WebAppServiceBuilder(
             IServiceCollection services,
-            GiantTeamAspServiceBuilder giantTeamServiceBuilder,
-            GiantTeamAspUIServiceBuilder giantTeamAspUIServiceBuilder)
+            GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
             services.AddHttpContextAccessor();
 
@@ -88,7 +87,30 @@ namespace WebApp
                     .Build();
             });
 
-            services.AddRazorPages();
+            services.AddControllers();
+
+            // See https://aka.ms/aspnetcore/swashbuckle
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "GiantTeam API",
+                    Description = "TODO",
+                    TermsOfService = new Uri("/terms", UriKind.Relative),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Contact Us",
+                        Url = new Uri("/contact", UriKind.Relative)
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "License",
+                        Url = new Uri("/license", UriKind.Relative)
+                    },
+                });
+            });
 
             services.AddScopedFromAssembly(typeof(WebAppServiceBuilder).Assembly);
         }
