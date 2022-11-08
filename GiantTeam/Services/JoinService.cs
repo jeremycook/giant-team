@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GiantTeam.Data;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
-using WebApp.Data;
 
-namespace WebApp.Services
+namespace GiantTeam.Services
 {
     public class JoinService
     {

@@ -1,9 +1,9 @@
 ﻿using Dapper;
+using GiantTeam.Data;
 using GiantTeam.Postgres;
 using Microsoft.EntityFrameworkCore;
-using WebApp.Data;
 
-namespace WebApp.Services
+namespace GiantTeam.Services
 {
     public class CreateWorkspaceService
     {

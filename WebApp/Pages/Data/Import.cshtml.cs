@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text;
 using GiantTeam.DatabaseModel;
-using WebApp.Services;
+using GiantTeam.Services;
 using GiantTeam.Postgres;
 
 namespace WebApp.Pages.Data

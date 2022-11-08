@@ -1,15 +1,10 @@
+using GiantTeam.Data;
 using GiantTeam.DatabaseModel;
 using GiantTeam.DataProtection;
 using GiantTeam.EntityFramework;
 using GiantTeam.Postgres;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using System.Security.Claims;
-using WebApp.Data;
-using WebApp.Services;
+using System.Collections.Immutable;
 
 namespace WebApp
 {
@@ -19,124 +14,33 @@ namespace WebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var configuration = builder.Configuration;
-
-            // Add services to the container.
-            var services = builder.Services;
-
-            services.AddHttpContextAccessor();
-
-            services
-                .AddAuthentication(options =>
-                {
-                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                })
-                .AddCookie(options =>
-                {
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.HttpOnly = true;
-
-                    options.AccessDeniedPath = "/access-denied";
-                    options.LoginPath = "/login";
-                    options.LogoutPath = "/logout";
-
-                    //// Controls the lifetime of the authentication session and cookie
-                    //// when AuthenticationProperties.IsPersistent is set to true.
-                    //options.ExpireTimeSpan = TimeSpan.FromDays(2);
-                    //options.SlidingExpiration = true;
-
-                    options.Events.OnSigningIn = async (context) =>
-                    {
-                        //context.Options.ExpireTimeSpan
-                    };
-                    options.Events.OnSignedIn = async (context) =>
-                    {
-                        //context.Options.ExpireTimeSpan
-                    };
-                    options.Events.OnCheckSlidingExpiration = async (context) =>
-                    {
-                    };
-                    options.Events.OnValidatePrincipal = async (context) =>
-                    {
-                        if (context.ShouldRenew)
-                        {
-                            IDbContextFactory<GiantTeamDbContext> dbContextFactory = context.HttpContext.RequestServices
-                                .GetRequiredService<IDbContextFactory<GiantTeamDbContext>>();
-
-                            ClaimsIdentity identity =
-                                context.Principal?.Identity as ClaimsIdentity ??
-                                throw new NullReferenceException("The ClaimsIdentity is null.");
-
-                            // Synchronize the lifespan of the passwords with the authentication cookie
-                            DateTimeOffset databasePasswordValidUntil = DateTimeOffset.UtcNow.Add(context.Options.ExpireTimeSpan);
-
-                            SessionUser sessionUser = new(identity, databasePasswordValidUntil);
-
-                            using (var db = await dbContextFactory.CreateDbContextAsync())
-                            {
-                                // Set database passwords
-                                await db.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil);
-                            }
-
-                            ClaimsPrincipal principal = new(sessionUser.CreateIdentity());
-
-                            context.ReplacePrincipal(principal);
-                        }
-                    };
-                });
-
-            services.AddAuthorization(options =>
+            var serviceBuilderCollection = new ServiceCollection();
+            serviceBuilderCollection.AddSingleton(builder.Services);
+            serviceBuilderCollection.AddSingleton(builder.Environment);
+            serviceBuilderCollection.AddSingleton<IHostEnvironment>(builder.Environment);
+            serviceBuilderCollection.AddSingleton(builder.Configuration);
+            serviceBuilderCollection.AddSingleton<IConfiguration>(builder.Configuration);
+            serviceBuilderCollection.AddSingleton(builder.Logging);
+            serviceBuilderCollection.AddSingleton(builder.Host);
+            serviceBuilderCollection.AddSingleton<IHostBuilder>(builder.Host);
+            serviceBuilderCollection.AddSingleton(builder.WebHost);
+            serviceBuilderCollection.AddSingleton<IWebHostBuilder>(builder.WebHost);
+            serviceBuilderCollection.AddLogging();
+            var standardServiceTypes = serviceBuilderCollection.Select(s => s.ServiceType).ToImmutableHashSet();
+            var serviceBuilderTypes = GetDependentTypes(typeof(WebAppServiceBuilder)).Append(typeof(WebAppServiceBuilder))
+                .Distinct()
+                .Where(t => !standardServiceTypes.Contains(t))
+                .ToList();
+            foreach (var type in serviceBuilderTypes)
             {
-                // Use the fallback policy to require all users to be authenticated
-                // except when accessing Razor Pages, controllers or action methods
-                // with an authorization or anonymous attribute.
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-            });
-
-            services.AddRazorPages();
-
-            services.Configure<EncryptionOptions>(configuration.GetSection("Encryption"));
-
-            services.AddDbContext<DataProtectionDbContext>(options =>
+                serviceBuilderCollection.AddSingleton(type);
+            }
+#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
+            var serviceBuilderServices = serviceBuilderCollection.BuildServiceProvider();
+#pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
+            foreach (var type in serviceBuilderTypes)
             {
-                string connectionString = configuration.GetConnectionString("DataProtection");
-                NpgsqlConnection connection = new(connectionString);
-
-                if (configuration.GetSection("ConnectionStrings:DataProtectionCaCertificate").Get<string>() is string caCertificate)
-                {
-                    connection.ConfigureCaCertificateValidation(caCertificate);
-                }
-
-                options
-                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
-                .UseNpgsql(connection);
-            });
-            services.AddDataProtection().PersistKeysToDbContext<DataProtectionDbContext>();
-
-            services.AddPooledDbContextFactory<GiantTeamDbContext>(options =>
-            {
-                string connectionString = configuration.GetConnectionString("Main");
-                NpgsqlConnection connection = new(connectionString);
-
-                if (configuration.GetSection("ConnectionStrings:MainCaCertificate").Get<string>() is string connectionCaCertificateText)
-                {
-                    connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
-                }
-
-                options
-                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
-                .UseNpgsql(connection);
-            });
-
-            foreach (Type type in from t in typeof(Program).Assembly.ExportedTypes
-                                  where
-                                      t.Namespace!.EndsWith(".Services") &&
-                                      t.Name.EndsWith("Service")
-                                  select t)
-            {
-                services.AddScoped(type);
+                serviceBuilderServices.GetService(type);
             }
 
             // Configure the HTTP request pipeline.
@@ -159,7 +63,7 @@ namespace WebApp
 
                 Database database = new();
                 EntityFrameworkDatabaseContributor.Singleton.Contribute(database, giantTeamDbContext.Model, GiantTeamDbContext.DefaultSchema);
-                ObjectDatabaseScriptsContributor.Singleton.Contribute(database, "./Data/Scripts");
+                EmbeddedResourcesDatabaseScriptsContributor.Singleton.Contribute<GiantTeamDbContext>(database);
 
                 PgDatabaseScripter scripter = new();
                 string sql = scripter.Script(database);
@@ -191,6 +95,13 @@ namespace WebApp
             app.MapRazorPages();
 
             app.Run();
+        }
+
+        private static IEnumerable<Type> GetDependentTypes(Type type)
+        {
+            return type.GetConstructors()
+                .SelectMany(ctor => ctor.GetParameters())
+                .SelectMany(p => GetDependentTypes(p.ParameterType).Append(p.ParameterType));
         }
     }
 }

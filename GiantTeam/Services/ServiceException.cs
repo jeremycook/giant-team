@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 
-namespace WebApp.Services
+namespace GiantTeam.Services
 {
     [Serializable]
     public class ServiceException : ValidationException

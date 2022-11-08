@@ -1,6 +1,7 @@
-﻿using Npgsql;
+﻿using Microsoft.Extensions.Configuration;
+using Npgsql;
 
-namespace WebApp.Services
+namespace GiantTeam.Services
 {
     public class DatabaseConnectionService
     {

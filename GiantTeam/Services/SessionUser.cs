@@ -1,7 +1,7 @@
-﻿using System.Security.Claims;
-using WebApp.Data;
+﻿using GiantTeam.Data;
+using System.Security.Claims;
 
-namespace WebApp.Services
+namespace GiantTeam.Services
 {
     public class SessionUser
     {

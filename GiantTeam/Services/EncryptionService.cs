@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 
-namespace WebApp.Services
+namespace GiantTeam.Services
 {
-    [Obsolete("Experimental")]
+    [RequiresPreviewFeatures]
     public class EncryptionService
     {
         public EncryptionService(IOptions<EncryptionOptions> options)

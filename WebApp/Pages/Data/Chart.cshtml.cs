@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using WebApp.Charting;
-using WebApp.Services;
+using GiantTeam.Services;
 
 namespace WebApp.Pages.Data
 {

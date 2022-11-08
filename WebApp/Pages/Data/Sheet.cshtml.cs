@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Npgsql;
 using Npgsql.Schema;
 using System.ComponentModel.DataAnnotations;
-using WebApp.Services;
+using GiantTeam.Services;
 
 namespace WebApp.Pages.Data
 {

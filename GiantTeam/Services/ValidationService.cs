@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApp.Services
+namespace GiantTeam.Services
 {
     public class ValidationService
     {

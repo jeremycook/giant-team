@@ -1,4 +1,4 @@
-﻿namespace WebApp.Services
+﻿namespace GiantTeam.Services
 {
     public static class DatabaseHelper
     {
