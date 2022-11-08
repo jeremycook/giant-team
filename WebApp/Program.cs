@@ -1,10 +1,10 @@
+using GiantTeam.Asp.Startup;
 using GiantTeam.Data;
 using GiantTeam.DatabaseModel;
 using GiantTeam.DataProtection;
 using GiantTeam.EntityFramework;
 using GiantTeam.Postgres;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Immutable;
 
 namespace WebApp
 {
@@ -14,37 +14,11 @@ namespace WebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var serviceBuilderCollection = new ServiceCollection();
-            serviceBuilderCollection.AddSingleton(builder.Services);
-            serviceBuilderCollection.AddSingleton(builder.Environment);
-            serviceBuilderCollection.AddSingleton<IHostEnvironment>(builder.Environment);
-            serviceBuilderCollection.AddSingleton(builder.Configuration);
-            serviceBuilderCollection.AddSingleton<IConfiguration>(builder.Configuration);
-            serviceBuilderCollection.AddSingleton(builder.Logging);
-            serviceBuilderCollection.AddSingleton(builder.Host);
-            serviceBuilderCollection.AddSingleton<IHostBuilder>(builder.Host);
-            serviceBuilderCollection.AddSingleton(builder.WebHost);
-            serviceBuilderCollection.AddSingleton<IWebHostBuilder>(builder.WebHost);
-            serviceBuilderCollection.AddLogging();
-            var standardServiceTypes = serviceBuilderCollection.Select(s => s.ServiceType).ToImmutableHashSet();
-            var serviceBuilderTypes = GetDependentTypes(typeof(WebAppServiceBuilder)).Append(typeof(WebAppServiceBuilder))
-                .Distinct()
-                .Where(t => !standardServiceTypes.Contains(t))
-                .ToList();
-            foreach (var type in serviceBuilderTypes)
-            {
-                serviceBuilderCollection.AddSingleton(type);
-            }
-#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
-            var serviceBuilderServices = serviceBuilderCollection.BuildServiceProvider();
-#pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
-            foreach (var type in serviceBuilderTypes)
-            {
-                serviceBuilderServices.GetService(type);
-            }
+            builder.ConfigureServicesWithServiceBuilders<WebAppServiceBuilder>();
+
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
             {
@@ -95,13 +69,6 @@ namespace WebApp
             app.MapRazorPages();
 
             app.Run();
-        }
-
-        private static IEnumerable<Type> GetDependentTypes(Type type)
-        {
-            return type.GetConstructors()
-                .SelectMany(ctor => ctor.GetParameters())
-                .SelectMany(p => GetDependentTypes(p.ParameterType).Append(p.ParameterType));
         }
     }
 }

@@ -14,23 +14,31 @@ namespace GiantTeam.DataProtection
     {
         public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration Configuration, IHostEnvironment Environment)
         {
-            var dataProtectionOptions = Configuration
+            DataProtectionOptions dataProtectionOptions = Configuration
                 .GetRequiredSection("DataProtection")
-                .Get<DataProtectionOptions>();
+                .Get<DataProtectionOptions>() ??
+                throw new InvalidOperationException();
+
+            string connectionString = dataProtectionOptions.ConnectionString;
+            string? connectionCaCertificate = dataProtectionOptions.ConnectionCaCertificate;
+            string? setRole = dataProtectionOptions.SetRole;
 
             services.AddDbContext<DataProtectionDbContext>(options =>
             {
-                string connectionString = dataProtectionOptions.ConnectionString;
                 NpgsqlConnection connection = new(connectionString);
 
-                if (dataProtectionOptions.ConnectionCaCertificate is not null)
+                if (connectionCaCertificate is not null)
                 {
-                    connection.ConfigureCaCertificateValidation(dataProtectionOptions.ConnectionCaCertificate);
+                    connection.ConfigureCaCertificateValidation(connectionCaCertificate);
                 }
 
-                options
-                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
-                .UseNpgsql(connection);
+                if (setRole is not null)
+                {
+                    options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(setRole)};"));
+
+                }
+
+                options.UseNpgsql(connection);
             });
             if (dataProtectionOptions.ProtectionCertificate is not null)
             {
@@ -42,13 +50,14 @@ namespace GiantTeam.DataProtection
             }
             else if (Environment.IsDevelopment())
             {
+                // Keys can be persisted unencrypted in development
                 services
                     .AddDataProtection()
                     .PersistKeysToDbContext<DataProtectionDbContext>();
             }
             else
             {
-                throw new ApplicationException("Data protection must be encrypted at rest under non-development environments.");
+                throw new ApplicationException("Data protection keys must be encrypted at rest in non-development environments.");
             }
         }
     }

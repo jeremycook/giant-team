@@ -1,0 +1,20 @@
+﻿using GiantTeam.Services;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+
+namespace GiantTeam.Asp.Services
+{
+    public class AspNetCoreSessionService : SessionService
+    {
+        private readonly IHttpContextAccessor? httpContextAccessor;
+
+        public AspNetCoreSessionService(IHttpContextAccessor? httpContextAccessor)
+        {
+            this.httpContextAccessor = httpContextAccessor;
+        }
+
+        public override ClaimsIdentity Identity =>
+            httpContextAccessor?.HttpContext?.User.Identity as ClaimsIdentity ??
+            throw new InvalidOperationException("Could not find the active ClaimsIdentity.");
+    }
+}

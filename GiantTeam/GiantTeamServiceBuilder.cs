@@ -13,7 +13,7 @@ public class GiantTeamServiceBuilder : IServiceBuilder
 {
     public GiantTeamServiceBuilder(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped(typeof(GiantTeamServiceBuilder).Assembly);
+        services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
         services.AddPooledDbContextFactory<GiantTeamDbContext>(options =>
         {

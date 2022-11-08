@@ -1,6 +1,6 @@
-﻿using GiantTeam;
+﻿using GiantTeam.Asp;
+using GiantTeam.Asp.UI;
 using GiantTeam.Data;
-using GiantTeam.DataProtection;
 using GiantTeam.Services;
 using GiantTeam.Startup;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -14,8 +14,8 @@ namespace WebApp
     {
         public WebAppServiceBuilder(
             IServiceCollection services,
-            GiantTeamServiceBuilder giantTeamServiceBuilder,
-            DataProtectionServiceBuilder dataProtectionServiceBuilder)
+            GiantTeamAspServiceBuilder giantTeamServiceBuilder,
+            GiantTeamAspUIServiceBuilder giantTeamAspUIServiceBuilder)
         {
             services.AddHttpContextAccessor();
 
@@ -90,7 +90,7 @@ namespace WebApp
 
             services.AddRazorPages();
 
-            services.AddScoped(typeof(WebAppServiceBuilder).Assembly);
+            services.AddScopedFromAssembly(typeof(WebAppServiceBuilder).Assembly);
         }
     }
 }
