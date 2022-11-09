@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace GiantTeam.Startup
 {
     public static class GiantTeamServicesCollectionExtensions
     {

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GiantTeam.Asp\GiantTeam.Asp.csproj" />
+    <ProjectReference Include="..\GiantTeam.Authentication.Api\GiantTeam.Authentication.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,11 +1,14 @@
 ﻿using GiantTeam.Asp;
+using GiantTeam.Asp.Routing;
 using GiantTeam.Data;
 using GiantTeam.Services;
 using GiantTeam.Startup;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Net;
 using System.Security.Claims;
 
 namespace WebApp
@@ -18,6 +21,11 @@ namespace WebApp
         {
             services.AddHttpContextAccessor();
 
+            services.AddCookiePolicy(options =>
+            {
+                options.Secure = CookieSecurePolicy.Always;
+            });
+
             services
                 .AddAuthentication(options =>
                 {
@@ -28,26 +36,34 @@ namespace WebApp
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.HttpOnly = true;
 
-                    options.AccessDeniedPath = "/access-denied";
-                    options.LoginPath = "/login";
-                    options.LogoutPath = "/logout";
+                    // Controls the lifetime of the authentication session and cookie
+                    // when AuthenticationProperties.IsPersistent is set to true.
+                    options.ExpireTimeSpan = TimeSpan.FromDays(45);
+                    options.SlidingExpiration = true;
 
-                    //// Controls the lifetime of the authentication session and cookie
-                    //// when AuthenticationProperties.IsPersistent is set to true.
-                    //options.ExpireTimeSpan = TimeSpan.FromDays(2);
-                    //options.SlidingExpiration = true;
+                    // This is an API, do not redirect the client
+                    options.AccessDeniedPath = string.Empty;
+                    options.LoginPath = string.Empty;
+                    options.LogoutPath = string.Empty;
+                    options.Events.OnRedirectToAccessDenied = innerOptions =>
+                    {
+                        innerOptions.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                        return Task.CompletedTask;
+                    };
+                    options.Events.OnRedirectToLogin = innerOptions =>
+                    {
+                        innerOptions.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        return Task.CompletedTask;
+                    };
+                    options.Events.OnRedirectToLogout = innerOptions =>
+                    {
+                        throw new NotSupportedException();
+                    };
+                    options.Events.OnRedirectToReturnUrl = innerOptions =>
+                    {
+                        throw new NotSupportedException();
+                    };
 
-                    options.Events.OnSigningIn = async (context) =>
-                    {
-                        //context.Options.ExpireTimeSpan
-                    };
-                    options.Events.OnSignedIn = async (context) =>
-                    {
-                        //context.Options.ExpireTimeSpan
-                    };
-                    options.Events.OnCheckSlidingExpiration = async (context) =>
-                    {
-                    };
                     options.Events.OnValidatePrincipal = async (context) =>
                     {
                         if (context.ShouldRenew)
@@ -87,9 +103,12 @@ namespace WebApp
                     .Build();
             });
 
-            services.AddControllers();
+            services.AddControllers(options =>
+            {
+                options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+            });
 
-            // See https://aka.ms/aspnetcore/swashbuckle
+            // More info at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {

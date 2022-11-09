@@ -1,4 +1,5 @@
 ﻿using GiantTeam.DataProtection;
+using GiantTeam.Startup;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GiantTeam.Asp
