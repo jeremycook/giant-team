@@ -1,7 +1,9 @@
-import type { Component } from 'solid-js';
+import { Component, Match, Switch } from 'solid-js';
 import { Link, useRoutes, useLocation } from 'solid-app-router';
 
 import { routes } from './routes';
+import { session, sessionSetter } from './session';
+import { SessionStatus } from './api/GiantTeam.Authentication.Api';
 
 const App: Component = () => {
   const location = useLocation();
@@ -35,6 +37,19 @@ const App: Component = () => {
               readOnly
               value={location.pathname}
             />
+          </li>
+          <li class="py-2 px-4">
+            <Switch fallback={
+              <Link href="/login" class="no-underline hover:underline">
+                Login
+              </Link>
+            }>
+              <Match when={session().status == SessionStatus.Authenticated}>
+                <Link href="/logout" class="no-underline hover:underline">
+                  Logout {session().name}
+                </Link>
+              </Match>
+            </Switch>
           </li>
         </ul>
       </nav>

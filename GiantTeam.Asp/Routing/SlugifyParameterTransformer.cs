@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Routing;
-using System.Text;
+﻿using GiantTeam.Text;
+using Microsoft.AspNetCore.Routing;
 
 namespace GiantTeam.Asp.Routing
 {
@@ -8,32 +8,12 @@ namespace GiantTeam.Asp.Routing
     /// </summary>
     public class SlugifyParameterTransformer : IOutboundParameterTransformer
     {
-        private const int caseDifference = 32;
 
         public string? TransformOutbound(object? value)
         {
             if (value is string text)
             {
-                var sb = new StringBuilder(text.Length);
-
-                char last = '\0';
-                foreach (var ch in text)
-                {
-                    if (char.IsUpper(ch))
-                    {
-                        if (char.IsLower(last))
-                        {
-                            sb.Append('-');
-                        }
-                        sb.Append((char)(ch + caseDifference));
-                    }
-                    else
-                    {
-                        sb.Append(ch);
-                    }
-                }
-
-                return sb.ToString();
+                return TextTransformers.Slugify(text);
             }
             else
             {

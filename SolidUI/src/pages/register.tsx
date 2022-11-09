@@ -1,16 +1,8 @@
 import { createEffect, createSignal, createUniqueId, Show } from 'solid-js';
-import { RegisterInput, RegisterOutput, RegisterStatus } from '../types/GiantTeam.Authentication.Api';
+import { postRegister, RegisterStatus } from '../api/GiantTeam.Authentication.Api';
 
 const getId = (suffix: string) =>
   createUniqueId() + "_" + suffix;
-
-const registerAsync = async (input: RegisterInput): Promise<RegisterOutput> => {
-  return (await fetch("/api/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input)
-  })).json();
-}
 
 export default function Register() {
   // Input
@@ -25,13 +17,13 @@ export default function Register() {
 
   createEffect(() => {
     if (!username() && name())
-      usernameSetter(name())
+      usernameSetter(name().toLowerCase().replace(/[^a-z0-9]+/, "-"))
   });
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
 
-    const output = await registerAsync({
+    const output = await postRegister({
       name: name(),
       email: email(),
       username: username(),

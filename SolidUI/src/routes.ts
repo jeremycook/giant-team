@@ -19,6 +19,14 @@ export const routes: RouteDefinition[] = [
     component: lazy(() => import('./pages/login'))
   },
   {
+    path: '/logout',
+    component: lazy(() => import('./pages/logout'))
+  },
+  {
+    path: '/register',
+    component: lazy(() => import('./pages/register'))
+  },
+  {
     path: '**',
     component: lazy(() => import('./errors/404')),
   },

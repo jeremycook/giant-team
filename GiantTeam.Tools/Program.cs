@@ -1,6 +1,9 @@
-﻿using Namotion.Reflection;
+﻿using GiantTeam.Text;
+using Microsoft.AspNetCore.Mvc;
+using Namotion.Reflection;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using static System.Console;
 
 bool preview = args.Contains("--preview");
@@ -40,36 +43,36 @@ static void TypeScript(bool preview)
         throw new InvalidOperationException("The input directory could not be determined.")
     , solutionDirectory.FullName);
 
-    string outFolder = Path.GetFullPath("./SolidUI/src/types/", solutionDirectory.FullName);
+    string outFolder = Path.GetFullPath("./SolidUI/src/api/", solutionDirectory.FullName);
 
     var inFiles = Directory
         .EnumerateFiles(inFolder, "*.dll")
         .OrderBy(f => f);
 
-    var solutionAssemblies = new List<Assembly>();
+    var appAssemblies = new List<Assembly>();
     foreach (var file in inFiles)
     {
         var filename = Path.GetFileName(file);
         if (filename.StartsWith("GiantTeam."))
         {
             var assembly = Assembly.LoadFrom(file);
-            solutionAssemblies.Add(assembly);
+            appAssemblies.Add(assembly);
         }
     }
 
     const string tab = "    ";
 
-    foreach (var assembly in solutionAssemblies)
+    foreach (var assembly in appAssemblies)
     {
         var sb = new StringBuilder();
 
         var types = assembly
-        .ExportedTypes
-        .Where(t =>
-            t.Name.EndsWith("Input") ||
-            t.Name.EndsWith("Output") ||
-            t.Name.EndsWith("Status")
-        );
+            .ExportedTypes
+            .Where(t =>
+                t.Name.EndsWith("Input") ||
+                t.Name.EndsWith("Output") ||
+                t.Name.EndsWith("Status")
+            );
 
         foreach (var type in types)
         {
@@ -86,13 +89,13 @@ static void TypeScript(bool preview)
                 }
                 sb.Append("}\n\n");
             }
-            else
+            else if (type.IsInterface)
             {
                 sb.Append($"export interface {type.Name} {{\n");
                 foreach (var prop in type.GetProperties())
                 {
                     var contextualProperty = prop.ToContextualProperty();
-                    bool udt = solutionAssemblies.Contains(prop.PropertyType.Assembly);
+                    bool udt = appAssemblies.Contains(prop.PropertyType.Assembly);
                     bool nullable = contextualProperty.Nullability == Nullability.Nullable;
 
                     sb.Append(tab);
@@ -105,7 +108,100 @@ static void TypeScript(bool preview)
                 }
                 sb.Append("}\n\n");
             }
+            else
+            {
+                sb.Append($"export interface {type.Name} {{\n");
+                foreach (var prop in type.GetProperties())
+                {
+                    var contextualProperty = prop.ToContextualProperty();
+                    bool nullable = contextualProperty.Nullability == Nullability.Nullable;
+
+                    sb.Append(tab);
+                    sb.Append(CamelCase(prop.Name));
+                    if (nullable) sb.Append("?");
+                    sb.Append(": ");
+                    sb.Append(TypeScriptTypeName(prop.PropertyType));
+                    sb.Append(";\n");
+
+                }
+                sb.Append("}\n\n");
+            }
         }
+
+        var controllers = assembly
+            .ExportedTypes
+            .Where(t =>
+                t.Name.EndsWith("Controller")
+            );
+
+        foreach (var controller in controllers)
+        {
+            string controllerName = TextTransformers.Slugify(Regex.Replace(controller.Name, "Controller$", ""));
+
+            var postActions = controller
+                .GetMethods()
+                .Where(m => m.DeclaringType == m.ReflectedType)
+                .Where(m => m.GetCustomAttribute<HttpPostAttribute>() is not null);
+
+            foreach (var method in postActions)
+            {
+                // TODO: Check for ActionNameAttribute
+                string actionName = TextTransformers.Slugify(method.Name);
+
+                string functionName = actionName + controllerName[..1].ToUpper() + controllerName[1..];
+
+                var parameters = method
+                    .GetParameters()
+                    .Where(p => !p.CustomAttributes.Any()) // ignore parameters with attributes
+                    .Select(p => p.ToContextualParameter())
+                    .Select(p => new
+                    {
+                        Name = CamelCase(p.Name) + (p.Nullability == Nullability.Nullable ? "?" : ""),
+                        Type = TypeScriptTypeName(p.Type)
+                    });
+
+                Type? returnType =
+                    method.ReturnType == typeof(void) || method.ReturnType == typeof(Task) ? null :
+                    method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>) ? method.ReturnType.GetGenericArguments()[0] :
+                    method.ReturnType;
+
+                if (returnType?.IsAssignableTo(typeof(IActionResult)) == true)
+                {
+                    returnType = null;
+                }
+
+                string returnTypeName = returnType is not null ?
+                    TypeScriptTypeName(returnType) :
+                    string.Empty;
+
+                string path;
+                if (method.GetCustomAttribute<HttpPostAttribute>() is HttpPostAttribute httpPost &&
+                    httpPost.Template is not null)
+                {
+                    // Based on route
+                    path = httpPost.Template
+                        .Replace("[controller]", controllerName, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("[action]", actionName, StringComparison.InvariantCultureIgnoreCase);
+                }
+                else
+                {
+                    // Guess
+                    path = $"/api/{controllerName}/{actionName}";
+                }
+
+                sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}){(returnTypeName != string.Empty ? $": Promise<{returnTypeName}>" : "")} => {{\n");
+                sb.Append($"    const response = await fetch(\"{path}\", {{\n");
+                sb.Append($"        method: \"POST\",\n");
+                sb.Append($"        headers: {{ \"Content-Type\": \"application/json\" }},\n");
+                if (parameters.Any())
+                { sb.Append($"        body: JSON.stringify({string.Join(", ", parameters.Select(p => p.Name))})\n"); }
+                sb.Append($"    }});\n");
+                if (returnTypeName != string.Empty)
+                { sb.Append($"    return response.json();\n"); }
+                sb.Append($"}}\n\n");
+            }
+        }
+
 
         string outFile = Path.Combine(outFolder, assembly.GetName().Name + ".ts");
         if (sb.Length <= 0)
@@ -161,4 +257,16 @@ static void TypeScript(bool preview)
             }
         }
     }
+}
+
+static string CamelCase(string propName)
+{
+    return propName[0..1].ToLower() + propName[1..];
+}
+
+static string TypeScriptTypeName(Type type)
+{
+    return type.Namespace == "System" ?
+        type.Name.ToLower() :
+        type.Name;
 }
