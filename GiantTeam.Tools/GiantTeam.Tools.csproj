@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,5 +14,25 @@
   <ItemGroup>
     <PackageReference Include="Namotion.Reflection" Version="2.1.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebApp\WebApp.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="echo Configuration: $(Configuration)" />
+    <Exec Command="echo DevEnvDir: $(DevEnvDir)" />
+    <Exec Command="echo OutDir: $(OutDir)" />
+    <Exec Command="echo ProjectDir: $(ProjectDir)" />
+    <Exec Command="echo VisualStudioVersion: $(VisualStudioVersion)" />
+    <Exec Command="echo AssemblySearchPaths: $(AssemblySearchPaths)" />
+    <Exec Command="echo AssemblyName: $(AssemblyName)" />
+    <Exec Command="echo BaseIntermediateOutputPath: $(BaseIntermediateOutputPath)" />
+    <Exec Command="echo CscToolPath: $(CscToolPath)" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="$(ProjectDir)$(OutDir)$(AssemblyName).exe typescript" />
+  </Target>
 
 </Project>
