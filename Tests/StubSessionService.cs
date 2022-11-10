@@ -1,5 +1,4 @@
 ﻿using GiantTeam.Services;
-using System.Security.Claims;
 
 namespace Tests
 {
