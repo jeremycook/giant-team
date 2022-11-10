@@ -12,7 +12,7 @@ namespace GiantTeam.Services
             return passwordHasher.HashPassword(stubUser, plaintext);
         }
 
-        public static bool VerifyHashedPlaintext(string? hashtext, string plaintext)
+        public static bool VerifyHashedPlaintext(string hashtext, string plaintext)
         {
             return passwordHasher.VerifyHashedPassword(stubUser, hashtext, plaintext) != PasswordVerificationResult.Failed;
         }

@@ -5,6 +5,7 @@ using GiantTeam.Startup;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace GiantTeam;
@@ -13,21 +14,33 @@ public class GiantTeamServiceBuilder : IServiceBuilder
 {
     public GiantTeamServiceBuilder(IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<GiantTeamOptions>(configuration.GetRequiredSection("GiantTeam"));
+
         services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
-        services.AddPooledDbContextFactory<GiantTeamDbContext>(options =>
+        services.AddPooledDbContextFactory<GiantTeamDbContext>((services, options) =>
         {
-            string connectionString = configuration.GetConnectionString("Main");
-            NpgsqlConnection connection = new(connectionString);
+            var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
 
-            if (configuration.GetSection("ConnectionStrings:MainCaCertificate").Get<string>() is string connectionCaCertificateText)
+            NpgsqlConnectionStringBuilder connectionStringBuilder = new(giantTeamOptions.MainConnection.ConnectionString);
+            if (giantTeamOptions.MainConnection.Password is not null)
+            {
+                connectionStringBuilder.Password = giantTeamOptions.MainConnection.Password;
+            }
+
+            NpgsqlConnection connection = new(connectionStringBuilder.ToString());
+
+            if (giantTeamOptions.MainConnection.CaCertificate is string connectionCaCertificateText)
             {
                 connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
             }
 
-            options
-            .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier("giantteam")};"))
-            .UseNpgsql(connection);
+            if (giantTeamOptions.MainConnection.SetRole is not null)
+            {
+                options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(giantTeamOptions.MainConnection.SetRole)};"));
+            }
+
+            options.UseNpgsql(connection);
         });
     }
 }

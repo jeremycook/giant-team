@@ -39,7 +39,7 @@ public class CreateWorkspaceController : ControllerBase
 
         /// <summary>
         /// Created the workspace.
-        /// Clients may choose to open the workspace for the user.
+        /// Clients may choose to open the workspace matching <see cref="CreateWorkspaceOutput.WorkspaceId"/>.
         /// </summary>
         Created = 201,
     }

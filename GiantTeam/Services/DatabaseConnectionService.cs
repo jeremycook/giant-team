@@ -1,29 +1,19 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using GiantTeam.Postgres;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace GiantTeam.Services
 {
     public class DatabaseConnectionService
     {
-        private readonly string mainConnectionString;
-        private readonly string userConnectionString;
+        private string userConnectionString => options.Value.WorkspaceConnection.ConnectionString;
+        private readonly IOptions<GiantTeamOptions> options;
         private readonly SessionService sessionService;
 
-        public DatabaseConnectionService(IConfiguration configuration, SessionService sessionService)
+        public DatabaseConnectionService(IOptions<GiantTeamOptions> options, SessionService sessionService)
         {
-            mainConnectionString = configuration.GetConnectionString("Main");
-            userConnectionString = configuration.GetConnectionString("User");
+            this.options = options;
             this.sessionService = sessionService;
-        }
-
-        public NpgsqlConnection CreateAdminConnection(string database)
-        {
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(mainConnectionString)
-            {
-                Database = database,
-            };
-
-            return new(connectionStringBuilder.ToString());
         }
 
         public NpgsqlConnection CreateDesignConnection(string database)
@@ -37,7 +27,14 @@ namespace GiantTeam.Services
                 Password = user.DatabasePassword,
             };
 
-            return new(connectionStringBuilder.ToString());
+            NpgsqlConnection connection = new(connectionStringBuilder.ToString());
+
+            if (options.Value.WorkspaceConnection.CaCertificate is string connectionCaCertificate)
+            {
+                connection.ConfigureCaCertificateValidation(connectionCaCertificate);
+            }
+
+            return connection;
         }
 
         public NpgsqlConnection CreateManipulateConnection(string database)
@@ -51,7 +48,14 @@ namespace GiantTeam.Services
                 Password = user.DatabasePassword,
             };
 
-            return new(connectionStringBuilder.ToString());
+            NpgsqlConnection connection = new(connectionStringBuilder.ToString());
+
+            if (options.Value.WorkspaceConnection.CaCertificate is string connectionCaCertificate)
+            {
+                connection.ConfigureCaCertificateValidation(connectionCaCertificate);
+            }
+
+            return connection;
         }
 
         public NpgsqlConnection CreateQueryConnection(string database)
@@ -65,7 +69,14 @@ namespace GiantTeam.Services
                 Password = user.DatabasePassword,
             };
 
-            return new(connectionStringBuilder.ToString());
+            NpgsqlConnection connection = new(connectionStringBuilder.ToString());
+
+            if (options.Value.WorkspaceConnection.CaCertificate is string connectionCaCertificate)
+            {
+                connection.ConfigureCaCertificateValidation(connectionCaCertificate);
+            }
+
+            return connection;
         }
     }
 }

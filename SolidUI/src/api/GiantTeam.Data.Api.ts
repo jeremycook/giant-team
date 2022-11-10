@@ -16,8 +16,33 @@ export enum CreateWorkspaceStatus {
     Error = 400,
 }
 
+export interface GetWorkspaceInput {
+    workspaceId?: string;
+}
+
+export interface GetWorkspaceOutput {
+    status: GetWorkspaceStatus;
+    message?: string;
+    workspace?: Workspace;
+}
+
+export enum GetWorkspaceStatus {
+    Found = 200,
+    Problem = 400,
+    NotFound = 404,
+}
+
 export const postCreateWorkspace = async (input: CreateWorkspaceInput): Promise<CreateWorkspaceOutput> => {
     const response = await fetch("/api/create-workspace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input)
+    });
+    return response.json();
+}
+
+export const postGetWorkspace = async (input: GetWorkspaceInput): Promise<GetWorkspaceOutput> => {
+    const response = await fetch("/api/get-workspace", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input)

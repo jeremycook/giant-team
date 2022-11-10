@@ -1,6 +1,6 @@
 ﻿using GiantTeam.Postgres;
-using Microsoft.EntityFrameworkCore;
 using GiantTeam.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace GiantTeam.Data
 {
@@ -13,6 +13,9 @@ namespace GiantTeam.Data
 
         public GiantTeamDbContext(DbContextOptions<GiantTeamDbContext> options)
             : base(options) { }
+
+        protected GiantTeamDbContext()
+            : base() { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
