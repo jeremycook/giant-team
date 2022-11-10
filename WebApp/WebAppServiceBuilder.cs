@@ -5,6 +5,7 @@ using GiantTeam.Services;
 using GiantTeam.Startup;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -105,7 +106,13 @@ namespace WebApp
 
             services.AddControllers(options =>
             {
+                // Slugify paths
                 options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+            });
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                // Disabling the automatic validation
+                options.SuppressModelStateInvalidFilter = true;
             });
 
             // More info at https://aka.ms/aspnetcore/swashbuckle

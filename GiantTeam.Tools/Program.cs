@@ -44,9 +44,10 @@ static void TypeScript(bool preview)
     , solutionDirectory.FullName);
 
     string outFolder = Path.GetFullPath("./SolidUI/src/api/", solutionDirectory.FullName);
+    Directory.CreateDirectory(outFolder);
 
     var inFiles = Directory
-        .EnumerateFiles(inFolder, "*.dll")
+        .EnumerateFiles(inFolder, "*.Api.dll")
         .OrderBy(f => f);
 
     var appAssemblies = new List<Assembly>();
@@ -136,7 +137,8 @@ static void TypeScript(bool preview)
 
         foreach (var controller in controllers)
         {
-            string controllerName = TextTransformers.Slugify(Regex.Replace(controller.Name, "Controller$", ""));
+            string controllerName = Regex.Replace(controller.Name, "Controller$", "");
+            string controllerSlug = TextTransformers.Slugify(controllerName);
 
             var postActions = controller
                 .GetMethods()
@@ -146,9 +148,10 @@ static void TypeScript(bool preview)
             foreach (var method in postActions)
             {
                 // TODO: Check for ActionNameAttribute
-                string actionName = TextTransformers.Slugify(method.Name);
+                string actionName = method.Name;
+                string actionSlug = TextTransformers.Slugify(method.Name);
 
-                string functionName = actionName + controllerName[..1].ToUpper() + controllerName[1..];
+                string functionName = actionName[..1].ToLower() + actionName[1..] + controllerName;
 
                 var parameters = method
                     .GetParameters()
@@ -180,13 +183,13 @@ static void TypeScript(bool preview)
                 {
                     // Based on route
                     path = httpPost.Template
-                        .Replace("[controller]", controllerName, StringComparison.InvariantCultureIgnoreCase)
-                        .Replace("[action]", actionName, StringComparison.InvariantCultureIgnoreCase);
+                        .Replace("[controller]", controllerSlug, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("[action]", actionSlug, StringComparison.InvariantCultureIgnoreCase);
                 }
                 else
                 {
                     // Guess
-                    path = $"/api/{controllerName}/{actionName}";
+                    path = $"/api/{controllerSlug}/{actionSlug}";
                 }
 
                 sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}){(returnTypeName != string.Empty ? $": Promise<{returnTypeName}>" : "")} => {{\n");

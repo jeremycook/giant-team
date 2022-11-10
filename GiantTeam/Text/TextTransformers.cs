@@ -25,6 +25,8 @@ namespace GiantTeam.Text
                 {
                     sb.Append(ch);
                 }
+
+                last = ch;
             }
 
             return sb.ToString();
