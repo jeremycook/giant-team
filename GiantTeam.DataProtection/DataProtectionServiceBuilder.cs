@@ -19,23 +19,24 @@ namespace GiantTeam.DataProtection
                 .Get<DataProtectionOptions>() ??
                 throw new InvalidOperationException();
 
-            string connectionString = dataProtectionOptions.ConnectionString;
-            string? connectionCaCertificate = dataProtectionOptions.ConnectionCaCertificate;
-            string? setRole = dataProtectionOptions.SetRole;
-
             services.AddDbContext<DataProtectionDbContext>(options =>
             {
-                NpgsqlConnection connection = new(connectionString);
-
-                if (connectionCaCertificate is not null)
+                if (dataProtectionOptions.Connection.SetRole is not null)
                 {
-                    connection.ConfigureCaCertificateValidation(connectionCaCertificate);
+                    options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(dataProtectionOptions.Connection.SetRole)};"));
                 }
 
-                if (setRole is not null)
+                NpgsqlConnectionStringBuilder connectionStringBuilder = new(dataProtectionOptions.Connection.ConnectionString);
+                if (dataProtectionOptions.Connection.Password is not null)
                 {
-                    options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(setRole)};"));
+                    connectionStringBuilder.Password = dataProtectionOptions.Connection.Password;
+                }
 
+                NpgsqlConnection connection = new(connectionStringBuilder.ToString());
+
+                if (dataProtectionOptions.Connection.CaCertificate is not null)
+                {
+                    connection.ConfigureCaCertificateValidation(dataProtectionOptions.Connection.CaCertificate);
                 }
 
                 options.UseNpgsql(connection);

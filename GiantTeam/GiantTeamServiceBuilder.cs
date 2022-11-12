@@ -22,22 +22,22 @@ public class GiantTeamServiceBuilder : IServiceBuilder
         {
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(giantTeamOptions.MainConnection.ConnectionString);
-            if (giantTeamOptions.MainConnection.Password is not null)
+            if (giantTeamOptions.DominionConnection.SetRole is not null)
             {
-                connectionStringBuilder.Password = giantTeamOptions.MainConnection.Password;
+                options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(giantTeamOptions.DominionConnection.SetRole)};"));
+            }
+
+            NpgsqlConnectionStringBuilder connectionStringBuilder = new(giantTeamOptions.DominionConnection.ConnectionString);
+            if (giantTeamOptions.DominionConnection.Password is not null)
+            {
+                connectionStringBuilder.Password = giantTeamOptions.DominionConnection.Password;
             }
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (giantTeamOptions.MainConnection.CaCertificate is string connectionCaCertificateText)
+            if (giantTeamOptions.DominionConnection.CaCertificate is string connectionCaCertificateText)
             {
                 connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
-            }
-
-            if (giantTeamOptions.MainConnection.SetRole is not null)
-            {
-                options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(giantTeamOptions.MainConnection.SetRole)};"));
             }
 
             options.UseNpgsql(connection);

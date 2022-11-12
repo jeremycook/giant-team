@@ -6,7 +6,6 @@ namespace GiantTeam.Services
 {
     public class DatabaseConnectionService
     {
-        private string userConnectionString => options.Value.WorkspaceConnection.ConnectionString;
         private readonly IOptions<GiantTeamOptions> options;
         private readonly SessionService sessionService;
 
@@ -19,8 +18,9 @@ namespace GiantTeam.Services
         public NpgsqlConnection CreateDesignConnection(string database)
         {
             SessionUser user = sessionService.User;
+            var workspaceUserConnection = options.Value.WorkspaceUserConnection;
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(userConnectionString)
+            NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
             {
                 Database = database,
                 Username = DatabaseHelper.DesignUser(user.DatabaseUsername, user.DatabaseSlot),
@@ -29,9 +29,9 @@ namespace GiantTeam.Services
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (options.Value.WorkspaceConnection.CaCertificate is string connectionCaCertificate)
+            if (workspaceUserConnection.CaCertificate is not null)
             {
-                connection.ConfigureCaCertificateValidation(connectionCaCertificate);
+                connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
             }
 
             return connection;
@@ -40,8 +40,9 @@ namespace GiantTeam.Services
         public NpgsqlConnection CreateManipulateConnection(string database)
         {
             SessionUser user = sessionService.User;
+            var workspaceUserConnection = options.Value.WorkspaceUserConnection;
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(userConnectionString)
+            NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
             {
                 Database = database,
                 Username = DatabaseHelper.ManipulateUser(user.DatabaseUsername, user.DatabaseSlot),
@@ -50,9 +51,9 @@ namespace GiantTeam.Services
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (options.Value.WorkspaceConnection.CaCertificate is string connectionCaCertificate)
+            if (workspaceUserConnection.CaCertificate is not null)
             {
-                connection.ConfigureCaCertificateValidation(connectionCaCertificate);
+                connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
             }
 
             return connection;
@@ -61,8 +62,9 @@ namespace GiantTeam.Services
         public NpgsqlConnection CreateQueryConnection(string database)
         {
             SessionUser user = sessionService.User;
+            var workspaceUserConnection = options.Value.WorkspaceUserConnection;
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(userConnectionString)
+            NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
             {
                 Database = database,
                 Username = DatabaseHelper.QueryUser(user.DatabaseUsername, user.DatabaseSlot),
@@ -71,9 +73,9 @@ namespace GiantTeam.Services
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (options.Value.WorkspaceConnection.CaCertificate is string connectionCaCertificate)
+            if (workspaceUserConnection.CaCertificate is not null)
             {
-                connection.ConfigureCaCertificateValidation(connectionCaCertificate);
+                connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
             }
 
             return connection;
