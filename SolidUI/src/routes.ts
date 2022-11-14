@@ -29,8 +29,8 @@ export const routes: RouteDefinition[] = [
     component: lazy(() => import('./pages/logout'))
   },
   {
-    path: '/register',
-    component: lazy(() => import('./pages/register'))
+    path: '/join',
+    component: lazy(() => import('./pages/join'))
   },
 
   {

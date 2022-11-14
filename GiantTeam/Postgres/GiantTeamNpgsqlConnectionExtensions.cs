@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GiantTeam.Postgres
 {
-    public static class NpgsqlConnectionBuilder
+    public static class GiantTeamNpgsqlConnectionExtensions
     {
         /// <summary>
         /// Configures the <see cref="NpgsqlConnection.UserCertificateValidationCallback"/> of <paramref name="connection"/>

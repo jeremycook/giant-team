@@ -1,12 +1,11 @@
-﻿using GiantTeam.Data;
-using GiantTeam.EntityFramework;
-using GiantTeam.Postgres;
+﻿using GiantTeam.Postgres;
+using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup;
+using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Npgsql;
 
 namespace GiantTeam;
 
@@ -18,29 +17,20 @@ public class GiantTeamServiceBuilder : IServiceBuilder
 
         services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
-        services.AddPooledDbContextFactory<GiantTeamDbContext>((services, options) =>
+        services.AddPooledDbContextFactory<RecordsManagementDbContext>((services, options) =>
         {
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
+            var connectionOptions = giantTeamOptions.RecordsManagementConnection;
 
-            if (giantTeamOptions.DominionConnection.SetRole is not null)
-            {
-                options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(giantTeamOptions.DominionConnection.SetRole)};"));
-            }
+            options.UseNpgsql(connectionOptions);
+        });
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(giantTeamOptions.DominionConnection.ConnectionString);
-            if (giantTeamOptions.DominionConnection.Password is not null)
-            {
-                connectionStringBuilder.Password = giantTeamOptions.DominionConnection.Password;
-            }
+        services.AddDbContextPool<WorkspaceAdministrationDbContext>((services, options) =>
+        {
+            var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
+            var connectionOptions = giantTeamOptions.WorkspaceAdministrationConnection;
 
-            NpgsqlConnection connection = new(connectionStringBuilder.ToString());
-
-            if (giantTeamOptions.DominionConnection.CaCertificate is string connectionCaCertificateText)
-            {
-                connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
-            }
-
-            options.UseNpgsql(connection);
+            options.UseNpgsql(connectionOptions);
         });
     }
 }

@@ -1,24 +1,29 @@
 ﻿using Dapper;
-using GiantTeam.Data;
 using GiantTeam.Postgres;
+using GiantTeam.RecordsManagement.Data;
+using GiantTeam.WorkspaceAdministration.Data;
+using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace GiantTeam.Services
 {
     public class CreateWorkspaceService
     {
-        private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
+        private readonly IDbContextFactory<RecordsManagementDbContext> dbContextFactory;
+        private readonly WorkspaceAdministrationDbContext workspaceAdministrationDbContext;
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
         private readonly DatabaseConnectionService databaseConnectionService;
 
         public CreateWorkspaceService(
-            IDbContextFactory<GiantTeamDbContext> dbContextFactory,
+            IDbContextFactory<RecordsManagementDbContext> dbContextFactory,
+            WorkspaceAdministrationDbContext workspaceAdministrationDbContext,
             ValidationService validationService,
             SessionService sessionService,
             DatabaseConnectionService databaseConnectionService)
         {
             this.dbContextFactory = dbContextFactory;
+            this.workspaceAdministrationDbContext = workspaceAdministrationDbContext;
             this.validationService = validationService;
             this.sessionService = sessionService;
             this.databaseConnectionService = databaseConnectionService;
@@ -45,6 +50,7 @@ namespace GiantTeam.Services
             string quotedQueryRole = PgQuote.Identifier(DatabaseHelper.QueryRole(input.WorkspaceName));
 
             using (var db = dbContextFactory.CreateDbContext())
+            using (var tx = await db.Database.BeginTransactionAsync())
             {
                 db.Workspaces.Add(new Workspace
                 {
@@ -54,7 +60,7 @@ namespace GiantTeam.Services
                 });
                 await db.SaveChangesAsync();
 
-                await db.Database.ExecuteSqlRawAsync($@"
+                await workspaceAdministrationDbContext.Database.ExecuteSqlRawAsync($@"
 CREATE ROLE {quotedDesignRole} ROLE {quotedDesignUser}, CURRENT_USER;
 CREATE ROLE {quotedManipulateRole} ROLE {quotedManipulateUser};
 CREATE ROLE {quotedQueryRole} ROLE {quotedQueryUser};
@@ -63,13 +69,10 @@ CREATE DATABASE {quotedDbName} OWNER {quotedDesignRole};
 
 REVOKE {quotedDesignRole} FROM CURRENT_USER;
 ");
-            }
 
-            using (var connection = databaseConnectionService.CreateDesignConnection(input.WorkspaceName))
-            {
-                await connection.OpenAsync();
-
-                await connection.ExecuteAsync($@"
+                using (var connection = databaseConnectionService.CreateDesignConnection(input.WorkspaceName))
+                {
+                    await connection.ExecuteAsync($@"
 GRANT ALL ON DATABASE {quotedDbName} TO {quotedDesignRole};
 GRANT TEMPORARY, CONNECT ON DATABASE {quotedDbName} TO {quotedManipulateRole};
 GRANT CONNECT ON DATABASE {quotedDbName} TO {quotedQueryRole};
@@ -90,6 +93,9 @@ ALTER DEFAULT PRIVILEGES GRANT USAGE ON TYPES TO {quotedDesignRole};
 ALTER DEFAULT PRIVILEGES GRANT USAGE ON TYPES TO {quotedManipulateRole};
 ALTER DEFAULT PRIVILEGES GRANT USAGE ON TYPES TO {quotedQueryRole};
 ");
+                }
+
+                await tx.CommitAsync();
             }
         }
     }

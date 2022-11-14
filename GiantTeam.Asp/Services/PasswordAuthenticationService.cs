@@ -1,5 +1,6 @@
-﻿using GiantTeam.Data;
+﻿using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Services;
+using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -10,14 +11,17 @@ namespace GiantTeam.Asp.Services
 {
     public class PasswordAuthenticationService
     {
-        private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
+        private readonly IDbContextFactory<RecordsManagementDbContext> dbContextFactory;
+        private readonly WorkspaceAdministrationDbContext databaseAdministrationDbContext;
         private readonly IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions;
 
         public PasswordAuthenticationService(
-            IDbContextFactory<GiantTeamDbContext> dbContextFactory,
+            IDbContextFactory<RecordsManagementDbContext> dbContextFactory,
+            WorkspaceAdministrationDbContext databaseAdministrationDbContext,
             IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions)
         {
             this.dbContextFactory = dbContextFactory;
+            this.databaseAdministrationDbContext = databaseAdministrationDbContext;
             this.cookieAuthenticationOptions = cookieAuthenticationOptions;
         }
 
@@ -44,7 +48,7 @@ namespace GiantTeam.Asp.Services
                 SessionUser sessionUser = new(user, databaseSlot, databasePassword, databasePasswordValidUntil);
 
                 // Set database passwords
-                await db.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil);
+                await databaseAdministrationDbContext.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil);
 
                 // Create principal
                 ClaimsPrincipal principal = new(sessionUser.CreateIdentity());

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Data
+namespace GiantTeam.RecordsManagement.Data
 {
     public class Workspace
     {

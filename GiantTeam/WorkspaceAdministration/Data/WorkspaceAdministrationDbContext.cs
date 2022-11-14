@@ -1,35 +1,24 @@
 ﻿using GiantTeam.Postgres;
+using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace GiantTeam.Data
+namespace GiantTeam.WorkspaceAdministration.Data
 {
-    public class GiantTeamDbContext : DbContext
+    public class WorkspaceAdministrationDbContext : DbContext
     {
-        /// <summary>
-        /// "gt"
-        /// </summary>
-        public static string DefaultSchema { get; } = "gt";
+        public const string DefaultSchema = "wa";
 
-        public GiantTeamDbContext(DbContextOptions<GiantTeamDbContext> options)
+        public WorkspaceAdministrationDbContext(DbContextOptions<WorkspaceAdministrationDbContext> options)
             : base(options) { }
 
-        protected GiantTeamDbContext()
+        protected WorkspaceAdministrationDbContext()
             : base() { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema(DefaultSchema);
-
-            var user = modelBuilder.Entity<User>();
-            user.Property(o => o.UserId).HasDefaultValueSql();
-            user.Property(o => o.UsernameNormalized).HasComputedColumnSql($"LOWER({PgQuote.Identifier(nameof(User.Username))})", stored: true);
-            user.Property(o => o.EmailVerified).HasDefaultValueSql("false");
-            user.Property(o => o.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
         }
-
-        public DbSet<Workspace> Workspaces => Set<Workspace>();
-        public DbSet<User> Users => Set<User>();
 
         /// <summary>
         /// Creates the DDL, DML and DQL roles for <paramref name="user"/> that cannot login,
@@ -69,9 +58,9 @@ CREATE USER {PgQuote.Identifier(DatabaseHelper.QueryUser(user.UsernameNormalized
         public async Task SetDatabaseUserPasswordsAsync(string username, int slot, string password, DateTimeOffset validUntil)
         {
             await Database.ExecuteSqlInterpolatedAsync($@"
-CALL gt.set_user_password({DatabaseHelper.DesignUser(username, slot)},{password},{validUntil});
-CALL gt.set_user_password({DatabaseHelper.ManipulateUser(username, slot)},{password},{validUntil});
-CALL gt.set_user_password({DatabaseHelper.QueryUser(username, slot)},{password},{validUntil});
+CALL wa.set_user_password({DatabaseHelper.DesignUser(username, slot)},{password},{validUntil});
+CALL wa.set_user_password({DatabaseHelper.ManipulateUser(username, slot)},{password},{validUntil});
+CALL wa.set_user_password({DatabaseHelper.QueryUser(username, slot)},{password},{validUntil});
 ");
         }
     }

@@ -1,9 +1,9 @@
 using GiantTeam.Asp.Startup;
-using GiantTeam.Data;
-using GiantTeam.Data.Services;
+using GiantTeam.RecordsManagement.Data;
+using GiantTeam.RecordsManagement.Services;
 using GiantTeam.Services;
+using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -39,13 +39,13 @@ namespace Tests
 
         public WorkspaceTests()
         {
-            workspaceName = "Tests-" + Guid.NewGuid();
+            workspaceName = "tests-" + Guid.NewGuid();
 
             sessionUser = new SessionUser(
                 new User()
                 {
                     UserId = Guid.NewGuid(),
-                    Username = "Tests-" + Guid.NewGuid(),
+                    Username = "tests-" + Guid.NewGuid(),
                     Created = DateTimeOffset.UtcNow,
                     Email = "test.user@example.com",
                     EmailVerified = true,
@@ -70,6 +70,7 @@ namespace Tests
             builder.Configuration
                 .AddJsonFile(Path.GetFullPath("../../../appsettings.json"), true, true)
                 .AddJsonFile(Path.GetFullPath($"../../../appsettings.{builder.Environment.EnvironmentName}.json"), true, true)
+                .AddUserSecrets(typeof(WebApp.Program).Assembly, true, true)
                 .AddUserSecrets(GetType().Assembly, true, true);
 
             builder
@@ -83,7 +84,7 @@ namespace Tests
 
             using var scope = application.Services.CreateScope();
             var joinService = scope.ServiceProvider.GetRequiredService<JoinService>();
-            var mainDbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<GiantTeamDbContext>>();
+            var databaseAdministrationDbContext = scope.ServiceProvider.GetRequiredService<WorkspaceAdministrationDbContext>();
 
             joinService.JoinAsync(new()
             {
@@ -92,8 +93,8 @@ namespace Tests
                 Password = Guid.NewGuid().ToString(),
                 Username = sessionUser.Username,
             }).GetAwaiter().GetResult();
-            using var mainDbContext = mainDbContextFactory.CreateDbContextAsync().GetAwaiter().GetResult();
-            mainDbContext.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil).GetAwaiter().GetResult();
+
+            databaseAdministrationDbContext.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil).GetAwaiter().GetResult();
         }
 
         async ValueTask IAsyncDisposable.DisposeAsync()

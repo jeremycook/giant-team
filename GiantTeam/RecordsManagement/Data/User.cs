@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Data
+namespace GiantTeam.RecordsManagement.Data
 {
     [Index(nameof(UsernameNormalized), IsUnique = true)]
     public class User

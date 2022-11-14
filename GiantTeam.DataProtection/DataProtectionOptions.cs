@@ -1,8 +1,10 @@
-﻿namespace GiantTeam.DataProtection
+﻿using GiantTeam.Postgres;
+
+namespace GiantTeam.DataProtection
 {
     public class DataProtectionOptions
     {
-        public GiantTeamOptions.ConnectionOptions Connection { get; } = new();
-        public byte[]? ProtectionCertificate { get; set; }
+        public string? DataProtectionCertificate { get; set; }
+        public ExtendedConnectionOptions DataProtectionConnection { get; } = new();
     }
 }

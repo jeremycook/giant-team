@@ -1,8 +1,10 @@
 ﻿using GiantTeam.Asp;
 using GiantTeam.Asp.Routing;
 using GiantTeam.Data;
+using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Services;
 using GiantTeam.Startup;
+using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -69,8 +71,8 @@ namespace WebApp
                     {
                         if (context.ShouldRenew)
                         {
-                            IDbContextFactory<GiantTeamDbContext> dbContextFactory = context.HttpContext.RequestServices
-                                .GetRequiredService<IDbContextFactory<GiantTeamDbContext>>();
+                            WorkspaceAdministrationDbContext db = context.HttpContext.RequestServices
+                                .GetRequiredService<WorkspaceAdministrationDbContext>();
 
                             ClaimsIdentity identity =
                                 context.Principal?.Identity as ClaimsIdentity ??
@@ -81,11 +83,8 @@ namespace WebApp
 
                             SessionUser sessionUser = new(identity, databasePasswordValidUntil);
 
-                            using (var db = await dbContextFactory.CreateDbContextAsync())
-                            {
-                                // Set database passwords
-                                await db.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil);
-                            }
+                            // Extend login's valid until
+                            await db.Database.ExecuteSqlInterpolatedAsync($"ALTER ROLE giantteam_rm VALID UNTIL {sessionUser.DatabasePasswordValidUntil};");
 
                             ClaimsPrincipal principal = new(sessionUser.CreateIdentity());
 

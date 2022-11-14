@@ -5,7 +5,7 @@ public class EmbeddedResourcesDatabaseScriptsContributor
     public static EmbeddedResourcesDatabaseScriptsContributor Singleton { get; } = new();
 
     /// <summary>
-    /// Contribute embedded resources that share a common namespace with <typeparamref name="T"/>.
+    /// Contribute *.pgsql embedded resources that share a common namespace with <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="database"></param>

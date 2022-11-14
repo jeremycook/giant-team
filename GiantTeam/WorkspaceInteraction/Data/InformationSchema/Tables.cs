@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GiantTeam.Data.InformationSchema
+namespace GiantTeam.WorkspaceInteraction.Data.InformationSchema
 {
     [Keyless]
     [Table("tables", Schema = "information_schema")]

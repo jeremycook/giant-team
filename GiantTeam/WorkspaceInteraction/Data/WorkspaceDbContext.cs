@@ -1,10 +1,12 @@
 ﻿using GiantTeam.EntityFramework;
 using GiantTeam.Postgres;
 using GiantTeam.Services;
+using GiantTeam.WorkspaceInteraction.Data.InformationSchema;
+using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace GiantTeam.Data
+namespace GiantTeam.WorkspaceInteraction.Data
 {
     public class WorkspaceDbContext : DbContext
     {
@@ -41,6 +43,6 @@ namespace GiantTeam.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<InformationSchema.Tables> InformationSchemaTables => Set<InformationSchema.Tables>();
+        public DbSet<Tables> InformationSchemaTables => Set<Tables>();
     }
 }

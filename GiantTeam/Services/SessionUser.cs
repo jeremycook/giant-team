@@ -1,4 +1,4 @@
-﻿using GiantTeam.Data;
+﻿using GiantTeam.RecordsManagement.Data;
 using System.Security.Claims;
 
 namespace GiantTeam.Services

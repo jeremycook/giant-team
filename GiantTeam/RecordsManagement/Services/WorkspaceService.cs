@@ -1,7 +1,10 @@
-﻿using GiantTeam.Services;
+﻿using GiantTeam.RecordsManagement.Data;
+using GiantTeam.Services;
+using GiantTeam.WorkspaceInteraction.Data;
+using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace GiantTeam.Data.Services
+namespace GiantTeam.RecordsManagement.Services
 {
     public class WorkspaceService : IDisposable
     {

@@ -1,4 +1,5 @@
-﻿using GiantTeam.Data.Services;
+﻿using GiantTeam.RecordsManagement.Data;
+using GiantTeam.RecordsManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;

@@ -1,55 +1,44 @@
-﻿using GiantTeam.EntityFramework;
-using GiantTeam.Postgres;
+﻿using GiantTeam.Postgres;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Npgsql;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Encodings.Web;
 
 namespace GiantTeam.DataProtection
 {
     public class DataProtectionServiceBuilder
     {
-        public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration Configuration, IHostEnvironment Environment)
+        public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
-            DataProtectionOptions dataProtectionOptions = Configuration
-                .GetRequiredSection("DataProtection")
-                .Get<DataProtectionOptions>() ??
-                throw new InvalidOperationException();
+            IConfigurationSection dataProtectionSection = configuration.GetRequiredSection("GiantTeam.DataProtection");
+            services.Configure<DataProtectionOptions>(dataProtectionSection);
 
-            services.AddDbContext<DataProtectionDbContext>(options =>
+            services.AddDbContextPool<DataProtectionDbContext>((services, options) =>
             {
-                if (dataProtectionOptions.Connection.SetRole is not null)
-                {
-                    options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(dataProtectionOptions.Connection.SetRole)};"));
-                }
+                var giantTeamOptions = services.GetRequiredService<IOptions<DataProtectionOptions>>().Value;
+                var connectionOptions = giantTeamOptions.DataProtectionConnection;
 
-                NpgsqlConnectionStringBuilder connectionStringBuilder = new(dataProtectionOptions.Connection.ConnectionString);
-                if (dataProtectionOptions.Connection.Password is not null)
-                {
-                    connectionStringBuilder.Password = dataProtectionOptions.Connection.Password;
-                }
-
-                NpgsqlConnection connection = new(connectionStringBuilder.ToString());
-
-                if (dataProtectionOptions.Connection.CaCertificate is not null)
-                {
-                    connection.ConfigureCaCertificateValidation(dataProtectionOptions.Connection.CaCertificate);
-                }
-
-                options.UseNpgsql(connection);
+                options.UseNpgsql(connectionOptions);
             });
-            if (dataProtectionOptions.ProtectionCertificate is not null)
+
+            DataProtectionOptions dataProtectionOptions =
+                dataProtectionSection.Get<DataProtectionOptions>() ??
+                throw new InvalidOperationException();
+            if (dataProtectionOptions.DataProtectionCertificate is not null)
             {
-                var certificate = new X509Certificate2(dataProtectionOptions.ProtectionCertificate);
+                var bytes = Encoding.UTF8.GetBytes(dataProtectionOptions.DataProtectionCertificate);
+                var certificate = new X509Certificate2(bytes);
                 services
                     .AddDataProtection()
                     .ProtectKeysWithCertificate(certificate)
                     .PersistKeysToDbContext<DataProtectionDbContext>();
             }
-            else if (Environment.IsDevelopment())
+            else if (environment.IsDevelopment())
             {
                 // Keys can be persisted unencrypted in development
                 services

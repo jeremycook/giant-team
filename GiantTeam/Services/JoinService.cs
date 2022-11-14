@@ -1,4 +1,5 @@
-﻿using GiantTeam.Data;
+﻿using GiantTeam.RecordsManagement.Data;
+using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
@@ -8,16 +9,19 @@ namespace GiantTeam.Services
     public class JoinService
     {
         private readonly ILogger<JoinService> logger;
-        private readonly IDbContextFactory<GiantTeamDbContext> dbContextFactory;
+        private readonly IDbContextFactory<RecordsManagementDbContext> dbContextFactory;
+        private readonly WorkspaceAdministrationDbContext databaseAdministrationDbContext;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
-            IDbContextFactory<GiantTeamDbContext> dbContextFactory,
+            IDbContextFactory<RecordsManagementDbContext> dbContextFactory,
+            WorkspaceAdministrationDbContext databaseAdministrationDbContext,
             ValidationService validationService)
         {
             this.logger = logger;
             this.dbContextFactory = dbContextFactory;
+            this.databaseAdministrationDbContext = databaseAdministrationDbContext;
             this.validationService = validationService;
         }
 
@@ -39,34 +43,32 @@ namespace GiantTeam.Services
                 Created = DateTimeOffset.UtcNow,
             };
 
-            using (var db = await dbContextFactory.CreateDbContextAsync())
-            using (var tx = await db.Database.BeginTransactionAsync())
+            // Create user record
+            using var recordsManagementDbContext = await dbContextFactory.CreateDbContextAsync();
+            using var recordsManagementTx = await recordsManagementDbContext.Database.BeginTransactionAsync();
+            try
             {
-                // Create database user
-                try
-                {
-                    await db.CreateDatabaseUserRolesAsync(user);
-                }
-                catch (PostgresException ex) when (ex.SqlState == "42710")
-                {
-                    logger.LogWarning(ex, "Suppressed exception creating database users named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.UsernameNormalized, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                    throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
-                }
-
-                // Create application user
-                try
-                {
-                    db.Users.Add(user);
-                    await db.SaveChangesAsync();
-                }
-                catch (DbUpdateException ex)
-                {
-                    logger.LogWarning(ex, "Suppressed exception creating application user named \"{DisplayUsername}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                    throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
-                }
-
-                await tx.CommitAsync();
+                recordsManagementDbContext.Users.Add(user);
+                await recordsManagementDbContext.SaveChangesAsync();
             }
+            catch (DbUpdateException ex)
+            {
+                logger.LogWarning(ex, "Suppressed exception creating application user named \"{DisplayUsername}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
+            }
+
+            // Create database user
+            try
+            {
+                await databaseAdministrationDbContext.CreateDatabaseUserRolesAsync(user);
+            }
+            catch (PostgresException ex) when (ex.SqlState == "42710")
+            {
+                logger.LogWarning(ex, "Suppressed exception creating database users named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.UsernameNormalized, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
+            }
+
+            await recordsManagementTx.CommitAsync();
         }
     }
 }

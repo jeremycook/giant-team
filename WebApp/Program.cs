@@ -1,9 +1,10 @@
 using GiantTeam.Asp.Startup;
-using GiantTeam.Data;
 using GiantTeam.DatabaseModeling;
 using GiantTeam.DataProtection;
 using GiantTeam.EntityFramework;
 using GiantTeam.Postgres;
+using GiantTeam.RecordsManagement.Data;
+using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebApp
@@ -17,6 +18,7 @@ namespace WebApp
             builder.ConfigureServicesWithServiceBuilders<WebAppServiceBuilder>();
 
             var app = builder.Build();
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             // Configure the HTTP request pipeline.
 
@@ -33,31 +35,47 @@ namespace WebApp
             }
 
             {
-                var gtDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<GiantTeamDbContext>>();
-                using var giantTeamDbContext = gtDbContextFactory.CreateDbContext();
+                using var scope = app.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<DataProtectionDbContext>();
 
                 Database database = new();
-                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, giantTeamDbContext.Model, GiantTeamDbContext.DefaultSchema);
-                EmbeddedResourcesDatabaseScriptsContributor.Singleton.Contribute<GiantTeamDbContext>(database);
+                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, db.Model, DataProtectionDbContext.DefaultSchema);
+                PgDatabaseScripter scripter = new();
+                string sql = scripter.Script(database);
+
+                logger.LogDebug("Data Protection:\n\n{Sql}", sql);
+                //db.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
+                //db.Database.ExecuteSqlRaw(sql);
+            }
+
+            {
+                var factory = app.Services.GetRequiredService<IDbContextFactory<RecordsManagementDbContext>>();
+                using var db = factory.CreateDbContext();
+
+                Database database = new();
+                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, db.Model, RecordsManagementDbContext.DefaultSchema);
 
                 PgDatabaseScripter scripter = new();
                 string sql = scripter.Script(database);
 
-                giantTeamDbContext.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
-                giantTeamDbContext.Database.ExecuteSqlRaw(sql);
+                logger.LogDebug("Records Management:\n\n{Sql}", sql);
+                //db.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
+                //db.Database.ExecuteSqlRaw(sql);
             }
 
             {
                 using var scope = app.Services.CreateScope();
-                var dataProtectionDbContext = scope.ServiceProvider.GetRequiredService<DataProtectionDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<WorkspaceAdministrationDbContext>();
 
                 Database database = new();
-                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, dataProtectionDbContext.Model, DataProtectionDbContext.DefaultSchema);
+                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, db.Model, WorkspaceAdministrationDbContext.DefaultSchema);
+                EmbeddedResourcesDatabaseScriptsContributor.Singleton.Contribute<WorkspaceAdministrationDbContext>(database);
                 PgDatabaseScripter scripter = new();
                 string sql = scripter.Script(database);
 
-                dataProtectionDbContext.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
-                dataProtectionDbContext.Database.ExecuteSqlRaw(sql);
+                logger.LogDebug("Workspace Administration:\n\n{Sql}", sql);
+                //db.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
+                //db.Database.ExecuteSqlRaw(sql);
             }
 
             app.UseStaticFiles();

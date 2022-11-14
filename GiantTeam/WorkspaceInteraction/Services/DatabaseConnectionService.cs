@@ -1,8 +1,10 @@
-﻿using GiantTeam.Postgres;
+﻿using Dapper;
+using GiantTeam.Postgres;
+using GiantTeam.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace GiantTeam.Services
+namespace GiantTeam.WorkspaceInteraction.Services
 {
     public class DatabaseConnectionService
     {
@@ -18,7 +20,7 @@ namespace GiantTeam.Services
         public NpgsqlConnection CreateDesignConnection(string database)
         {
             SessionUser user = sessionService.User;
-            var workspaceUserConnection = options.Value.WorkspaceUserConnection;
+            var workspaceUserConnection = options.Value.WorkspaceConnection;
 
             NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
             {
@@ -34,13 +36,15 @@ namespace GiantTeam.Services
                 connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
             }
 
+            connection.Open();
+            connection.Execute($"SET ROLE {PgQuote.Identifier(DatabaseHelper.DesignUser(user.DatabaseUsername))};");
             return connection;
         }
 
         public NpgsqlConnection CreateManipulateConnection(string database)
         {
             SessionUser user = sessionService.User;
-            var workspaceUserConnection = options.Value.WorkspaceUserConnection;
+            var workspaceUserConnection = options.Value.WorkspaceConnection;
 
             NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
             {
@@ -56,13 +60,15 @@ namespace GiantTeam.Services
                 connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
             }
 
+            connection.Open();
+            connection.Execute($"SET ROLE {PgQuote.Identifier(DatabaseHelper.ManipulateUser(user.DatabaseUsername))};");
             return connection;
         }
 
         public NpgsqlConnection CreateQueryConnection(string database)
         {
             SessionUser user = sessionService.User;
-            var workspaceUserConnection = options.Value.WorkspaceUserConnection;
+            var workspaceUserConnection = options.Value.WorkspaceConnection;
 
             NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
             {
@@ -78,6 +84,8 @@ namespace GiantTeam.Services
                 connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
             }
 
+            connection.Open();
+            connection.Execute($"SET ROLE {PgQuote.Identifier(DatabaseHelper.QueryUser(user.DatabaseUsername))};");
             return connection;
         }
     }
