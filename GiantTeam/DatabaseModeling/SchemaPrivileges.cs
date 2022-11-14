@@ -6,12 +6,14 @@ namespace GiantTeam.DatabaseModeling;
 //GRANT USAGE ON SCHEMA "Finance" TO "t:DB1:m";
 //GRANT USAGE ON SCHEMA "Finance" TO "t:DB1:q";
 
-/// <summary>
-/// 
-/// </summary>
 public class SchemaPrivileges
 {
-    public SchemaPrivileges(string privileges, string grantee)
+    /// <summary>
+    /// Examples privileges: "ALL", "CREATE", "USAGE" or "CREATE, USAGE".
+    /// </summary>
+    /// <param name="grantee">Recipient of privileges.</param>
+    /// <param name="privileges">Granted privileges. Examples: "ALL", "CREATE", "USAGE" or "CREATE, USAGE".</param>
+    public SchemaPrivileges(string grantee, string privileges)
     {
         Grantee = grantee;
         this.privileges = privileges;
@@ -22,7 +24,7 @@ public class SchemaPrivileges
     private readonly string privileges;
     private bool privilegesIsValid;
     /// <summary>
-    /// Examples: ALL, CREATE, USAGE, CREATE USAGE
+    /// Examples: "ALL", "CREATE", "USAGE" or "CREATE, USAGE".
     /// </summary>
     public string Privileges
     {
@@ -32,7 +34,7 @@ public class SchemaPrivileges
             {
                 return privileges;
             }
-            else if (Regex.IsMatch(privileges, "^[A-Z ]+$"))
+            else if (Regex.IsMatch(privileges, "^[A-Z][A-Z, ][A-Z]+$"))
             {
                 privilegesIsValid = true;
                 return privileges;

@@ -133,21 +133,21 @@ namespace GiantTeam.Asp.UI.Pages.Data
                                     },
                                     Privileges =
                                     {
-                                        new("ALL", $"t:{WorkspaceId}:d"),
-                                        new("USAGE", $"t:{WorkspaceId}:m"),
-                                        new("USAGE", $"t:{WorkspaceId}:q"),
+                                        new($"t:{WorkspaceId}:d", "ALL"),
+                                        new($"t:{WorkspaceId}:m", "USAGE"),
+                                        new($"t:{WorkspaceId}:q", "USAGE"),
                                     },
                                     DefaultPrivileges =
                                     {
-                                        new("ALL", "TABLES", $"t:{WorkspaceId}:d"),
-                                        new("ALL", "TABLES", $"t:{WorkspaceId}:m"),
-                                        new("SELECT", "TABLES", $"t:{WorkspaceId}:q"),
+                                        new($"t:{WorkspaceId}:d", DefaultPrivilegesEnum.Tables, "ALL"),
+                                        new($"t:{WorkspaceId}:m", DefaultPrivilegesEnum.Tables, "SELECT, INSERT, UPDATE, DELETE"),
+                                        new($"t:{WorkspaceId}:q", DefaultPrivilegesEnum.Tables, "SELECT"),
 
-                                        new("ALL", "SEQUENCES", $"t:{WorkspaceId}:d"),
-                                        new("SELECT", "SEQUENCES", $"t:{WorkspaceId}:m"),
+                                        new($"t:{WorkspaceId}:d", DefaultPrivilegesEnum.Sequences, "ALL"),
+                                        new($"t:{WorkspaceId}:m", DefaultPrivilegesEnum.Sequences, "USAGE"),
 
-                                        new("EXECUTE", "FUNCTIONS", $"t:{WorkspaceId}:d"),
-                                        new("EXECUTE", "FUNCTIONS", $"t:{WorkspaceId}:m"),
+                                        new($"t:{WorkspaceId}:d", DefaultPrivilegesEnum.Functions, "EXECUTE"),
+                                        new($"t:{WorkspaceId}:m", DefaultPrivilegesEnum.Functions, "EXECUTE"),
                                     },
                                 };
 

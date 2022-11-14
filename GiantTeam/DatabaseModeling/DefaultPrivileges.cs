@@ -26,10 +26,10 @@ namespace GiantTeam.DatabaseModeling
     /// </summary>
     public class DefaultPrivileges
     {
-        public DefaultPrivileges(string privileges, string objectType, string grantee)
+        public DefaultPrivileges(string grantee, DefaultPrivilegesEnum objectType, string privileges)
         {
             this.privileges = privileges;
-            this.objectType = objectType;
+            this.objectType = objectType.ToString().ToUpperInvariant();
             Grantee = grantee;
         }
 
@@ -46,7 +46,7 @@ namespace GiantTeam.DatabaseModeling
                 {
                     return privileges;
                 }
-                else if (Regex.IsMatch(privileges, "^[A-Z ]+$"))
+                else if (Regex.IsMatch(privileges, "^[A-Z, ]+$"))
                 {
                     privilegesIsValid = true;
                     return privileges;

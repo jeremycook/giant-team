@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GiantTeam.DatabaseModeling;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using GiantTeam.DatabaseModeling;
 
 namespace GiantTeam.EntityFramework;
 
@@ -8,11 +8,17 @@ public class EntityFrameworkDatabaseContributor
 {
     public static EntityFrameworkDatabaseContributor Singleton { get; } = new();
 
-    public void Contribute(Database database, IModel model, string fallbackSchema)
+    public void Contribute(Database database, IModel model)
     {
+        if (model.GetDefaultSchema() is string defaultSchema)
+        {
+            // Last wins
+            database.DefaultSchema = model.GetDefaultSchema();
+        }
+
         foreach (var entityType in model.GetEntityTypes())
         {
-            foreach (var schemaGroup in entityType.GetTableMappings().GroupBy(o => o.Table.Schema ?? fallbackSchema))
+            foreach (var schemaGroup in entityType.GetTableMappings().GroupBy(o => o.Table.Schema ?? database.DefaultSchema ?? string.Empty))
             {
                 var schema = database.Schemas.GetOrAdd(schemaGroup.Key, key => new Schema(key));
                 foreach (var tableMapping in schemaGroup)
