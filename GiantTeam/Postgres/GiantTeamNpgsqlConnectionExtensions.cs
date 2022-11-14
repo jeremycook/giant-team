@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using Dapper;
+using Npgsql;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -7,6 +8,16 @@ namespace GiantTeam.Postgres
 {
     public static class GiantTeamNpgsqlConnectionExtensions
     {
+        public static int SetRole(this NpgsqlConnection connection, string role)
+        {
+            return connection.Execute($"SET ROLE {PgQuote.Identifier(role)};");
+        }
+
+        public static async Task<int> SetRoleAsync(this NpgsqlConnection connection, string role)
+        {
+            return await connection.ExecuteAsync($"SET ROLE {PgQuote.Identifier(role)};");
+        }
+
         /// <summary>
         /// Configures the <see cref="NpgsqlConnection.UserCertificateValidationCallback"/> of <paramref name="connection"/>
         /// against the <paramref name="caCertificateText"/>.

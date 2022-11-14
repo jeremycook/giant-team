@@ -1,24 +1,22 @@
+using GiantTeam;
 using GiantTeam.Asp.Startup;
-using GiantTeam.DatabaseModeling;
 using GiantTeam.DataProtection;
-using GiantTeam.EntityFramework;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.WorkspaceAdministration.Data;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace WebApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             builder.ConfigureServicesWithServiceBuilders<WebAppServiceBuilder>();
 
             var app = builder.Build();
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             // Configure the HTTP request pipeline.
 
@@ -34,48 +32,21 @@ namespace WebApp
                 app.UseHttpsRedirection();
             }
 
+            if (app.Environment.IsDevelopment())
             {
-                using var scope = app.Services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<DataProtectionDbContext>();
+                ConnectionOptions? migratorConnectionOptions = app.Configuration
+                    .GetSection("GiantTeam.MigratorConnection")
+                    .Get<ConnectionOptions>();
 
-                Database database = new();
-                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, db.Model, DataProtectionDbContext.DefaultSchema);
-                PgDatabaseScripter scripter = new();
-                string sql = scripter.Script(database);
+                if (migratorConnectionOptions is not null)
+                {
+                    DataProtectionOptions dataProtectionOptions = app.Services.GetRequiredService<IOptions<DataProtectionOptions>>().Value;
+                    GiantTeamOptions giantTeamOptions = app.Services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
 
-                logger.LogDebug("Data Protection:\n\n{Sql}", sql);
-                //db.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
-                //db.Database.ExecuteSqlRaw(sql);
-            }
-
-            {
-                var factory = app.Services.GetRequiredService<IDbContextFactory<RecordsManagementDbContext>>();
-                using var db = factory.CreateDbContext();
-
-                Database database = new();
-                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, db.Model, RecordsManagementDbContext.DefaultSchema);
-
-                PgDatabaseScripter scripter = new();
-                string sql = scripter.Script(database);
-
-                logger.LogDebug("Records Management:\n\n{Sql}", sql);
-                //db.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
-                //db.Database.ExecuteSqlRaw(sql);
-            }
-
-            {
-                using var scope = app.Services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<WorkspaceAdministrationDbContext>();
-
-                Database database = new();
-                EntityFrameworkDatabaseContributor.Singleton.Contribute(database, db.Model, WorkspaceAdministrationDbContext.DefaultSchema);
-                EmbeddedResourcesDatabaseScriptsContributor.Singleton.Contribute<WorkspaceAdministrationDbContext>(database);
-                PgDatabaseScripter scripter = new();
-                string sql = scripter.Script(database);
-
-                logger.LogDebug("Workspace Administration:\n\n{Sql}", sql);
-                //db.Database.ExecuteSqlRaw("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
-                //db.Database.ExecuteSqlRaw(sql);
+                    await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migratorConnectionOptions, dataProtectionOptions.DataProtectionConnection);
+                    await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migratorConnectionOptions, giantTeamOptions.RecordsManagementConnection);
+                    await app.Services.MigrateDbContextAsync<WorkspaceAdministrationDbContext>(migratorConnectionOptions, giantTeamOptions.WorkspaceAdministrationConnection);
+                }
             }
 
             app.UseStaticFiles();
