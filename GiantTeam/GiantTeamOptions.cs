@@ -4,8 +4,8 @@ namespace GiantTeam
 {
     public class GiantTeamOptions
     {
-        public ExtendedConnectionOptions RecordsManagementConnection { get; } = new();
-        public ExtendedConnectionOptions WorkspaceAdministrationConnection { get; } = new();
-        public BasicConnectionOptions WorkspaceConnection { get; } = new();
+        public ConnectionOptions RecordsManagementConnection { get; } = new();
+        public ConnectionOptions WorkspaceAdministrationConnection { get; } = new();
+        public ConnectionOptions WorkspaceConnection { get; } = new();
     }
 }
