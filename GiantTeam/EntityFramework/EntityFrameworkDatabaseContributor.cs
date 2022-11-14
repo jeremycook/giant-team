@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using GiantTeam.DatabaseModel;
+using GiantTeam.DatabaseModeling;
 
 namespace GiantTeam.EntityFramework;
 

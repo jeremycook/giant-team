@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-namespace GiantTeam.DatabaseModel;
+﻿namespace GiantTeam.DatabaseModeling;
 
 public class Column
 {

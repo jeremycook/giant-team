@@ -1,6 +1,6 @@
 using GiantTeam.Asp.Startup;
 using GiantTeam.Data;
-using GiantTeam.DatabaseModel;
+using GiantTeam.DatabaseModeling;
 using GiantTeam.DataProtection;
 using GiantTeam.EntityFramework;
 using GiantTeam.Postgres;

@@ -1,5 +1,5 @@
-﻿using System.Text;
-using GiantTeam.DatabaseModel;
+﻿using GiantTeam.DatabaseModeling;
+using System.Text;
 using static GiantTeam.Postgres.PgQuote;
 
 namespace GiantTeam.Postgres
