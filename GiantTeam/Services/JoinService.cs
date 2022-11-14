@@ -9,18 +9,18 @@ namespace GiantTeam.Services
     public class JoinService
     {
         private readonly ILogger<JoinService> logger;
-        private readonly IDbContextFactory<RecordsManagementDbContext> dbContextFactory;
+        private readonly RecordsManagementDbContext recordsManagementDbContext;
         private readonly WorkspaceAdministrationDbContext databaseAdministrationDbContext;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
-            IDbContextFactory<RecordsManagementDbContext> dbContextFactory,
+            RecordsManagementDbContext recordsManagementDbContext,
             WorkspaceAdministrationDbContext databaseAdministrationDbContext,
             ValidationService validationService)
         {
             this.logger = logger;
-            this.dbContextFactory = dbContextFactory;
+            this.recordsManagementDbContext = recordsManagementDbContext;
             this.databaseAdministrationDbContext = databaseAdministrationDbContext;
             this.validationService = validationService;
         }
@@ -44,7 +44,6 @@ namespace GiantTeam.Services
             };
 
             // Create user record
-            using var recordsManagementDbContext = await dbContextFactory.CreateDbContextAsync();
             using var recordsManagementTx = await recordsManagementDbContext.Database.BeginTransactionAsync();
             try
             {

@@ -11,24 +11,22 @@ namespace GiantTeam.Asp.Services
 {
     public class PasswordAuthenticationService
     {
-        private readonly IDbContextFactory<RecordsManagementDbContext> dbContextFactory;
+        private readonly RecordsManagementDbContext db;
         private readonly WorkspaceAdministrationDbContext databaseAdministrationDbContext;
         private readonly IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions;
 
         public PasswordAuthenticationService(
-            IDbContextFactory<RecordsManagementDbContext> dbContextFactory,
+            RecordsManagementDbContext db,
             WorkspaceAdministrationDbContext databaseAdministrationDbContext,
             IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions)
         {
-            this.dbContextFactory = dbContextFactory;
+            this.db = db;
             this.databaseAdministrationDbContext = databaseAdministrationDbContext;
             this.cookieAuthenticationOptions = cookieAuthenticationOptions;
         }
 
         public async Task<ClaimsPrincipal> AuthenticateAsync(PasswordAuthenticationInput input)
         {
-            using var db = await dbContextFactory.CreateDbContextAsync();
-
             var user = await db.Users
                 .SingleOrDefaultAsync(o => o.UsernameNormalized == input.Username.ToLower());
 

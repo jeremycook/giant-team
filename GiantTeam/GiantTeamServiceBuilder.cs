@@ -17,7 +17,7 @@ public class GiantTeamServiceBuilder : IServiceBuilder
 
         services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
-        services.AddPooledDbContextFactory<RecordsManagementDbContext>((services, options) =>
+        services.AddDbContextPool<RecordsManagementDbContext>((services, options) =>
         {
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
             var connectionOptions = giantTeamOptions.RecordsManagementConnection;

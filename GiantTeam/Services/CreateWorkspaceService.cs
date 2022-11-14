@@ -9,20 +9,20 @@ namespace GiantTeam.Services
 {
     public class CreateWorkspaceService
     {
-        private readonly IDbContextFactory<RecordsManagementDbContext> dbContextFactory;
+        private readonly RecordsManagementDbContext db;
         private readonly WorkspaceAdministrationDbContext workspaceAdministrationDbContext;
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
         private readonly DatabaseConnectionService databaseConnectionService;
 
         public CreateWorkspaceService(
-            IDbContextFactory<RecordsManagementDbContext> dbContextFactory,
+            RecordsManagementDbContext db,
             WorkspaceAdministrationDbContext workspaceAdministrationDbContext,
             ValidationService validationService,
             SessionService sessionService,
             DatabaseConnectionService databaseConnectionService)
         {
-            this.dbContextFactory = dbContextFactory;
+            this.db = db;
             this.workspaceAdministrationDbContext = workspaceAdministrationDbContext;
             this.validationService = validationService;
             this.sessionService = sessionService;
@@ -49,7 +49,6 @@ namespace GiantTeam.Services
             string quotedManipulateRole = PgQuote.Identifier(DatabaseHelper.ManipulateRole(input.WorkspaceName));
             string quotedQueryRole = PgQuote.Identifier(DatabaseHelper.QueryRole(input.WorkspaceName));
 
-            using (var db = dbContextFactory.CreateDbContext())
             using (var tx = await db.Database.BeginTransactionAsync())
             {
                 db.Workspaces.Add(new Workspace
