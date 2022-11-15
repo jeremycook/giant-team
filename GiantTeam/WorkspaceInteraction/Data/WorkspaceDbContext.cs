@@ -10,12 +10,12 @@ namespace GiantTeam.WorkspaceInteraction.Data
 {
     public class WorkspaceDbContext : DbContext
     {
-        private readonly DatabaseConnectionService databaseConnectionService;
+        private readonly WorkspaceConnectionService databaseConnectionService;
         private readonly SessionService sessionService;
         private readonly string databaseName;
 
         public WorkspaceDbContext(
-            DatabaseConnectionService databaseConnectionService,
+            WorkspaceConnectionService databaseConnectionService,
             SessionService sessionService,
             string databaseName)
         {
@@ -28,7 +28,7 @@ namespace GiantTeam.WorkspaceInteraction.Data
         {
             SessionUser sessionUser = sessionService.User;
 
-            NpgsqlConnection connection = databaseConnectionService.CreateUserConnection(databaseName);
+            NpgsqlConnection connection = databaseConnectionService.CreateConnection(databaseName);
 
             optionsBuilder
                 .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(sessionUser.DbRole)};"))

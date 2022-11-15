@@ -50,12 +50,12 @@ namespace GiantTeam.Postgres
             migratorConnectionStringBuilder.Database = dbConnectionStringBuilder.Database;
 
             var migratorConnection = new NpgsqlConnection(migratorConnectionStringBuilder.ToString());
-            if (dbContextConnectionOptions.CaCertificate is not null)
+            if (!string.IsNullOrEmpty(dbContextConnectionOptions.CaCertificate))
             {
                 migratorConnection.ConfigureCaCertificateValidation(dbContextConnectionOptions.CaCertificate);
             }
             await migratorConnection.OpenAsync();
-            if (migratorConnectionOptions.SetRole is not null)
+            if (!string.IsNullOrEmpty(migratorConnectionOptions.SetRole))
             {
                 await migratorConnection.SetRoleAsync(migratorConnectionOptions.SetRole);
             }

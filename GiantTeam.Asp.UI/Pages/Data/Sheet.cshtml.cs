@@ -26,7 +26,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
         public List<object?[]> Records { get; } = new();
 
         public async Task<ActionResult> OnGet(
-            [FromServices] DatabaseConnectionService databaseConnectionService)
+            [FromServices] WorkspaceConnectionService databaseConnectionService)
         {
             try
             {

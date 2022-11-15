@@ -20,7 +20,6 @@ namespace GiantTeam.RecordsManagement.Data
             var user = modelBuilder.Entity<User>();
             user.Property(o => o.UserId).HasDefaultValueSql();
             user.Property(o => o.UsernameNormalized).HasComputedColumnSql($"LOWER({PgQuote.Identifier(nameof(User.Username))})", stored: true);
-            user.Property(o => o.EmailVerified).HasDefaultValueSql("false");
             user.Property(o => o.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
         }
 

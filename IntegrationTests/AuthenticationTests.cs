@@ -1,17 +1,15 @@
-using GiantTeam.Authentication.Api.Controllers;
 using Microsoft.AspNetCore.Mvc.Testing;
-using static GiantTeam.Authentication.Api.Controllers.RegisterController;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
+using static GiantTeam.Authentication.Api.Controllers.RegisterController;
 using static GiantTeam.Authentication.Api.Controllers.SessionController;
-using static GiantTeam.Authentication.Api.Controllers.LogoutController;
 
 namespace IntegrationTests;
 
-public class Authentication : IClassFixture<WebApplicationFactory<WebApp.Program>>
+public class AuthenticationTests : IClassFixture<WebApplicationFactory<WebApp.Program>>
 {
     private readonly WebApplicationFactory<WebApp.Program> _factory;
 
-    public Authentication(WebApplicationFactory<WebApp.Program> factory)
+    public AuthenticationTests(WebApplicationFactory<WebApp.Program> factory)
     {
         _factory = factory;
     }

@@ -34,5 +34,25 @@ namespace GiantTeam.Services
                 throw new ServiceException(validationResults);
             }
         }
+
+        public bool TryValidate<T>(T model, out IEnumerable<ValidationResult> validationResults)
+        {
+            try
+            {
+                Validate(model);
+                validationResults = Enumerable.Empty<ValidationResult>();
+                return true;
+            }
+            catch (ServiceException ex)
+            {
+                validationResults = ex.ValidationResults;
+                return false;
+            }
+            catch (ValidationException ex)
+            {
+                validationResults = new[] { ex.ValidationResult };
+                return false;
+            }
+        }
     }
 }

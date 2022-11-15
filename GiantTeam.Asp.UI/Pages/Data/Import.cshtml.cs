@@ -20,7 +20,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
     [Authorize]
     public class ImportModel : PageModel
     {
-        private readonly DatabaseConnectionService databaseConnectionService;
+        private readonly WorkspaceConnectionService databaseConnectionService;
 
         [FromRoute]
         public string WorkspaceId { get; set; } = null!;
@@ -35,7 +35,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
         [BindProperty]
         public List<IFormFile> DataFiles { get; set; } = new();
 
-        public ImportModel(DatabaseConnectionService databaseConnectionService)
+        public ImportModel(WorkspaceConnectionService databaseConnectionService)
         {
             this.databaseConnectionService = databaseConnectionService;
         }

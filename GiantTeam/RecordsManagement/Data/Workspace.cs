@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.RecordsManagement.Data
 {
@@ -10,6 +11,8 @@ namespace GiantTeam.RecordsManagement.Data
         public string WorkspaceId { get => _workspaceId; set => _workspaceId = value?.ToLowerInvariant()!; }
 
         public string? WorkspaceName { get; set; }
+
+        public bool Recycle { get; set; }
 
         public DateTimeOffset Created { get; set; }
 

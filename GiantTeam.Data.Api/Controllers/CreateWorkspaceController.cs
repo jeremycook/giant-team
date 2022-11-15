@@ -53,14 +53,14 @@ public class CreateWorkspaceController : ControllerBase
         {
             try
             {
-                await createWorkspaceService.CreateWorkspaceAsync(new()
+                var output = await createWorkspaceService.CreateWorkspaceAsync(new()
                 {
                     WorkspaceName = input.WorkspaceName!,
                 });
 
                 return new(CreateWorkspaceStatus.Created)
                 {
-                    WorkspaceId = input.WorkspaceName,
+                    WorkspaceId = output.WorkspaceId,
                 };
             }
             catch (ValidationException ex)

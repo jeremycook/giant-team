@@ -43,9 +43,16 @@ namespace WebApp
                     DataProtectionOptions dataProtectionOptions = app.Services.GetRequiredService<IOptions<DataProtectionOptions>>().Value;
                     GiantTeamOptions giantTeamOptions = app.Services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
 
-                    await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migratorConnectionOptions, dataProtectionOptions.DataProtectionConnection);
-                    await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migratorConnectionOptions, giantTeamOptions.RecordsManagementConnection);
-                    await app.Services.MigrateDbContextAsync<WorkspaceAdministrationDbContext>(migratorConnectionOptions, giantTeamOptions.WorkspaceAdministrationConnection);
+                    try
+                    {
+                        await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migratorConnectionOptions, dataProtectionOptions.DataProtectionConnection);
+                        await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migratorConnectionOptions, giantTeamOptions.RecordsManagementConnection);
+                        await app.Services.MigrateDbContextAsync<WorkspaceAdministrationDbContext>(migratorConnectionOptions, giantTeamOptions.WorkspaceAdministrationConnection);
+                    }
+                    catch (Exception ex)
+                    {
+                        app.Logger.LogError(ex, "Suppressed migration exception {Exception}: {ExceptionMessage}", ex.GetBaseException(), ex.GetBaseException().Message);
+                    }
                 }
             }
 

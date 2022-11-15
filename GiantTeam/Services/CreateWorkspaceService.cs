@@ -1,14 +1,25 @@
-﻿using Dapper;
-using GiantTeam.Postgres;
+﻿using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.WorkspaceAdministration.Data;
-using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Services
 {
     public class CreateWorkspaceService
     {
+        public class CreateWorkspaceInput
+        {
+            [PgLaxIdentifier]
+            [StringLength(25)]
+            public string WorkspaceName { get; set; } = null!;
+        }
+
+        public class CreateWorkspaceOutput
+        {
+            public string WorkspaceId { get; set; } = null!;
+        }
+
         private readonly RecordsManagementDbContext db;
         private readonly WorkspaceAdministrationDbContext workspaceAdministrationDbContext;
         private readonly ValidationService validationService;
@@ -26,7 +37,7 @@ namespace GiantTeam.Services
             this.sessionService = sessionService;
         }
 
-        public async Task CreateWorkspaceAsync(CreateWorkspaceInput input)
+        public async Task<CreateWorkspaceOutput> CreateWorkspaceAsync(CreateWorkspaceInput input)
         {
             if (input is null)
             {
@@ -50,11 +61,11 @@ namespace GiantTeam.Services
             string quotedDbUser = PgQuote.Identifier(sessionUser.DbRole);
             string quotedDbWorkspace = PgQuote.Identifier(workspace.WorkspaceId);
 
-            await workspaceAdministrationDbContext.Database.ExecuteSqlRawAsync($@"
+            await workspaceAdministrationDbContext.Database.ExecuteSqlRawAsync($"""
 CREATE ROLE {quotedDbWorkspace} ROLE {quotedDbUser}, CURRENT_USER;
 CREATE DATABASE {quotedDbWorkspace} OWNER {quotedDbWorkspace};
 REVOKE {quotedDbWorkspace} FROM CURRENT_USER;
-");
+""");
 
             //                // TODO: Configure privileges of new database
             //                await newDatabaseConnection.ExecuteSqlAsync($@"
@@ -80,6 +91,11 @@ REVOKE {quotedDbWorkspace} FROM CURRENT_USER;
             //");
 
             await tx.CommitAsync();
+
+            return new()
+            {
+                WorkspaceId = workspace.WorkspaceId,
+            };
         }
     }
 }

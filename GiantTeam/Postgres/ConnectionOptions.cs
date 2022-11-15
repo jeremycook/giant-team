@@ -9,6 +9,7 @@ namespace GiantTeam.Postgres
         public string? Username { get; set; }
         public string? Password { get; set; }
         public string? SetRole { get; set; }
+        public string? MaintenanceDatabase { get; set; }
 
         public async Task<NpgsqlConnection> CreateOpenConnectionAsync()
         {
@@ -16,14 +17,14 @@ namespace GiantTeam.Postgres
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (CaCertificate is not null)
+            if (!string.IsNullOrEmpty(CaCertificate))
             {
                 connection.ConfigureCaCertificateValidation(CaCertificate);
             }
 
             await connection.OpenAsync();
 
-            if (SetRole is not null)
+            if (!string.IsNullOrEmpty(SetRole))
             {
                 await connection.SetRoleAsync(SetRole);
             }
@@ -35,12 +36,12 @@ namespace GiantTeam.Postgres
         {
             NpgsqlConnectionStringBuilder connectionStringBuilder = new(ConnectionString);
 
-            if (Username is not null)
+            if (!string.IsNullOrEmpty(Username))
             {
                 connectionStringBuilder.Username = Username;
             }
 
-            if (Password is not null)
+            if (!string.IsNullOrEmpty(Password))
             {
                 connectionStringBuilder.Password = Password;
             }

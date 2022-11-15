@@ -57,8 +57,6 @@ public class EntityFrameworkDatabaseContributor
     private static readonly Dictionary<Type, string> DefaultValueSqlMap = new()
     {
         { typeof(bool), "false" },
-        { typeof(int), "0" },
-        { typeof(DateTimeOffset), "CURRENT_TIMESTAMP" },
     };
 
     private static string? GetDefaultValueSql(IColumnMapping columnMapping)

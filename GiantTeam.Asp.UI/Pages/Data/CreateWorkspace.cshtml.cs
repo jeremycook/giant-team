@@ -8,7 +8,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
     public class CreateWorkspaceModel : PageModel
     {
         [BindProperty]
-        public CreateWorkspaceInput Model { get; set; } = new();
+        public CreateWorkspaceService.CreateWorkspaceInput Model { get; set; } = new();
 
         public void OnGet()
         {

@@ -9,37 +9,51 @@ namespace GiantTeam.RecordsManagement.Services
     public class WorkspaceService : IDisposable
     {
         private readonly Dictionary<string, WorkspaceDbContext> cache = new(StringComparer.InvariantCultureIgnoreCase);
-        private readonly DatabaseConnectionService databaseConnectionService;
+        private readonly RecordsManagementDbContext recordsManagementDbContext;
+        private readonly WorkspaceConnectionService databaseConnectionService;
         private readonly SessionService sessionService;
         private bool disposedValue;
 
         public WorkspaceService(
-            DatabaseConnectionService databaseConnectionService,
+            RecordsManagementDbContext recordsManagementDbContext,
+            WorkspaceConnectionService databaseConnectionService,
             SessionService sessionService)
         {
+            this.recordsManagementDbContext = recordsManagementDbContext;
             this.databaseConnectionService = databaseConnectionService;
             this.sessionService = sessionService;
         }
 
         public async Task<Workspace?> GetWorkspaceAsync(string workspaceId)
         {
+            var workspace = await recordsManagementDbContext
+                .Workspaces
+                .FindAsync(workspaceId);
+
+            if (workspace is null)
+            {
+                return null;
+            }
+
             var workspaceDbContext = GetWorkspaceDbContext(workspaceId);
 
-            return await workspaceDbContext
+            var hasAccess = await workspaceDbContext
                 .InformationSchemaTables
-                .Where(o => o.table_catalog == workspaceId)
-                .Select(o => new Workspace()
-                {
-                    WorkspaceId = o.table_catalog!,
-                    WorkspaceName = o.table_catalog!,
-                })
-                .FirstOrDefaultAsync();
+                .AnyAsync(o => o.table_catalog == workspaceId);
+
+            if (hasAccess)
+            {
+                return workspace;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
-        /// Returns a <see cref="WorkspaceDbContext"/> with a lifetime
-        /// that is tied to <see cref="WorkspaceService"/>.
-        /// Disposal is handled by <see cref="WorkspaceService"/>.
+        /// Returns a new or cached <see cref="WorkspaceDbContext"/> with a lifetime
+        /// is managed and disposed by <c>this</c> <see cref="WorkspaceService"/>.
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <returns></returns>

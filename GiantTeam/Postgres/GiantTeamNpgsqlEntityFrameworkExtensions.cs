@@ -12,9 +12,9 @@ namespace GiantTeam.Postgres
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (connectionOptions.CaCertificate is string connectionCaCertificateText)
+            if (!string.IsNullOrEmpty(connectionOptions.CaCertificate))
             {
-                connection.ConfigureCaCertificateValidation(connectionCaCertificateText);
+                connection.ConfigureCaCertificateValidation(connectionOptions.CaCertificate);
             }
 
             if (connectionOptions.SetRole is not null)
