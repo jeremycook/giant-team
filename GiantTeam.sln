@@ -24,9 +24,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Authentication.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Tools", "GiantTeam.Tools\GiantTeam.Tools.csproj", "{81211C30-DB23-4FAE-B32C-E680B1DCEF11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GiantTeam.Data.Api", "GiantTeam.Data.Api\GiantTeam.Data.Api.csproj", "{77FA17AD-75FC-44B7-AAF4-B568FD9814F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Data.Api", "GiantTeam.Data.Api\GiantTeam.Data.Api.csproj", "{77FA17AD-75FC-44B7-AAF4-B568FD9814F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +76,10 @@ Global
 		{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
