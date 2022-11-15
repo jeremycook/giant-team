@@ -26,8 +26,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Tools", "GiantTea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Data.Api", "GiantTeam.Data.Api\GiantTeam.Data.Api.csproj", "{77FA17AD-75FC-44B7-AAF4-B568FD9814F5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}"
 EndProject
 Global
@@ -72,10 +70,6 @@ Global
 		{77FA17AD-75FC-44B7-AAF4-B568FD9814F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77FA17AD-75FC-44B7-AAF4-B568FD9814F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77FA17AD-75FC-44B7-AAF4-B568FD9814F5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B33E968-9CAD-4553-B837-8C39EAA5A8B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
