@@ -31,6 +31,7 @@ namespace GiantTeam.RecordsManagement.Services
                 .Select(o => new Workspace()
                 {
                     WorkspaceId = o.table_catalog!,
+                    WorkspaceName = o.table_catalog!,
                 })
                 .FirstOrDefaultAsync();
         }

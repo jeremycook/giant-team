@@ -28,13 +28,10 @@ namespace GiantTeam.WorkspaceInteraction.Data
         {
             SessionUser sessionUser = sessionService.User;
 
-            string userRole = DatabaseHelper.QueryUser(sessionUser.DatabaseUsername);
-
-            NpgsqlConnection connection = databaseConnectionService
-                .CreateQueryConnection(databaseName);
+            NpgsqlConnection connection = databaseConnectionService.CreateUserConnection(databaseName);
 
             optionsBuilder
-                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(userRole)};"))
+                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(sessionUser.DbRole)};"))
                 .UseNpgsql(connection);
         }
 

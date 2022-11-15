@@ -1,5 +1,4 @@
-﻿using Dapper;
-using GiantTeam.Postgres;
+﻿using GiantTeam.Postgres;
 using GiantTeam.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
@@ -17,75 +16,67 @@ namespace GiantTeam.WorkspaceInteraction.Services
             this.sessionService = sessionService;
         }
 
-        public NpgsqlConnection CreateDesignConnection(string database)
+        public async Task<NpgsqlConnection> OpenAdminConnectionAsync(string database)
         {
             SessionUser user = sessionService.User;
-            var workspaceUserConnection = options.Value.WorkspaceConnection;
+            var workspaceConnection = options.Value.WorkspaceConnection;
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
-            {
-                Database = database,
-                Username = DatabaseHelper.DesignUser(user.DatabaseUsername, user.DatabaseSlot),
-                Password = user.DatabasePassword,
-            };
+            NpgsqlConnectionStringBuilder connectionStringBuilder = workspaceConnection.ToConnectionStringBuilder();
+            connectionStringBuilder.Database = database;
+            connectionStringBuilder.Username = user.DbLogin;
+            connectionStringBuilder.Password = user.DbPassword;
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (workspaceUserConnection.CaCertificate is not null)
+            if (workspaceConnection.CaCertificate is not null)
             {
-                connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
+                connection.ConfigureCaCertificateValidation(workspaceConnection.CaCertificate);
             }
 
-            connection.Open();
-            connection.Execute($"SET ROLE {PgQuote.Identifier(DatabaseHelper.DesignUser(user.DatabaseUsername))};");
+            await connection.OpenAsync();
+            await connection.SetRoleAsync(database);
             return connection;
         }
 
-        public NpgsqlConnection CreateManipulateConnection(string database)
+        public async Task<NpgsqlConnection> OpenUserConnectionAsync(string database)
         {
             SessionUser user = sessionService.User;
-            var workspaceUserConnection = options.Value.WorkspaceConnection;
+            var workspaceConnection = options.Value.WorkspaceConnection;
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
-            {
-                Database = database,
-                Username = DatabaseHelper.ManipulateUser(user.DatabaseUsername, user.DatabaseSlot),
-                Password = user.DatabasePassword,
-            };
+            NpgsqlConnectionStringBuilder connectionStringBuilder = workspaceConnection.ToConnectionStringBuilder();
+            connectionStringBuilder.Database = database;
+            connectionStringBuilder.Username = user.DbLogin;
+            connectionStringBuilder.Password = user.DbPassword;
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (workspaceUserConnection.CaCertificate is not null)
+            if (workspaceConnection.CaCertificate is not null)
             {
-                connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
+                connection.ConfigureCaCertificateValidation(workspaceConnection.CaCertificate);
             }
 
-            connection.Open();
-            connection.Execute($"SET ROLE {PgQuote.Identifier(DatabaseHelper.ManipulateUser(user.DatabaseUsername))};");
+            await connection.OpenAsync();
+            await connection.SetRoleAsync(user.DbRole);
             return connection;
         }
 
-        public NpgsqlConnection CreateQueryConnection(string database)
+        public NpgsqlConnection CreateUserConnection(string database)
         {
             SessionUser user = sessionService.User;
-            var workspaceUserConnection = options.Value.WorkspaceConnection;
+            var workspaceConnection = options.Value.WorkspaceConnection;
 
-            NpgsqlConnectionStringBuilder connectionStringBuilder = new(workspaceUserConnection.ConnectionString)
-            {
-                Database = database,
-                Username = DatabaseHelper.QueryUser(user.DatabaseUsername, user.DatabaseSlot),
-                Password = user.DatabasePassword,
-            };
+            NpgsqlConnectionStringBuilder connectionStringBuilder = workspaceConnection.ToConnectionStringBuilder();
+            connectionStringBuilder.Database = database;
+            connectionStringBuilder.Username = user.DbLogin;
+            connectionStringBuilder.Password = user.DbPassword;
 
             NpgsqlConnection connection = new(connectionStringBuilder.ToString());
 
-            if (workspaceUserConnection.CaCertificate is not null)
+            if (workspaceConnection.CaCertificate is not null)
             {
-                connection.ConfigureCaCertificateValidation(workspaceUserConnection.CaCertificate);
+                connection.ConfigureCaCertificateValidation(workspaceConnection.CaCertificate);
             }
 
-            connection.Open();
-            connection.Execute($"SET ROLE {PgQuote.Identifier(DatabaseHelper.QueryUser(user.DatabaseUsername))};");
             return connection;
         }
     }

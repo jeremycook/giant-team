@@ -1,68 +1,72 @@
-﻿using GiantTeam.RecordsManagement.Data;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 
 namespace GiantTeam.Services
 {
     public class SessionUser
     {
-        public SessionUser(ClaimsIdentity identity, DateTimeOffset? databasePasswordValidUntil = null)
+        public static SessionUser Create(ClaimsIdentity identity)
         {
             if (identity is null)
                 throw new ArgumentNullException(nameof(identity));
 
-            Sub =
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Sub)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Sub}\" claim.");
+            SessionUser sessionUser = new(
+                sub:
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Sub)?.Value ??
+                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Sub}\" claim."),
 
-            Username =
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Username)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Username}\" claim.");
+                username:
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Username)?.Value ??
+                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Username}\" claim."),
 
-            Name =
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Name)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Name}\" claim.");
+                name:
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Name)?.Value ??
+                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Name}\" claim."),
 
-            Email =
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Email)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Email}\" claim.");
+                email:
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Email)?.Value ??
+                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Email}\" claim."),
 
-            EmailVerified = "true" == (
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.EmailVerified)?.Value
+                emailVerified: "true" == (
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.EmailVerified)?.Value
+                ),
+
+                // Database stuff
+
+                dbLogin:
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DbLogin)?.Value ??
+                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DbLogin}\" claim."),
+
+                dbPassword:
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DbPassword)?.Value ??
+                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DbPassword}\" claim."),
+
+                dbRole:
+                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DbRole)?.Value ??
+                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DbRole}\" claim.")
             );
 
-            // Database stuff
-
-            DatabaseUsername =
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DatabaseUsername)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DatabaseUsername}\" claim.");
-
-            DatabaseSlot = int.Parse(
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DatabaseSlot)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DatabaseSlot}\" claim.")
-            );
-
-            DatabasePassword =
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DatabasePassword)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DatabasePassword}\" claim.");
-
-            DatabasePasswordValidUntil = databasePasswordValidUntil ?? DateTimeOffset.Parse(
-                identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DatabasePasswordValidUntil)?.Value ??
-                throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DatabasePasswordValidUntil}\" claim.")
-            );
+            return sessionUser;
         }
 
-        public SessionUser(User user, int databaseSlot, string databasePassword, DateTimeOffset databasePasswordValidUntil)
+        public SessionUser(
+            string sub,
+            string username,
+            string name,
+            string email,
+            bool emailVerified,
+            string dbLogin,
+            string dbPassword,
+            string dbRole)
         {
-            Sub = user.UserId.ToString();
-            Username = user.Username;
-            Name = user.Name;
-            Email = user.Email;
-            EmailVerified = user.EmailVerified;
+            Sub = sub;
+            Username = username;
+            Name = name;
+            Email = email;
+            EmailVerified = emailVerified;
 
-            DatabaseUsername = user.UsernameNormalized;
-            DatabaseSlot = databaseSlot;
-            DatabasePassword = databasePassword;
-            DatabasePasswordValidUntil = databasePasswordValidUntil;
+            DbLogin = dbLogin;
+            DbPassword = dbPassword;
+            DbRole = dbRole;
         }
 
         public ClaimsIdentity CreateIdentity()
@@ -80,11 +84,10 @@ namespace GiantTeam.Services
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Email, Email));
             if (EmailVerified) identity.AddClaim(new(PrincipalHelper.ClaimTypes.EmailVerified, "true"));
 
-            // Database login claims
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DatabaseUsername, DatabaseUsername));
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DatabaseSlot, DatabaseSlot.ToString()));
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DatabasePassword, DatabasePassword));
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DatabasePasswordValidUntil, DatabasePasswordValidUntil.ToString("u")));
+            // Database claims
+            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbLogin, DbLogin));
+            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbPassword, DbPassword));
+            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbRole, DbRole));
 
             return identity;
         }
@@ -103,9 +106,8 @@ namespace GiantTeam.Services
 
         // Database
 
-        public string DatabaseUsername { get; }
-        public int DatabaseSlot { get; }
-        public string DatabasePassword { get; }
-        public DateTimeOffset DatabasePasswordValidUntil { get; }
+        public string DbLogin { get; }
+        public string DbPassword { get; }
+        public string DbRole { get; }
     }
 }

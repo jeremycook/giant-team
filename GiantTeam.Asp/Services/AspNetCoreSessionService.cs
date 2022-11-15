@@ -14,7 +14,7 @@ namespace GiantTeam.Asp.Services
             this.httpContextAccessor = httpContextAccessor;
         }
 
-        public override SessionUser User => _user ??= new(GetIdentity());
+        public override SessionUser User => _user ??= SessionUser.Create(GetIdentity());
 
         private ClaimsIdentity GetIdentity() =>
             httpContextAccessor?.HttpContext?.User.Identity as ClaimsIdentity ??

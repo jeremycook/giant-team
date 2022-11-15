@@ -28,6 +28,7 @@ export interface RegisterInput {
 export interface RegisterOutput {
     status: RegisterStatus;
     message?: string;
+    userId?: string;
 }
 
 export enum RegisterStatus {

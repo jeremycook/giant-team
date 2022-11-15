@@ -15,10 +15,10 @@
             public const string Email = "email";
             public const string EmailVerified = "email_verified";
             public const string Role = "role";
-            public const string DatabaseUsername = "du";
-            public const string DatabaseSlot = "ds";
-            public const string DatabasePassword = "dp";
-            public const string DatabasePasswordValidUntil = "dv";
+
+            public const string DbLogin = "db_login";
+            public const string DbPassword = "db_pass";
+            public const string DbRole = "db_role";
         }
     }
 }

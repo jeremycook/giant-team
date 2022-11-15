@@ -25,13 +25,7 @@ namespace GiantTeam.Asp.UI.Pages
             {
                 try
                 {
-                    await joinService.JoinAsync(new JoinDataModel
-                    {
-                        Name = Form.Name,
-                        Email = Form.Email,
-                        Username = Form.Username,
-                        Password = Form.Password,
-                    });
+                    await joinService.JoinAsync(Form);
 
                     // TODO: Success message
 
@@ -46,7 +40,7 @@ namespace GiantTeam.Asp.UI.Pages
             return Page();
         }
 
-        public class FormModel : JoinDataModel
+        public class FormModel : JoinService.JoinInput
         {
             [Display(Order = 10001)]
             [DataType(DataType.Password)]

@@ -36,17 +36,25 @@ namespace GiantTeam.Asp.Services
             {
                 // TODO: Log authentication success
 
-                // TODO: Capture or create a free slot instead of always using slot 1.
-                int databaseSlot = 1;
-                string databasePassword = PasswordHelper.Base64Url();
+                string dbLogin = await databaseAdministrationDbContext.CreateDatabaseLoginAsync(user.UsernameNormalized);
+
+                string dbPassword = PasswordHelper.Base64Url();
+
                 // Match the lifespan of the database password to that of the cookie authentication ticket
-                DateTimeOffset databasePasswordValidUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
+                DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
 
-                // Create session user
-                SessionUser sessionUser = new(user, databaseSlot, databasePassword, databasePasswordValidUntil);
+                await databaseAdministrationDbContext.SetDatabasePasswordsAsync(dbLogin, dbPassword, validUntil);
 
-                // Set database passwords
-                await databaseAdministrationDbContext.SetDatabaseUserPasswordsAsync(sessionUser.DatabaseUsername, sessionUser.DatabaseSlot, sessionUser.DatabasePassword, sessionUser.DatabasePasswordValidUntil);
+                var sessionUser = new SessionUser(
+                    sub: user.UserId.ToString(),
+                    username: user.Username,
+                    name: user.Name,
+                    email: user.Email,
+                    emailVerified: user.EmailVerified,
+                    dbLogin: dbLogin,
+                    dbPassword: dbPassword,
+                    dbRole: user.UsernameNormalized
+                );
 
                 // Create principal
                 ClaimsPrincipal principal = new(sessionUser.CreateIdentity());

@@ -96,14 +96,13 @@ static void TypeScript(bool preview)
                 foreach (var prop in type.GetProperties())
                 {
                     var contextualProperty = prop.ToContextualProperty();
-                    bool udt = appAssemblies.Contains(prop.PropertyType.Assembly);
                     bool nullable = contextualProperty.Nullability == Nullability.Nullable;
 
                     sb.Append(tab);
-                    sb.Append(prop.Name[0..1].ToLower() + prop.Name[1..]);
-                    if (nullable) sb.Append("?");
+                    sb.Append(CamelCase(prop.Name));
+                    if (nullable) sb.Append('?');
                     sb.Append(": ");
-                    sb.Append(udt ? prop.PropertyType.Name : prop.PropertyType.Name.ToLower());
+                    sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
                     sb.Append(";\n");
 
                 }
@@ -119,9 +118,9 @@ static void TypeScript(bool preview)
 
                     sb.Append(tab);
                     sb.Append(CamelCase(prop.Name));
-                    if (nullable) sb.Append("?");
+                    if (nullable) sb.Append('?');
                     sb.Append(": ");
-                    sb.Append(TypeScriptTypeName(prop.PropertyType));
+                    sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
                     sb.Append(";\n");
 
                 }
@@ -269,7 +268,8 @@ static string CamelCase(string propName)
 
 static string TypeScriptTypeName(Type type)
 {
-    return type.Namespace == "System" ?
-        type.Name.ToLower() :
+    return
+        type == typeof(Guid) ? "string" :
+        type.Namespace == "System" ? type.Name.ToLower() :
         type.Name;
 }

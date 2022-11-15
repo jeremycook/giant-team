@@ -43,6 +43,7 @@ public class RegisterController : ControllerBase
         public RegisterStatus Status { get; }
 
         public string? Message { get; init; }
+        public Guid? UserId { get; init; }
     }
 
     public enum RegisterStatus
@@ -69,7 +70,7 @@ public class RegisterController : ControllerBase
         {
             try
             {
-                await joinService.JoinAsync(new JoinDataModel
+                var joinOutput = await joinService.JoinAsync(new()
                 {
                     Name = input.Name,
                     Email = input.Email,
@@ -77,7 +78,10 @@ public class RegisterController : ControllerBase
                     Password = input.Password,
                 });
 
-                return new(RegisterStatus.Success);
+                return new(RegisterStatus.Success)
+                {
+                    UserId = joinOutput.UserId,
+                };
             }
             catch (ValidationException ex)
             {

@@ -37,8 +37,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
         {
             try
             {
-                using NpgsqlConnection connection = databaseConnectionService.CreateQueryConnection(DatabaseName);
-                await connection.OpenAsync();
+                using NpgsqlConnection connection = await databaseConnectionService.OpenUserConnectionAsync(DatabaseName);
 
                 string select = $@"SELECT * FROM {PgQuote.Identifier(SchemaName, TableName)}";
 

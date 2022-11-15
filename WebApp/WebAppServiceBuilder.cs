@@ -1,6 +1,7 @@
 ﻿using GiantTeam.Asp;
 using GiantTeam.Asp.Routing;
 using GiantTeam.Data;
+using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Services;
 using GiantTeam.Startup;
@@ -71,24 +72,18 @@ namespace WebApp
                     {
                         if (context.ShouldRenew)
                         {
+                            SessionService sessionService = context.HttpContext.RequestServices
+                                .GetRequiredService<SessionService>();
                             WorkspaceAdministrationDbContext db = context.HttpContext.RequestServices
                                 .GetRequiredService<WorkspaceAdministrationDbContext>();
 
-                            ClaimsIdentity identity =
-                                context.Principal?.Identity as ClaimsIdentity ??
-                                throw new NullReferenceException("The ClaimsIdentity is null.");
-
                             // Synchronize the lifespan of the passwords with the authentication cookie
-                            DateTimeOffset databasePasswordValidUntil = DateTimeOffset.UtcNow.Add(context.Options.ExpireTimeSpan);
+                            DateTimeOffset databasePasswordValidUntil = DateTimeOffset.UtcNow.Add(context.Options.ExpireTimeSpan).AddMinutes(1);
 
-                            SessionUser sessionUser = new(identity, databasePasswordValidUntil);
+                            // TODO: Verify that the login hasn't expired
 
-                            // Extend login's valid until
-                            await db.Database.ExecuteSqlInterpolatedAsync($"ALTER ROLE giantteam_rm VALID UNTIL {sessionUser.DatabasePasswordValidUntil};");
-
-                            ClaimsPrincipal principal = new(sessionUser.CreateIdentity());
-
-                            context.ReplacePrincipal(principal);
+                            // Extend life of db login's password
+                            await db.Database.ExecuteSqlRawAsync($"ALTER ROLE {PgQuote.Identifier(sessionService.User.DbLogin)} VALID UNTIL {{0}};", databasePasswordValidUntil);
                         }
                     };
                 });

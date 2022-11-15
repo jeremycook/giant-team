@@ -21,47 +21,54 @@ namespace GiantTeam.WorkspaceAdministration.Data
         }
 
         /// <summary>
-        /// Creates the DDL, DML and DQL roles for <paramref name="user"/> that cannot login,
-        /// and for now also creates the slot 1 logins.
-        /// TODO: Develop a system that manages multiple slots.
+        /// Create a group role.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="adminRole"></param>
+        /// <returns></returns>
+        public async Task CreateDatabaseGroupAsync(string group, string adminRole)
+        {
+            await Database.ExecuteSqlRawAsync($"""
+-- Create a group role
+CREATE ROLE {PgQuote.Identifier(group)} WITH NOLOGIN INHERIT ADMIN {PgQuote.Identifier(adminRole)};
+""");
+        }
+
+        /// <summary>
+        /// Create a user role that cannot login.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public async Task CreateDatabaseUserRolesAsync(User user)
+        public async Task CreateDatabaseUserAsync(string user)
         {
-            await Database.ExecuteSqlRawAsync($@"
--- Create roles that cannot login
-CREATE ROLE {PgQuote.Identifier(DatabaseHelper.DesignUser(user.UsernameNormalized))} WITH
-    NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION INHERIT;
-
-CREATE ROLE {PgQuote.Identifier(DatabaseHelper.ManipulateUser(user.UsernameNormalized))} WITH
-    NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION INHERIT;
-
-CREATE ROLE {PgQuote.Identifier(DatabaseHelper.QueryUser(user.UsernameNormalized))} WITH
-    NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION INHERIT;
-
--- Create corresponding slot 1 logins.
-CREATE USER {PgQuote.Identifier(DatabaseHelper.DesignUser(user.UsernameNormalized, 1))} WITH
-    LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION INHERIT
-    IN ROLE {PgQuote.Identifier(DatabaseHelper.DesignUser(user.UsernameNormalized))};
-
-CREATE USER {PgQuote.Identifier(DatabaseHelper.ManipulateUser(user.UsernameNormalized, 1))} WITH
-    LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION INHERIT
-    IN ROLE {PgQuote.Identifier(DatabaseHelper.ManipulateUser(user.UsernameNormalized))};
-
-CREATE USER {PgQuote.Identifier(DatabaseHelper.QueryUser(user.UsernameNormalized, 1))} WITH
-    LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION INHERIT
-    IN ROLE {PgQuote.Identifier(DatabaseHelper.QueryUser(user.UsernameNormalized))};
-");
+            await Database.ExecuteSqlRawAsync($"""
+-- Create a user role that cannot login
+CREATE ROLE {PgQuote.Identifier(user)} WITH NOLOGIN INHERIT;
+""");
         }
 
-        public async Task SetDatabaseUserPasswordsAsync(string username, int slot, string password, DateTimeOffset validUntil)
+        /// <summary>
+        /// Create a new login for a user and returns its name.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task<string> CreateDatabaseLoginAsync(string user)
         {
-            await Database.ExecuteSqlInterpolatedAsync($@"
-CALL wa.set_user_password({DatabaseHelper.DesignUser(username, slot)},{password},{validUntil});
-CALL wa.set_user_password({DatabaseHelper.ManipulateUser(username, slot)},{password},{validUntil});
-CALL wa.set_user_password({DatabaseHelper.QueryUser(username, slot)},{password},{validUntil});
-");
+            int slot = Random.Shared.Next();
+            string login = $"l:{user}:{slot:D10}";
+            await Database.ExecuteSqlRawAsync($"""
+-- Create a login for a user
+CREATE ROLE {PgQuote.Identifier(login)} WITH LOGIN NOINHERIT IN ROLE {PgQuote.Identifier(user)};
+ALTER ROLE {PgQuote.Identifier(login)} SET ROLE {PgQuote.Identifier(user)};
+""");
+            return login;
+        }
+
+        public async Task SetDatabasePasswordsAsync(string login, string password, DateTimeOffset validUntil)
+        {
+            await Database.ExecuteSqlInterpolatedAsync($"""
+CALL wa.set_user_password({login},{password},{validUntil});
+""");
         }
     }
 }

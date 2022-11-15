@@ -8,38 +8,65 @@ namespace GiantTeam.Services
 {
     public class JoinService
     {
+        public class JoinInput
+        {
+            [Required]
+            [StringLength(100, MinimumLength = 3)]
+            public string Name { get; set; } = default!;
+
+            [Required]
+            [EmailAddress]
+            [StringLength(200, MinimumLength = 3)]
+            public string Email { get; set; } = default!;
+
+            [Required]
+            [RegularExpression("^[A-Za-z][A-Za-z0-9-_]*$")]
+            [StringLength(50, MinimumLength = 3)]
+            public string Username { get; set; } = default!;
+
+            [Required]
+            [StringLength(100, MinimumLength = 10)]
+            [DataType(DataType.Password)]
+            public string Password { get; set; } = default!;
+        }
+
+        public class JoinOutput
+        {
+            public Guid UserId { get; set; }
+        }
+
         private readonly ILogger<JoinService> logger;
         private readonly RecordsManagementDbContext recordsManagementDbContext;
-        private readonly WorkspaceAdministrationDbContext databaseAdministrationDbContext;
+        private readonly WorkspaceAdministrationDbContext workspaceAdministrationDbContext;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
             RecordsManagementDbContext recordsManagementDbContext,
-            WorkspaceAdministrationDbContext databaseAdministrationDbContext,
+            WorkspaceAdministrationDbContext workspaceAdministrationDbContext,
             ValidationService validationService)
         {
             this.logger = logger;
             this.recordsManagementDbContext = recordsManagementDbContext;
-            this.databaseAdministrationDbContext = databaseAdministrationDbContext;
+            this.workspaceAdministrationDbContext = workspaceAdministrationDbContext;
             this.validationService = validationService;
         }
 
-        public async Task JoinAsync(JoinDataModel joinDataModel)
+        public async Task<JoinOutput> JoinAsync(JoinInput joinInputModel)
         {
-            if (joinDataModel is null)
+            if (joinInputModel is null)
             {
-                throw new ArgumentNullException(nameof(joinDataModel));
+                throw new ArgumentNullException(nameof(joinInputModel));
             }
 
-            validationService.Validate(joinDataModel);
+            validationService.Validate(joinInputModel);
 
             User user = new()
             {
-                Name = joinDataModel.Name,
-                Email = joinDataModel.Email,
-                Username = joinDataModel.Username,
-                PasswordDigest = HashingHelper.HashPlaintext(joinDataModel.Password),
+                Name = joinInputModel.Name,
+                Email = joinInputModel.Email,
+                Username = joinInputModel.Username,
+                PasswordDigest = HashingHelper.HashPlaintext(joinInputModel.Password),
                 Created = DateTimeOffset.UtcNow,
             };
 
@@ -59,7 +86,7 @@ namespace GiantTeam.Services
             // Create database user
             try
             {
-                await databaseAdministrationDbContext.CreateDatabaseUserRolesAsync(user);
+                await workspaceAdministrationDbContext.CreateDatabaseUserAsync(user.UsernameNormalized);
             }
             catch (PostgresException ex) when (ex.SqlState == "42710")
             {
@@ -68,6 +95,11 @@ namespace GiantTeam.Services
             }
 
             await recordsManagementTx.CommitAsync();
+
+            return new()
+            {
+                UserId = user.UserId,
+            };
         }
     }
 }
