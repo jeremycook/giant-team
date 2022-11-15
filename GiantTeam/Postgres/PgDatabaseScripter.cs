@@ -134,6 +134,7 @@ namespace GiantTeam.Postgres
                     return column.StoreType switch
                     {
                         "uuid" => " DEFAULT gen_random_uuid()",
+                        "boolean" => " DEFAULT false",
                         _ => string.Empty,
                     };
                 }
