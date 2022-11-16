@@ -10,14 +10,18 @@ namespace GiantTeam.Tools
 {
     public static class TypeScriptTool
     {
-        static readonly string[] suffixes = new[]
+        static readonly string[] include = new[]
         {
-            "Input",
-            "Output",
-            "Status",
-            "GiantTeam.RecordsManagement.Data.Workspace",
-            "GiantTeam.RecordsManagement.Data.User",
-        };
+            "*Input",
+            "*Output",
+            "*Status",
+            "GiantTeam.RecordsManagement.Data.*",
+        }.Select(o => Regex.Escape(o).Replace("\\*", ".+")).ToArray();
+
+        static readonly string[] exclude = new[]
+        {
+            "*DbContext",
+        }.Select(o => Regex.Escape(o).Replace("\\*", ".+")).ToArray();
 
         public static void TypeScript(bool preview)
         {
@@ -64,7 +68,8 @@ namespace GiantTeam.Tools
                 var types = assembly
                     .ExportedTypes
                     .Where(t =>
-                        suffixes.Any(s => t.FullName.EndsWith(s))
+                        include.Any(pattern => Regex.IsMatch(t.FullName, pattern)) &&
+                        !exclude.Any(pattern => Regex.IsMatch(t.FullName, pattern))
                     );
 
                 foreach (var type in types)
@@ -267,11 +272,18 @@ namespace GiantTeam.Tools
 
         static string TypeScriptTypeName(Type type)
         {
-            return
+            bool isArray = false;
+            if (type.GetEnumerableItemType() is Type enumerableItemType)
+            {
+                isArray = true;
+                type = enumerableItemType;
+            }
+            return (
                 type == typeof(Guid) ? "string" :
                 type == typeof(DateTimeOffset) ? "string" :
                 type.Namespace == "System" ? type.Name.ToLower() :
-                type.Name;
+                type.Name
+            ) + (isArray ? "[]" : string.Empty);
         }
     }
 }
