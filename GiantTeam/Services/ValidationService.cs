@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Services
 {
@@ -12,14 +14,14 @@ namespace GiantTeam.Services
         }
 
         /// <summary>
-        /// Throws <see cref="ServiceException"/> if 
-        /// <paramref name="model"/> is invalid.
+        /// Returns <c>true</c> if the <paramref name="model"/> is valid.
+        /// Otherwise returns <c>false</c> and populates <paramref name="validationResults"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
+        /// <param name="validationResults"></param>
+        /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ServiceException"></exception>
-        public void Validate(object model)
+        public bool TryValidate(object model, out IEnumerable<ValidationResult> validationResults)
         {
             if (model is null)
             {
@@ -27,10 +29,29 @@ namespace GiantTeam.Services
             }
 
             var context = new ValidationContext(model, serviceProvider, items: null);
-            var validationResults = new List<ValidationResult>();
-            var isValid = Validator.TryValidateObject(model, context, validationResults);
+            var validationResultsList = new List<ValidationResult>();
+            var isValid = Validator.TryValidateObject(model, context, validationResultsList, validateAllProperties: true);
 
-            if (!isValid)
+            if (isValid)
+            {
+                validationResults = Enumerable.Empty<ValidationResult>();
+                return true;
+            }
+            else
+            {
+                validationResults = validationResultsList;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Throws <see cref="ServiceException"/> if <paramref name="model"/> is invalid.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <exception cref="ServiceException"></exception>
+        public void Validate(object model)
+        {
+            if (!TryValidate(model, out var validationResults))
             {
                 throw new ServiceException(validationResults);
             }
@@ -71,33 +92,6 @@ namespace GiantTeam.Services
         public void ValidateAll(params object[] models)
         {
             ValidateAll((IEnumerable<object>)models);
-        }
-
-        /// <summary>
-        /// Returns <c>true</c> if the <paramref name="model"/> is valid.
-        /// Otherwise returns <c>false</c> and populates <paramref name="validationResults"/>.
-        /// </summary>
-        /// <param name="model"></param>
-        /// <param name="validationResults"></param>
-        /// <returns></returns>
-        public bool TryValidate(object model, out IEnumerable<ValidationResult> validationResults)
-        {
-            try
-            {
-                Validate(model);
-                validationResults = Enumerable.Empty<ValidationResult>();
-                return true;
-            }
-            catch (ServiceException ex)
-            {
-                validationResults = ex.ValidationResults;
-                return false;
-            }
-            catch (ValidationException ex)
-            {
-                validationResults = new[] { ex.ValidationResult };
-                return false;
-            }
         }
     }
 }
