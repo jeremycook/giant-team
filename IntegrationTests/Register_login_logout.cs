@@ -21,7 +21,7 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
         // Arrange
         var client = _factory.CreateClient();
         DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-        string username = $"test-user {utcNow:yy-MM-dd HHmmss}";
+        string username = $"Test {GetType().Name} {DateTime.Now:ddHHmmss}";
         string password = PasswordHelper.Base64Url();
         Guid userId = Guid.Empty;
 

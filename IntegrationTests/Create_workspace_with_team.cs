@@ -3,14 +3,15 @@ using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;
 using static GiantTeam.Data.Api.Controllers.GetWorkspaceController;
 using static GiantTeam.Services.CreateWorkspaceService;
+using static GiantTeam.WorkspaceInteraction.Services.CreateTeamService;
 
 namespace IntegrationTests;
 
-public class Create_workspace_without_team : IClassFixture<WebApplicationFactory<WebApp.Program>>
+public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<WebApp.Program>>
 {
     private readonly WebApplicationFactory<WebApp.Program> _factory;
 
-    public Create_workspace_without_team(WebApplicationFactory<WebApp.Program> factory)
+    public Create_workspace_with_team(WebApplicationFactory<WebApp.Program> factory)
     {
         _factory = factory;
     }
@@ -22,10 +23,12 @@ public class Create_workspace_without_team : IClassFixture<WebApplicationFactory
         var client = _factory.CreateClient();
         string workspaceName = $"Test {GetType().Name} {DateTime.Now:ddHHmmss}";
         string workspaceId = string.Empty;
+        Guid teamId = Guid.Empty;
 
-        // Register with fixed credentials
-        // Ignore response, it may already exist and that's fine
+        // Register and login with fixed credentials
+        // Ignore responses, user may already exist and that's fine
         {
+            // Register
             using var registerResponse = await client.PostAsJsonAsync("/api/register", new RegisterInput()
             {
                 Name = "Test User",
@@ -35,20 +38,40 @@ public class Create_workspace_without_team : IClassFixture<WebApplicationFactory
                 PasswordConfirmation = Constants.Password,
             });
             registerResponse.EnsureSuccessStatusCode();
-        }
 
-        // Login
-        {
+            // Login
             using var loginResponse = await client.PostAsJsonAsync("/api/login", new LoginInput()
             {
                 Username = Constants.Username,
                 Password = Constants.Password,
             });
             loginResponse.EnsureSuccessStatusCode();
+            var loginOutput = await loginResponse.Content.ReadFromJsonAsync<LoginOutput>();
+            Assert.NotNull(loginOutput);
+            Assert.Null(loginOutput.Message);
+            Assert.Equal(LoginStatus.Success, loginOutput.Status);
 
-            // Use the authentication cookie to make authenticated requests
+            // Authenticate next request with cookie
             var setCookie = loginResponse.Headers.GetValues("Set-Cookie");
             client.DefaultRequestHeaders.Add("Cookie", setCookie);
+        }
+
+        // Create team
+        {
+            using var createTeamResponse = await client.PostAsJsonAsync("/api/create-team", new CreateTeamInput()
+            {
+                TeamName = "My " + workspaceName + " Team",
+            });
+            createTeamResponse.EnsureSuccessStatusCode();
+            var createTeamOutput = await createTeamResponse.Content.ReadFromJsonAsync<CreateTeamOutput>();
+
+            Assert.NotNull(createTeamOutput);
+            Assert.Null(createTeamOutput.Message);
+            Assert.Equal(CreateTeamStatus.Success, createTeamOutput.Status);
+            Assert.NotNull(createTeamOutput.TeamId);
+
+            // Save for later
+            teamId = createTeamOutput.TeamId.Value;
         }
 
         // Create workspace
@@ -56,6 +79,7 @@ public class Create_workspace_without_team : IClassFixture<WebApplicationFactory
             using var createWorkspaceResponse = await client.PostAsJsonAsync("/api/create-workspace", new CreateWorkspaceInput()
             {
                 WorkspaceName = workspaceName,
+                OwningTeamId = teamId,
             });
             createWorkspaceResponse.EnsureSuccessStatusCode();
             var createWorkspaceOutput = await createWorkspaceResponse.Content.ReadFromJsonAsync<CreateWorkspaceOutput>();

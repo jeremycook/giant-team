@@ -38,7 +38,11 @@ export enum RegisterStatus {
 
 export interface SessionOutput {
     status: SessionStatus;
+    userId?: string;
+    username?: string;
     name?: string;
+    email?: string;
+    emailVerified?: boolean;
 }
 
 export enum SessionStatus {

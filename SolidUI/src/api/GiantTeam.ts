@@ -46,6 +46,21 @@ export interface Workspace {
     created: string;
 }
 
+export interface CreateTeamInput {
+    teamName?: string;
+}
+
+export interface CreateTeamOutput {
+    status: CreateTeamStatus;
+    message?: string;
+    teamId?: string;
+}
+
+export enum CreateTeamStatus {
+    Success = 200,
+    Problem = 400,
+}
+
 export interface DeleteWorkspaceInput {
     workspaceId?: string;
 }
@@ -77,11 +92,19 @@ export enum RecycleWorkspaceStatus {
 }
 
 export interface CreateWorkspaceInput {
-    workspaceName: string;
+    workspaceName?: string;
+    owningTeamId?: string;
 }
 
 export interface CreateWorkspaceOutput {
-    workspaceId: string;
+    status: CreateWorkspaceStatus;
+    message?: string;
+    workspaceId?: string;
+}
+
+export enum CreateWorkspaceStatus {
+    Success = 200,
+    Problem = 400,
 }
 
 export interface JoinInput {
