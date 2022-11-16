@@ -1,5 +1,7 @@
 ﻿using GiantTeam.DatabaseModeling;
+using GiantTeam.Text;
 using System.Text;
+using System.Text.RegularExpressions;
 using static GiantTeam.Postgres.PgQuote;
 
 namespace GiantTeam.Postgres
@@ -121,6 +123,15 @@ namespace GiantTeam.Postgres
                 (column.ComputedColumnSql is not null ? $" GENERATED ALWAYS AS ({column.ComputedColumnSql}) STORED" : "");
         }
 
+        private static readonly Dictionary<string, string> DefaultValueSqlMap = new(StringComparer.InvariantCultureIgnoreCase)
+        {
+            { "boolean", "false" },
+            { "integer", "0" },
+            { "text", "''" },
+            { "timestamp with time zone", "(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')" },
+            { "uuid", "gen_random_uuid()" },
+        };
+
         private static string ScriptDefault(Column column)
         {
             if (column.DefaultValueSql is not null)
@@ -129,20 +140,17 @@ namespace GiantTeam.Postgres
                 {
                     return $" DEFAULT {column.DefaultValueSql}";
                 }
-                else
+                else if (DefaultValueSqlMap.TryGetValue(column.StoreType, out var defaultValueSql))
                 {
-                    return column.StoreType switch
-                    {
-                        "uuid" => " DEFAULT gen_random_uuid()",
-                        "boolean" => " DEFAULT false",
-                        _ => string.Empty,
-                    };
+                    return $" DEFAULT {defaultValueSql}";
+                }
+                else if (RegexPatterns.Alpha.IsMatch(column.StoreType))
+                {
+                    return $" DEFAULT '':{column.StoreType}";
                 }
             }
-            else
-            {
-                return string.Empty;
-            }
+
+            return string.Empty;
         }
     }
 }

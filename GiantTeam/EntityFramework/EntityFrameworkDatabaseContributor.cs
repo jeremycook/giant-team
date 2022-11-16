@@ -1,5 +1,4 @@
 ﻿using GiantTeam.DatabaseModeling;
-using GiantTeam.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -32,9 +31,7 @@ public class EntityFrameworkDatabaseContributor
                             name: columnName,
                             storeType: columnMapping.Column.StoreType,
                             isNullable: columnMapping.Column.IsNullable,
-                            defaultValueSql:
-                                columnMapping.Column.DefaultValueSql ??
-                                (!columnMapping.Column.IsNullable ? GetDefaultValueSql(columnMapping) : null),
+                            defaultValueSql: columnMapping.Column.DefaultValueSql,
                             computedColumnSql: columnMapping.Column.ComputedColumnSql));
                     }
 
@@ -52,17 +49,5 @@ public class EntityFrameworkDatabaseContributor
                 }
             }
         }
-    }
-
-    private static readonly Dictionary<Type, string> DefaultValueSqlMap = new()
-    {
-        { typeof(bool), "false" },
-    };
-
-    private static string? GetDefaultValueSql(IColumnMapping columnMapping)
-    {
-        return DefaultValueSqlMap.TryGetValue(columnMapping.Property.ClrType, out var defaultValueSql) ?
-            defaultValueSql :
-            null;
     }
 }
