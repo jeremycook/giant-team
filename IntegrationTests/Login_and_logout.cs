@@ -5,11 +5,11 @@ using static GiantTeam.Authentication.Api.Controllers.SessionController;
 
 namespace IntegrationTests;
 
-public class AuthenticationTests : IClassFixture<WebApplicationFactory<WebApp.Program>>
+public class Login_and_logout : IClassFixture<WebApplicationFactory<WebApp.Program>>
 {
     private readonly WebApplicationFactory<WebApp.Program> _factory;
 
-    public AuthenticationTests(WebApplicationFactory<WebApp.Program> factory)
+    public Login_and_logout(WebApplicationFactory<WebApp.Program> factory)
     {
         _factory = factory;
     }

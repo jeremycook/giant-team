@@ -7,11 +7,11 @@ using static GiantTeam.Data.Api.Controllers.GetWorkspaceController;
 
 namespace IntegrationTests;
 
-public class WorkspaceManagementTests : IClassFixture<WebApplicationFactory<WebApp.Program>>
+public class Create_workspace_without_team : IClassFixture<WebApplicationFactory<WebApp.Program>>
 {
     private readonly WebApplicationFactory<WebApp.Program> _factory;
 
-    public WorkspaceManagementTests(WebApplicationFactory<WebApp.Program> factory)
+    public Create_workspace_without_team(WebApplicationFactory<WebApp.Program> factory)
     {
         _factory = factory;
     }
