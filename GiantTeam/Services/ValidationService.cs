@@ -12,13 +12,14 @@ namespace GiantTeam.Services
         }
 
         /// <summary>
-        /// Throws if <paramref name="model"/> is invalid.
+        /// Throws <see cref="ServiceException"/> if 
+        /// <paramref name="model"/> is invalid.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ServiceException"></exception>
-        public void Validate<T>(T model)
+        public void Validate(object model)
         {
             if (model is null)
             {
@@ -35,7 +36,51 @@ namespace GiantTeam.Services
             }
         }
 
-        public bool TryValidate<T>(T model, out IEnumerable<ValidationResult> validationResults)
+        /// <summary>
+        /// If any <paramref name="models"/> are invalid this will
+        /// throw <see cref="ServiceException"/> after validating all 
+        /// <paramref name="models"/>.
+        /// </summary>
+        /// <param name="models"></param>
+        /// <exception cref="ServiceException"></exception>
+        public void ValidateAll(IEnumerable<object> models)
+        {
+            var validationResults = new List<ValidationResult>();
+
+            foreach (var model in models)
+            {
+                if (!TryValidate(model, out var results))
+                {
+                    validationResults.AddRange(results);
+                }
+            }
+
+            if (validationResults.Any())
+            {
+                throw new ServiceException(validationResults);
+            }
+        }
+
+        /// <summary>
+        /// If any <paramref name="models"/> are invalid this will
+        /// throw <see cref="ServiceException"/> after validating all 
+        /// <paramref name="models"/>.
+        /// </summary>
+        /// <param name="models"></param>
+        /// <exception cref="ServiceException"></exception>
+        public void ValidateAll(params object[] models)
+        {
+            ValidateAll((IEnumerable<object>)models);
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if the <paramref name="model"/> is valid.
+        /// Otherwise returns <c>false</c> and populates <paramref name="validationResults"/>.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="validationResults"></param>
+        /// <returns></returns>
+        public bool TryValidate(object model, out IEnumerable<ValidationResult> validationResults)
         {
             try
             {
