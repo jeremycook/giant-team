@@ -1,3 +1,4 @@
+using GiantTeam.Asp.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;
@@ -5,11 +6,11 @@ using static GiantTeam.Authentication.Api.Controllers.SessionController;
 
 namespace IntegrationTests;
 
-public class Login_and_logout : IClassFixture<WebApplicationFactory<WebApp.Program>>
+public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.Program>>
 {
     private readonly WebApplicationFactory<WebApp.Program> _factory;
 
-    public Login_and_logout(WebApplicationFactory<WebApp.Program> factory)
+    public Register_login_logout(WebApplicationFactory<WebApp.Program> factory)
     {
         _factory = factory;
     }
@@ -19,34 +20,46 @@ public class Login_and_logout : IClassFixture<WebApplicationFactory<WebApp.Progr
     {
         // Arrange
         var client = _factory.CreateClient();
-        var registerInput = new RegisterInput()
-        {
-            Name = "Test User",
-            Email = "testuser@example.com",
-            Username = "test-user",
-            Password = "test-password",
-            PasswordConfirmation = "test-password",
-        };
+        DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+        string username = $"test-user {utcNow:yy-MM-dd HHmmss}";
+        string password = PasswordHelper.Base64Url();
+        Guid userId = Guid.Empty;
 
         try
         {
-            // Register with fixed credentials
-            // Ignore response, it may already exist and that's fine
+            // Register
             {
-                using var registerResponse = await client.PostAsJsonAsync("/api/register", registerInput);
+                using var registerResponse = await client.PostAsJsonAsync("/api/register", new RegisterInput()
+                {
+                    Name = $"Test User {utcNow:yy-MM-dd HHmmss}",
+                    Email = $"test.user+{utcNow:yyMMddHHmmss}@example.com",
+                    Username = username,
+                    Password = password,
+                    PasswordConfirmation = password,
+                });
                 registerResponse.EnsureSuccessStatusCode();
+                var registerOutput = await registerResponse.Content.ReadFromJsonAsync<RegisterOutput>();
+                Assert.NotNull(registerOutput);
+                Assert.Null(registerOutput.Message);
+                Assert.Equal(RegisterStatus.Success, registerOutput.Status);
+                Assert.NotNull(registerOutput.UserId);
+
+                // Save for later
+                userId = registerOutput.UserId.Value;
             }
 
             // Login
             {
                 using var loginResponse = await client.PostAsJsonAsync("/api/login", new LoginInput()
                 {
-                    Username = registerInput.Username,
-                    Password = registerInput.Password,
+                    Username = username,
+                    Password = password,
                 });
                 loginResponse.EnsureSuccessStatusCode();
                 var loginOutput = await loginResponse.Content.ReadFromJsonAsync<LoginOutput>();
-                Assert.Equal(LoginStatus.Success, loginOutput?.Status);
+                Assert.NotNull(loginOutput);
+                Assert.Null(loginOutput.Message);
+                Assert.Equal(LoginStatus.Success, loginOutput.Status);
                 Assert.True(
                     loginResponse.Headers.TryGetValues("Set-Cookie", out var cookies) &&
                     cookies.Any(c => c.StartsWith(".AspNetCore.Cookies=") && c.EndsWith("; path=/; secure; samesite=lax; httponly")),
@@ -62,7 +75,10 @@ public class Login_and_logout : IClassFixture<WebApplicationFactory<WebApp.Progr
                 using var sessionResponse = await client.PostAsJsonAsync("/api/session", new { });
                 sessionResponse.EnsureSuccessStatusCode();
                 var sessionOutput = await sessionResponse.Content.ReadFromJsonAsync<SessionOutput>();
-                Assert.Equal(SessionStatus.Authenticated, sessionOutput?.Status);
+                Assert.NotNull(sessionOutput);
+                Assert.Equal(SessionStatus.Authenticated, sessionOutput.Status);
+                Assert.Equal(userId, sessionOutput.UserId);
+                Assert.Equal(username, sessionOutput.Username);
             }
 
             // Logout

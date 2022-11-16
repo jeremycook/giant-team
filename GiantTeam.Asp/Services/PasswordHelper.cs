@@ -6,7 +6,7 @@ namespace GiantTeam.Asp.Services
     public static class PasswordHelper
     {
         /// <summary>
-        /// Returns the provided <paramref name="bitsOfEntropy"/> that are base64url encoded.
+        /// Returns the requested <paramref name="bitsOfEntropy"/> as a base64url encoded string.
         /// </summary>
         /// <param name="bitsOfEntropy">Must be at least 128.</param>
         /// <returns></returns>

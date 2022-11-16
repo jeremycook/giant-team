@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using GiantTeam.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json.Serialization;
 
 namespace GiantTeam.Authentication.Api.Controllers;
 
@@ -16,18 +16,26 @@ public class SessionController : ControllerBase
 
         public SessionStatus Status { get; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? Name { get; init; }
+        public Guid? UserId { get; set; }
+        public string? Username { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public bool? EmailVerified { get; set; }
     }
 
     public enum SessionStatus
     {
         Anonymous = 0,
+        /// <summary>
+        /// The user is authenticated.
+        /// Check out the other <see cref="SessionOutput"/> properties.
+        /// </summary>
         Authenticated = 1,
     }
 
     [HttpPost("/api/[Controller]")]
-    public async Task<SessionOutput> Post()
+    public async Task<SessionOutput> Post(
+        [FromServices] SessionService sessionService)
     {
         if (User.Identity is null || !User.Identity.IsAuthenticated)
         {
@@ -35,9 +43,14 @@ public class SessionController : ControllerBase
         }
         else
         {
+            var user = sessionService.User;
             return new(SessionStatus.Authenticated)
             {
-                Name = User.Identity.Name,
+                UserId = user.UserId,
+                Name = user.Name,
+                Username = user.Username,
+                Email = user.Email,
+                EmailVerified = user.EmailVerified,
             };
         }
     }
