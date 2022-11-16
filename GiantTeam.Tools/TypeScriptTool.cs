@@ -70,7 +70,8 @@ namespace GiantTeam.Tools
                     .Where(t =>
                         include.Any(pattern => Regex.IsMatch(t.FullName, pattern)) &&
                         !exclude.Any(pattern => Regex.IsMatch(t.FullName, pattern))
-                    );
+                    )
+                    .OrderBy(o => o.FullName);
 
                 foreach (var type in types)
                 {
@@ -129,7 +130,8 @@ namespace GiantTeam.Tools
                     .ExportedTypes
                     .Where(t =>
                         t.Name.EndsWith("Controller")
-                    );
+                    )
+                    .OrderBy(o => o.FullName);
 
                 foreach (var controller in controllers)
                 {

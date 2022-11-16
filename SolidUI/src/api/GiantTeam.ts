@@ -61,6 +61,33 @@ export enum CreateTeamStatus {
     Problem = 400,
 }
 
+export interface JoinInput {
+    name: string;
+    email: string;
+    username: string;
+    password: string;
+}
+
+export interface JoinOutput {
+    userId: string;
+}
+
+export interface CreateWorkspaceInput {
+    workspaceName?: string;
+    owningTeamId?: string;
+}
+
+export interface CreateWorkspaceOutput {
+    status: CreateWorkspaceStatus;
+    message?: string;
+    workspaceId?: string;
+}
+
+export enum CreateWorkspaceStatus {
+    Success = 200,
+    Problem = 400,
+}
+
 export interface DeleteWorkspaceInput {
     workspaceId?: string;
 }
@@ -89,31 +116,4 @@ export enum RecycleWorkspaceStatus {
     Success = 200,
     Problem = 400,
     NotFound = 404,
-}
-
-export interface CreateWorkspaceInput {
-    workspaceName?: string;
-    owningTeamId?: string;
-}
-
-export interface CreateWorkspaceOutput {
-    status: CreateWorkspaceStatus;
-    message?: string;
-    workspaceId?: string;
-}
-
-export enum CreateWorkspaceStatus {
-    Success = 200,
-    Problem = 400,
-}
-
-export interface JoinInput {
-    name: string;
-    email: string;
-    username: string;
-    password: string;
-}
-
-export interface JoinOutput {
-    userId: string;
 }
