@@ -1,5 +1,6 @@
 ﻿using GiantTeam.Postgres;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace GiantTeam.RecordsManagement.Data
 {
@@ -17,13 +18,25 @@ namespace GiantTeam.RecordsManagement.Data
         {
             modelBuilder.HasDefaultSchema(DefaultSchema);
 
+            var dbRole = modelBuilder.Entity<DbRole>();
+            dbRole.Property(o => o.Created).HasDefaultValueSql();
+
             var user = modelBuilder.Entity<User>();
             user.Property(o => o.UserId).HasDefaultValueSql();
-            user.Property(o => o.UsernameNormalized).HasComputedColumnSql($"LOWER({PgQuote.Identifier(nameof(User.Username))})", stored: true);
-            user.Property(o => o.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            user.Property(o => o.InvariantUsername).HasComputedColumnSql($"LOWER({PgQuote.Identifier(nameof(User.Username))})", stored: true);
+            user.Property(o => o.Created).HasDefaultValueSql();
+
+            var team = modelBuilder.Entity<Team>();
+            team.Property(o => o.TeamId).HasDefaultValueSql();
+            team.Property(o => o.Created).HasDefaultValueSql();
+
+            var teamUser = modelBuilder.Entity<TeamUser>();
+            teamUser.Property(o => o.Created).HasDefaultValueSql();
         }
 
-        public DbSet<Workspace> Workspaces => Set<Workspace>();
+        public DbSet<DbRole> DbRoles => Set<DbRole>();
+        public DbSet<Team> Teams => Set<Team>();
         public DbSet<User> Users => Set<User>();
+        public DbSet<Workspace> Workspaces => Set<Workspace>();
     }
 }

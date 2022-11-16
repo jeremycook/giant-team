@@ -9,13 +9,13 @@ export interface CreateWorkspaceInput {
 
 export interface CreateWorkspaceOutput {
     status: CreateWorkspaceStatus;
-    errorMessage?: string;
+    message?: string;
     workspaceId?: string;
 }
 
 export enum CreateWorkspaceStatus {
-    Created = 201,
-    Error = 400,
+    Success = 200,
+    Problem = 400,
 }
 
 export interface GetWorkspaceInput {
@@ -29,7 +29,7 @@ export interface GetWorkspaceOutput {
 }
 
 export enum GetWorkspaceStatus {
-    Found = 200,
+    Success = 200,
     Problem = 400,
     NotFound = 404,
 }

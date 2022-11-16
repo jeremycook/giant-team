@@ -12,6 +12,7 @@ public class CreateWorkspaceController : ControllerBase
     {
         [Required]
         [PgLaxIdentifier]
+        [StringLength(50, MinimumLength = 3)]
         public string? WorkspaceName { get; set; }
     }
 
@@ -24,7 +25,7 @@ public class CreateWorkspaceController : ControllerBase
 
         public CreateWorkspaceStatus Status { get; }
 
-        public string? ErrorMessage { get; init; }
+        public string? Message { get; init; }
 
         public string? WorkspaceId { get; set; }
     }
@@ -33,15 +34,15 @@ public class CreateWorkspaceController : ControllerBase
     {
         /// <summary>
         /// Creation was not successful.
-        /// Clients should present the <see cref="CreateWorkspaceOutput.ErrorMessage"/>.
+        /// Clients should present the <see cref="CreateWorkspaceOutput.Message"/>.
         /// </summary>
-        Error = 400,
+        Problem = 400,
 
         /// <summary>
         /// Created the workspace.
         /// Clients may choose to open the workspace matching <see cref="CreateWorkspaceOutput.WorkspaceId"/>.
         /// </summary>
-        Created = 201,
+        Success = 200,
     }
 
     [HttpPost("/api/[Controller]")]
@@ -58,7 +59,7 @@ public class CreateWorkspaceController : ControllerBase
                     WorkspaceName = input.WorkspaceName!,
                 });
 
-                return new(CreateWorkspaceStatus.Created)
+                return new(CreateWorkspaceStatus.Success)
                 {
                     WorkspaceId = output.WorkspaceId,
                 };
@@ -69,9 +70,9 @@ public class CreateWorkspaceController : ControllerBase
             }
         }
 
-        return new(CreateWorkspaceStatus.Error)
+        return new(CreateWorkspaceStatus.Problem)
         {
-            ErrorMessage = string.Join(" ", ModelState.SelectMany(e => e.Value?.Errors ?? Enumerable.Empty<ModelError>()).Select(e => e.ErrorMessage)),
+            Message = string.Join(" ", ModelState.SelectMany(e => e.Value?.Errors ?? Enumerable.Empty<ModelError>()).Select(e => e.ErrorMessage)),
         };
     }
 }

@@ -22,13 +22,13 @@ export default function CreateWorkspace() {
     console.log(output);
 
     switch (output.status) {
-      case CreateWorkspaceStatus.Created:
+      case CreateWorkspaceStatus.Success:
         errorMessageSetter("");
         successMessageSetter("Workspace created! Taking you to it now…");
         location.assign(createUrl("/workspace", { workspaceId: output.workspaceId }));
         break;
-      case CreateWorkspaceStatus.Error:
-        errorMessageSetter(output.errorMessage);
+      case CreateWorkspaceStatus.Problem:
+        errorMessageSetter(output.message);
         successMessageSetter("");
         break;
       default:

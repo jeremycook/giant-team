@@ -52,7 +52,7 @@ public class RegisterController : ControllerBase
         /// Something about the input is invalid.
         /// Clients should present the <see cref="RegisterOutput.Message"/>.
         /// </summary>
-        Error = 400,
+        Problem = 400,
 
         /// <summary>
         /// A user was created using the supplied information.
@@ -89,7 +89,7 @@ public class RegisterController : ControllerBase
             }
         }
 
-        return new(RegisterStatus.Error)
+        return new(RegisterStatus.Problem)
         {
             Message = string.Join(" ", ModelState.SelectMany(e => e.Value?.Errors ?? Enumerable.Empty<ModelError>()).Select(e => e.ErrorMessage)),
         };

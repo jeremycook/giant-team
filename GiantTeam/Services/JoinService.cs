@@ -61,6 +61,11 @@ namespace GiantTeam.Services
 
             validationService.Validate(joinInputModel);
 
+            DbRole dbRole = new()
+            {
+                RoleId = joinInputModel.Username,
+                Created = DateTimeOffset.UtcNow,
+            };
             User user = new()
             {
                 Name = joinInputModel.Name,
@@ -68,29 +73,34 @@ namespace GiantTeam.Services
                 Username = joinInputModel.Username,
                 PasswordDigest = HashingHelper.HashPlaintext(joinInputModel.Password),
                 Created = DateTimeOffset.UtcNow,
+                DbRoleId = dbRole.RoleId,
             };
 
             // Create user record
             using var recordsManagementTx = await recordsManagementDbContext.Database.BeginTransactionAsync();
             try
             {
+                recordsManagementDbContext.DbRoles.Add(dbRole);
                 recordsManagementDbContext.Users.Add(user);
+
+                // Validate and then save changes
+                validationService.ValidateAll(dbRole, user);
                 await recordsManagementDbContext.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
             {
-                logger.LogWarning(ex, "Suppressed exception creating application user named \"{DisplayUsername}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                logger.LogWarning(ex, "Suppressed exception creating application user named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
             }
 
             // Create database user
             try
             {
-                await workspaceAdministrationDbContext.CreateDatabaseUserAsync(user.UsernameNormalized);
+                await workspaceAdministrationDbContext.CreateDatabaseUserAsync(user.DbRoleId);
             }
             catch (PostgresException ex) when (ex.SqlState == "42710")
             {
-                logger.LogWarning(ex, "Suppressed exception creating database users named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.UsernameNormalized, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                logger.LogWarning(ex, "Suppressed exception creating database user named \"{DbRole}\" {ExceptionType}: {ExceptionMessage}", user.DbRoleId, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
             }
 

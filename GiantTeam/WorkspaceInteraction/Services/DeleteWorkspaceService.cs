@@ -35,22 +35,21 @@ namespace GiantTeam.WorkspaceInteraction.Services
         public enum DeleteWorkspaceStatus
         {
             /// <summary>
-            /// Workspace not found.
-            /// Clients should present the <see cref="DeleteWorkspaceOutput.Message"/>.
-            /// </summary>
-            NotFound = 404,
-
-            /// <summary>
             /// Unable to delete the workspace.
             /// Clients should present the <see cref="DeleteWorkspaceOutput.Message"/>.
             /// </summary>
             Problem = 400,
 
             /// <summary>
-            /// Workspace found.
-            /// Clients may choose to open the workspace for the user.
+            /// Workspace not found.
+            /// Clients should present the <see cref="DeleteWorkspaceOutput.Message"/>.
             /// </summary>
-            Deleted = 200,
+            NotFound = 404,
+
+            /// <summary>
+            /// Workspace deleted.
+            /// </summary>
+            Success = 200,
         }
 
         public DeleteWorkspaceService(
@@ -129,7 +128,7 @@ DROP ROLE IF EXISTS {PgQuote.Identifier(workspaceId)};
                 .Where(o => o.WorkspaceId == workspaceId)
                 .ExecuteDeleteAsync();
 
-            return new(DeleteWorkspaceStatus.Deleted);
+            return new(DeleteWorkspaceStatus.Success);
         }
     }
 }

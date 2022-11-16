@@ -38,7 +38,7 @@ export default function Register() {
         messageSetter("Success! Redirecting to the login page…");
         location.replace("/login");
         break;
-      case RegisterStatus.Error:
+      case RegisterStatus.Problem:
         messageSetter(output.message);
         break;
       default:

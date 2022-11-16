@@ -33,22 +33,21 @@ namespace GiantTeam.WorkspaceInteraction.Services
         public enum RecycleWorkspaceStatus
         {
             /// <summary>
-            /// Workspace not found.
-            /// Clients should present the <see cref="RecycleWorkspaceOutput.Message"/>.
-            /// </summary>
-            NotFound = 404,
-
-            /// <summary>
             /// Unable to recycle the workspace.
             /// Clients should present the <see cref="RecycleWorkspaceOutput.Message"/>.
             /// </summary>
             Problem = 400,
 
             /// <summary>
-            /// Workspace found.
-            /// Clients may choose to open the workspace for the user.
+            /// Workspace not found.
+            /// Clients should present the <see cref="RecycleWorkspaceOutput.Message"/>.
             /// </summary>
-            Recycled = 200,
+            NotFound = 404,
+
+            /// <summary>
+            /// Workspace recycled.
+            /// </summary>
+            Success = 200,
         }
 
         public RecycleWorkspaceService(
@@ -93,7 +92,9 @@ namespace GiantTeam.WorkspaceInteraction.Services
 
             if (recycledWorkspaces > 0)
             {
-                return new(RecycleWorkspaceStatus.Recycled);
+                // TODO: Disable connecting to the database once
+                // we have a record of teams.
+                return new(RecycleWorkspaceStatus.Success);
             }
             else
             {

@@ -41,14 +41,14 @@ public class LoginController : ControllerBase
         /// Something about the input is invalid.
         /// Clients should present the <see cref="LoginOutput.Message"/>.
         /// </summary>
-        InvalidInput = 400,
+        Problem = 400,
 
         /// <summary>
         /// An HttpOnly authentication cookie is in the response.
         /// Clients should send the authentication cookie with requests.
         /// Web clients may need to refresh the web page to be able to use the authentication cookie.
         /// </summary>
-        Authenticated = 200,
+        Success = 200,
     }
 
     [HttpPost("/api/[Controller]")]
@@ -73,7 +73,7 @@ public class LoginController : ControllerBase
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
 
-                return new(LoginStatus.Authenticated);
+                return new(LoginStatus.Success);
             }
             catch (ValidationException ex)
             {
@@ -81,7 +81,7 @@ public class LoginController : ControllerBase
             }
         }
 
-        return new(LoginStatus.InvalidInput)
+        return new(LoginStatus.Problem)
         {
             Message = string.Join(" ", ModelState.SelectMany(e => e.Value?.Errors ?? Enumerable.Empty<ModelError>()).Select(e => e.ErrorMessage)),
         };

@@ -1,14 +1,7 @@
-using Dapper;
-using GiantTeam.Postgres;
-using GiantTeam.RecordsManagement.Data;
-using GiantTeam.Services;
-using GiantTeam.WorkspaceAdministration.Data;
 using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;
-using static GiantTeam.Authentication.Api.Controllers.SessionController;
 using static GiantTeam.Data.Api.Controllers.CreateWorkspaceController;
 using static GiantTeam.Data.Api.Controllers.GetWorkspaceController;
 
@@ -29,7 +22,7 @@ public class WorkspaceManagementTests : IClassFixture<WebApplicationFactory<WebA
         // Arrange
         var client = _factory.CreateClient();
         string workspaceName = $"Test Workspace {Random.Shared.Next()}";
-        string workspaceId = workspaceName.ToLowerInvariant();
+        string workspaceId = workspaceName;
 
         try
         {
@@ -71,7 +64,9 @@ public class WorkspaceManagementTests : IClassFixture<WebApplicationFactory<WebA
                 createWorkspaceResponse.EnsureSuccessStatusCode();
                 var createWorkspaceOutput = await createWorkspaceResponse.Content.ReadFromJsonAsync<CreateWorkspaceOutput>();
 
-                Assert.Equal(CreateWorkspaceStatus.Created, createWorkspaceOutput?.Status);
+                Assert.NotNull(createWorkspaceOutput);
+                Assert.Null(createWorkspaceOutput.Message);
+                Assert.Equal(CreateWorkspaceStatus.Success, createWorkspaceOutput?.Status);
                 Assert.Equal(workspaceId, createWorkspaceOutput?.WorkspaceId);
             }
 
@@ -86,11 +81,15 @@ public class WorkspaceManagementTests : IClassFixture<WebApplicationFactory<WebA
 
                 Assert.NotNull(getWorkspaceOutput);
                 Assert.Null(getWorkspaceOutput.Message);
-                Assert.Equal(GetWorkspaceStatus.Found, getWorkspaceOutput.Status);
+                Assert.Equal(GetWorkspaceStatus.Success, getWorkspaceOutput.Status);
                 Assert.NotNull(getWorkspaceOutput.Workspace);
                 Assert.Equal(workspaceId, getWorkspaceOutput.Workspace.WorkspaceId);
                 Assert.Equal(workspaceName, getWorkspaceOutput.Workspace.WorkspaceName);
             }
+        }
+        catch (Exception ex)
+        {
+            throw;
         }
         finally
         {

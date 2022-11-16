@@ -1,22 +1,23 @@
-﻿using System.ComponentModel;
+﻿using GiantTeam.Postgres;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.RecordsManagement.Data
 {
     public class Workspace
     {
-        private string _workspaceId = null!;
-
         [Key]
-        public string WorkspaceId { get => _workspaceId; set => _workspaceId = value?.ToLowerInvariant()!; }
+        [PgLaxIdentifier]
+        [StringLength(50, MinimumLength = 3)]
+        public string WorkspaceId { get; set; } = null!;
 
-        public string? WorkspaceName { get; set; }
+        [StringLength(50, MinimumLength = 3)]
+        public string WorkspaceName { get; set; } = null!;
+
+        public Guid OwnerId { get; set; }
+        public Team? Owner { get; private set; }
 
         public bool Recycle { get; set; }
 
         public DateTimeOffset Created { get; set; }
-
-        public Guid OwnerId { get; set; }
-        public User? Owner { get; private set; }
     }
 }

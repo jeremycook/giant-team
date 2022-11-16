@@ -13,8 +13,8 @@ export interface LoginOutput {
 }
 
 export enum LoginStatus {
-    Authenticated = 200,
-    InvalidInput = 400,
+    Success = 200,
+    Problem = 400,
 }
 
 export interface RegisterInput {
@@ -33,7 +33,7 @@ export interface RegisterOutput {
 
 export enum RegisterStatus {
     Success = 200,
-    Error = 400,
+    Problem = 400,
 }
 
 export interface SessionOutput {

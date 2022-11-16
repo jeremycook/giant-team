@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.RecordsManagement.Data
 {
-    [Index(nameof(UsernameNormalized), IsUnique = true)]
+    [Index(nameof(InvariantUsername), IsUnique = true)]
     public class User
     {
         [Key]
@@ -16,13 +16,7 @@ namespace GiantTeam.RecordsManagement.Data
         [PgLaxIdentifier]
         [StringLength(50, MinimumLength = 3)]
         public string Username { get; set; } = null!;
-
-        /// <summary>
-        /// The lowercase form of <see cref="Username"/>.
-        /// </summary>
-        [PgStrictIdentifier]
-        [StringLength(50, MinimumLength = 3)]
-        public string UsernameNormalized { get => Username?.ToLowerInvariant()!; private set { } }
+        public string InvariantUsername { get => Username?.ToLowerInvariant()!; private set { } }
 
         public string PasswordDigest { get; set; } = null!;
 
@@ -33,5 +27,10 @@ namespace GiantTeam.RecordsManagement.Data
         public bool EmailVerified { get; set; }
 
         public DateTimeOffset Created { get; set; }
+
+        public string DbRoleId { get; set; } = null!;
+        public DbRole? DbRole { get; private set; }
+
+        public List<TeamUser>? Teams { get; set; }
     }
 }

@@ -7,9 +7,9 @@ public class RecycleWorkspaceController : ControllerBase
 {
     [HttpPost("/api/[Controller]")]
     public async Task<RecycleWorkspaceService.RecycleWorkspaceOutput> Post(
-        [FromServices] RecycleWorkspaceService deleteWorkspaceService,
+        [FromServices] RecycleWorkspaceService recycleWorkspaceService,
         RecycleWorkspaceService.RecycleWorkspaceInput input)
     {
-        return await deleteWorkspaceService.RecycleAsync(input);
+        return await recycleWorkspaceService.RecycleAsync(input);
     }
 }

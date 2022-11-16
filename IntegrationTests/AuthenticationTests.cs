@@ -46,7 +46,7 @@ public class AuthenticationTests : IClassFixture<WebApplicationFactory<WebApp.Pr
                 });
                 loginResponse.EnsureSuccessStatusCode();
                 var loginOutput = await loginResponse.Content.ReadFromJsonAsync<LoginOutput>();
-                Assert.Equal(LoginStatus.Authenticated, loginOutput?.Status);
+                Assert.Equal(LoginStatus.Success, loginOutput?.Status);
                 Assert.True(
                     loginResponse.Headers.TryGetValues("Set-Cookie", out var cookies) &&
                     cookies.Any(c => c.StartsWith(".AspNetCore.Cookies=") && c.EndsWith("; path=/; secure; samesite=lax; httponly")),

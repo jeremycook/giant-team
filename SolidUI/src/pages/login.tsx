@@ -23,11 +23,11 @@ export default function Login() {
     console.log(output);
 
     switch (output.status) {
-      case LoginStatus.Authenticated:
+      case LoginStatus.Success:
         messageSetter("Logging you in…");
         location.replace("/");
         break;
-      case LoginStatus.InvalidInput:
+      case LoginStatus.Problem:
         messageSetter(output.message);
         break;
       default:

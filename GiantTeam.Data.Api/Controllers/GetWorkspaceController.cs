@@ -44,9 +44,9 @@ public class GetWorkspaceController : ControllerBase
 
         /// <summary>
         /// Workspace found.
-        /// Clients may choose to open the workspace for the user.
+        /// Data is in the <see cref="GetWorkspaceOutput.Workspace"/> property.
         /// </summary>
-        Found = 200,
+        Success = 200,
     }
 
     [HttpPost("/api/[Controller]")]
@@ -70,7 +70,7 @@ public class GetWorkspaceController : ControllerBase
                 }
                 else
                 {
-                    return new(GetWorkspaceStatus.Found)
+                    return new(GetWorkspaceStatus.Success)
                     {
                         Workspace = workspace,
                     };

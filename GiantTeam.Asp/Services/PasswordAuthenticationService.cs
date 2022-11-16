@@ -28,7 +28,7 @@ namespace GiantTeam.Asp.Services
         public async Task<ClaimsPrincipal> AuthenticateAsync(PasswordAuthenticationInput input)
         {
             var user = await db.Users
-                .SingleOrDefaultAsync(o => o.UsernameNormalized == input.Username.ToLower());
+                .SingleOrDefaultAsync(o => o.InvariantUsername == input.Username.ToLowerInvariant());
 
             if (user is not null &&
                 !string.IsNullOrEmpty(user.PasswordDigest) &&
@@ -36,7 +36,7 @@ namespace GiantTeam.Asp.Services
             {
                 // TODO: Log authentication success
 
-                string dbLogin = await databaseAdministrationDbContext.CreateDatabaseLoginAsync(user.UsernameNormalized);
+                string dbLogin = await databaseAdministrationDbContext.CreateDatabaseLoginAsync(user.DbRoleId);
 
                 string dbPassword = PasswordHelper.Base64Url();
 
@@ -53,7 +53,7 @@ namespace GiantTeam.Asp.Services
                     emailVerified: user.EmailVerified,
                     dbLogin: dbLogin,
                     dbPassword: dbPassword,
-                    dbRole: user.UsernameNormalized
+                    dbRole: user.DbRoleId
                 );
 
                 // Create principal

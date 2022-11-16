@@ -46,49 +46,47 @@ namespace GiantTeam.Services
             validationService.Validate(input);
 
             var sessionUser = sessionService.User;
-
-            using var tx = await db.Database.BeginTransactionAsync();
-            Workspace workspace = new Workspace
+            var ownerDbRole = new DbRole()
+            {
+                RoleId = input.WorkspaceName,
+                Created = DateTimeOffset.UtcNow,
+            };
+            var owner = new Team()
+            {
+                TeamId = Guid.NewGuid(),
+                Name = input.WorkspaceName,
+                DbRoleId = ownerDbRole.RoleId,
+                Created = DateTimeOffset.UtcNow,
+                Users = new()
+                {
+                    new() { UserId = sessionUser.UserId },
+                },
+            };
+            var workspace = new Workspace()
             {
                 WorkspaceId = input.WorkspaceName,
                 WorkspaceName = input.WorkspaceName,
-                OwnerId = sessionUser.UserId,
+                OwnerId = owner.TeamId,
                 Created = DateTimeOffset.UtcNow,
             };
+            // Validate
+            validationService.ValidateAll(ownerDbRole, owner, workspace);
+            // Insert
+            db.DbRoles.Add(ownerDbRole);
+            db.Teams.Add(owner);
             db.Workspaces.Add(workspace);
+            using var tx = await db.Database.BeginTransactionAsync();
             await db.SaveChangesAsync();
 
+            string quotedDbOwner = PgQuote.Identifier(owner.DbRoleId);
             string quotedDbUser = PgQuote.Identifier(sessionUser.DbRole);
             string quotedDbWorkspace = PgQuote.Identifier(workspace.WorkspaceId);
 
             await workspaceAdministrationDbContext.Database.ExecuteSqlRawAsync($"""
-CREATE ROLE {quotedDbWorkspace} ROLE {quotedDbUser}, CURRENT_USER;
-CREATE DATABASE {quotedDbWorkspace} OWNER {quotedDbWorkspace};
-REVOKE {quotedDbWorkspace} FROM CURRENT_USER;
+CREATE ROLE {quotedDbOwner} ROLE {quotedDbUser}, CURRENT_USER;
+CREATE DATABASE {quotedDbWorkspace} OWNER {quotedDbOwner};
+REVOKE {quotedDbOwner} FROM CURRENT_USER;
 """);
-
-            //                // TODO: Configure privileges of new database
-            //                await newDatabaseConnection.ExecuteSqlAsync($@"
-            //GRANT ALL ON DATABASE {quotedDbName} TO {quotedDesignRole};
-            //GRANT TEMPORARY, CONNECT ON DATABASE {quotedDbName} TO {quotedManipulateRole};
-            //GRANT CONNECT ON DATABASE {quotedDbName} TO {quotedQueryRole};
-
-            //REVOKE ALL ON DATABASE {quotedDbName} FROM PUBLIC;
-
-            //ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO {quotedDesignRole};
-            //ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO {quotedManipulateRole};
-            //ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO {quotedQueryRole};
-
-            //ALTER DEFAULT PRIVILEGES GRANT ALL ON SEQUENCES TO {quotedDesignRole};
-            //ALTER DEFAULT PRIVILEGES GRANT SELECT, USAGE ON SEQUENCES TO {quotedManipulateRole};
-
-            //ALTER DEFAULT PRIVILEGES GRANT EXECUTE ON FUNCTIONS TO {quotedDesignRole};
-            //ALTER DEFAULT PRIVILEGES GRANT EXECUTE ON FUNCTIONS TO {quotedManipulateRole};
-
-            //ALTER DEFAULT PRIVILEGES GRANT USAGE ON TYPES TO {quotedDesignRole};
-            //ALTER DEFAULT PRIVILEGES GRANT USAGE ON TYPES TO {quotedManipulateRole};
-            //ALTER DEFAULT PRIVILEGES GRANT USAGE ON TYPES TO {quotedQueryRole};
-            //");
 
             await tx.CommitAsync();
 
