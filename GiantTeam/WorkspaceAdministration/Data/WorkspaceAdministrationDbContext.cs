@@ -1,6 +1,4 @@
 ﻿using GiantTeam.Postgres;
-using GiantTeam.RecordsManagement.Data;
-using GiantTeam.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace GiantTeam.WorkspaceAdministration.Data

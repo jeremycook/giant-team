@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace GiantTeam.Services
+namespace GiantTeam.Text
 {
     public static class CsvHelper
     {

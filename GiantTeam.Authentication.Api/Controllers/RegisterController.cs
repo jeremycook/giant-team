@@ -1,5 +1,5 @@
 ﻿using GiantTeam.Postgres;
-using GiantTeam.Services;
+using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

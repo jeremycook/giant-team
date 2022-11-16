@@ -1,8 +1,8 @@
 ﻿using GiantTeam.Asp;
 using GiantTeam.Asp.Routing;
 using GiantTeam.Postgres;
-using GiantTeam.Services;
 using GiantTeam.Startup;
+using GiantTeam.UserManagement.Services;
 using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;

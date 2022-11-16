@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace GiantTeam.Services
+namespace GiantTeam.UserManagement.Services
 {
     public class SessionUser
     {

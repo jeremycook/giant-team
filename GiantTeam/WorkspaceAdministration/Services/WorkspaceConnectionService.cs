@@ -1,9 +1,9 @@
 ﻿using GiantTeam.Postgres;
-using GiantTeam.Services;
+using GiantTeam.UserManagement.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace GiantTeam.WorkspaceInteraction.Services
+namespace GiantTeam.WorkspaceAdministration.Services
 {
     public class WorkspaceConnectionService
     {

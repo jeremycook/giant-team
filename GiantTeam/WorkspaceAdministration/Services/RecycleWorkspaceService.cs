@@ -1,9 +1,10 @@
-﻿using GiantTeam.RecordsManagement.Data;
-using GiantTeam.Services;
+﻿using GiantTeam.ComponentModel.Services;
+using GiantTeam.RecordsManagement.Data;
+using GiantTeam.UserManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.WorkspaceInteraction.Services
+namespace GiantTeam.WorkspaceAdministration.Services
 {
     public class RecycleWorkspaceService
     {

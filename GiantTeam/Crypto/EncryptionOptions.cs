@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Versioning;
 
-namespace GiantTeam.Services
+namespace GiantTeam.Crypto
 {
     [RequiresPreviewFeatures]
     public class EncryptionOptions

@@ -1,24 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 
-namespace GiantTeam.Services
+namespace GiantTeam.ComponentModel
 {
     [Serializable]
-    public class ServiceException : ValidationException
+    public class DetailedValidationException : ValidationException
     {
-        public ServiceException(string message)
+        public DetailedValidationException(string message)
             : base(message)
         {
             ValidationResults.Add(new(message));
         }
 
-        public ServiceException(IEnumerable<ValidationResult> validationResults)
+        public DetailedValidationException(IEnumerable<ValidationResult> validationResults)
             : base(string.Join(" ", validationResults.Where(vr => vr.ErrorMessage is not null).Select(vr => vr.ErrorMessage!.TrimEnd('.') + ".")))
         {
             ValidationResults.AddRange(validationResults);
         }
 
-        protected ServiceException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected DetailedValidationException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 

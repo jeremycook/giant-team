@@ -1,10 +1,13 @@
-﻿using GiantTeam.RecordsManagement.Data;
+﻿using GiantTeam.ComponentModel.Services;
+using GiantTeam.Crypto;
+using GiantTeam.Postgres;
+using GiantTeam.RecordsManagement.Data;
 using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Services
+namespace GiantTeam.UserManagement.Services
 {
     public class JoinService
     {
@@ -20,7 +23,7 @@ namespace GiantTeam.Services
             public string Email { get; set; } = default!;
 
             [Required]
-            [RegularExpression("^[A-Za-z][A-Za-z0-9-_]*$")]
+            [PgLaxIdentifier]
             [StringLength(50, MinimumLength = 3)]
             public string Username { get; set; } = default!;
 

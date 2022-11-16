@@ -1,4 +1,4 @@
-﻿namespace GiantTeam.Services
+﻿namespace GiantTeam.UserManagement.Services
 {
     public abstract class SessionService
     {

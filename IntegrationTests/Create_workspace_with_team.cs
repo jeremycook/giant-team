@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;
 using static GiantTeam.Data.Api.Controllers.GetWorkspaceController;
-using static GiantTeam.Services.CreateWorkspaceService;
-using static GiantTeam.WorkspaceInteraction.Services.CreateTeamService;
+using static GiantTeam.WorkspaceAdministration.Services.CreateWorkspaceService;
+using static GiantTeam.UserManagement.Services.CreateTeamService;
 
 namespace IntegrationTests;
 

@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Services
+namespace GiantTeam.ComponentModel.Services
 {
     public class ValidationService
     {
@@ -45,25 +43,25 @@ namespace GiantTeam.Services
         }
 
         /// <summary>
-        /// Throws <see cref="ServiceException"/> if <paramref name="model"/> is invalid.
+        /// Throws <see cref="DetailedValidationException"/> if <paramref name="model"/> is invalid.
         /// </summary>
         /// <param name="model"></param>
-        /// <exception cref="ServiceException"></exception>
+        /// <exception cref="DetailedValidationException"></exception>
         public void Validate(object model)
         {
             if (!TryValidate(model, out var validationResults))
             {
-                throw new ServiceException(validationResults);
+                throw new DetailedValidationException(validationResults);
             }
         }
 
         /// <summary>
         /// If any <paramref name="models"/> are invalid this will
-        /// throw <see cref="ServiceException"/> after validating all 
+        /// throw <see cref="DetailedValidationException"/> after validating all 
         /// <paramref name="models"/>.
         /// </summary>
         /// <param name="models"></param>
-        /// <exception cref="ServiceException"></exception>
+        /// <exception cref="DetailedValidationException"></exception>
         public void ValidateAll(IEnumerable<object> models)
         {
             var validationResults = new List<ValidationResult>();
@@ -78,17 +76,17 @@ namespace GiantTeam.Services
 
             if (validationResults.Any())
             {
-                throw new ServiceException(validationResults);
+                throw new DetailedValidationException(validationResults);
             }
         }
 
         /// <summary>
         /// If any <paramref name="models"/> are invalid this will
-        /// throw <see cref="ServiceException"/> after validating all 
+        /// throw <see cref="DetailedValidationException"/> after validating all 
         /// <paramref name="models"/>.
         /// </summary>
         /// <param name="models"></param>
-        /// <exception cref="ServiceException"></exception>
+        /// <exception cref="DetailedValidationException"></exception>
         public void ValidateAll(params object[] models)
         {
             ValidateAll((IEnumerable<object>)models);

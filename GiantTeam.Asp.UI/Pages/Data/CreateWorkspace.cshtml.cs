@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
-using GiantTeam.Services;
+using GiantTeam.WorkspaceAdministration.Services;
 
 namespace GiantTeam.Asp.UI.Pages.Data
 {

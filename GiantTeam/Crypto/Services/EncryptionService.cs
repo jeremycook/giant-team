@@ -2,7 +2,7 @@
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 
-namespace GiantTeam.Services
+namespace GiantTeam.Crypto.Services
 {
     [RequiresPreviewFeatures]
     public class EncryptionService

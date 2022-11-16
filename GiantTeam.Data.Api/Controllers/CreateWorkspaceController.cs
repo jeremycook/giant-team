@@ -1,6 +1,6 @@
-﻿using GiantTeam.Services;
+﻿using GiantTeam.WorkspaceAdministration.Services;
 using Microsoft.AspNetCore.Mvc;
-using static GiantTeam.Services.CreateWorkspaceService;
+using static GiantTeam.WorkspaceAdministration.Services.CreateWorkspaceService;
 
 namespace GiantTeam.Data.Api.Controllers;
 

@@ -1,11 +1,13 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.ComponentModel;
+using GiantTeam.ComponentModel.Services;
+using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
+using GiantTeam.UserManagement.Services;
 using GiantTeam.WorkspaceAdministration.Data;
-using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Services
+namespace GiantTeam.WorkspaceAdministration.Services
 {
     public class CreateWorkspaceService
     {
@@ -61,8 +63,8 @@ namespace GiantTeam.Services
             RecordsManagementDbContext recordsManagementDbContext,
             CreateTeamService createTeamService)
         {
-            this.db = recordsManagementDbContext;
-            this.wa = workspaceAdministrationDbContext;
+            db = recordsManagementDbContext;
+            wa = workspaceAdministrationDbContext;
             this.validationService = validationService;
             this.sessionService = sessionService;
             this.createTeamService = createTeamService;
@@ -112,7 +114,7 @@ namespace GiantTeam.Services
 
                 if (createTeamOutput.Status != CreateTeamService.CreateTeamStatus.Success)
                 {
-                    throw new ServiceException($"A workspace was not created because a team named \"{candiateTeamName}\" could be not created for the workspace. " + createTeamOutput.Message);
+                    throw new DetailedValidationException($"A workspace was not created because a team named \"{candiateTeamName}\" could be not created for the workspace. " + createTeamOutput.Message);
                 }
 
                 teamId = createTeamOutput.TeamId!.Value;
@@ -122,7 +124,7 @@ namespace GiantTeam.Services
             var owner = await db.Teams
                 .Where(o => o.TeamId == teamId && o.Users!.Any(u => u.UserId == sessionUser.UserId))
                 .SingleOrDefaultAsync() ??
-                throw new ServiceException("The owning team was either not found, or you are not an immediate member of it.");
+                throw new DetailedValidationException("The owning team was either not found, or you are not an immediate member of it.");
 
             var workspace = new Workspace()
             {

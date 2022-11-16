@@ -1,4 +1,4 @@
-﻿namespace GiantTeam.Services
+﻿namespace GiantTeam.UserManagement
 {
     public static class PrincipalHelper
     {

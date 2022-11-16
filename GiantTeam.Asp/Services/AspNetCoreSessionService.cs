@@ -1,4 +1,4 @@
-﻿using GiantTeam.Services;
+﻿using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 

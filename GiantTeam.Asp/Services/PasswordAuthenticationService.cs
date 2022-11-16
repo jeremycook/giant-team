@@ -1,5 +1,6 @@
-﻿using GiantTeam.RecordsManagement.Data;
-using GiantTeam.Services;
+﻿using GiantTeam.Crypto;
+using GiantTeam.RecordsManagement.Data;
+using GiantTeam.UserManagement.Services;
 using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;

@@ -1,10 +1,10 @@
 ﻿using GiantTeam.RecordsManagement.Data;
-using GiantTeam.Services;
+using GiantTeam.UserManagement.Services;
+using GiantTeam.WorkspaceAdministration.Services;
 using GiantTeam.WorkspaceInteraction.Data;
-using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace GiantTeam.RecordsManagement.Services
+namespace GiantTeam.WorkspaceInteraction.Services
 {
     public class WorkspaceService : IDisposable
     {
@@ -53,7 +53,7 @@ namespace GiantTeam.RecordsManagement.Services
 
         /// <summary>
         /// Returns a new or cached <see cref="WorkspaceDbContext"/> with a lifetime
-        /// is managed and disposed by <c>this</c> <see cref="WorkspaceService"/>.
+        /// managed and disposed by this <see cref="WorkspaceService"/>.
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <returns></returns>

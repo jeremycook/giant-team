@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace GiantTeam.Services
+namespace GiantTeam.Crypto
 {
     public static class HashingHelper
     {

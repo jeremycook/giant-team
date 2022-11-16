@@ -1,11 +1,12 @@
 ﻿using Dapper;
+using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
-using GiantTeam.Services;
+using GiantTeam.UserManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.WorkspaceInteraction.Services
+namespace GiantTeam.WorkspaceAdministration.Services
 {
     public class DeleteWorkspaceService
     {

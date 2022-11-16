@@ -1,8 +1,8 @@
 ﻿using GiantTeam.EntityFramework;
 using GiantTeam.Postgres;
-using GiantTeam.Services;
+using GiantTeam.UserManagement.Services;
+using GiantTeam.WorkspaceAdministration.Services;
 using GiantTeam.WorkspaceInteraction.Data.InformationSchema;
-using GiantTeam.WorkspaceInteraction.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 

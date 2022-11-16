@@ -1,11 +1,11 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.ComponentModel.Services;
+using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
-using GiantTeam.Services;
 using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.WorkspaceInteraction.Services
+namespace GiantTeam.UserManagement.Services
 {
     public class CreateTeamService
     {
