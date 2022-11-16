@@ -6,6 +6,12 @@ namespace GiantTeam.Services
     [Serializable]
     public class ServiceException : ValidationException
     {
+        public ServiceException(string message)
+            : base(message)
+        {
+            ValidationResults.Add(new(message));
+        }
+
         public ServiceException(IEnumerable<ValidationResult> validationResults)
             : base(string.Join(" ", validationResults.Where(vr => vr.ErrorMessage is not null).Select(vr => vr.ErrorMessage!.TrimEnd('.') + ".")))
         {
