@@ -16,9 +16,8 @@ Npgsql is the .NET client library that talks to PostgreSQL.
 
 # Windows Setup
 
-1. Download the latest stable version of the PostgreSQL installer from https://www.postgresql.org/download/
-2. When using the EDB installer, avoid installing pgAdmin (it is usually out of date)
-3. Download and install the latest version of pgAdmin from https://www.pgadmin.org/download/
+1. Download and install the latest stable version of the PostgreSQL installer from https://www.postgresql.org/download/. When using the EDB installer, avoid installing pgAdmin because it is usually out of date.
+2. Download and install the latest version of pgAdmin from https://www.pgadmin.org/download/.
 
 ## Trusted authentication on Windows
 
