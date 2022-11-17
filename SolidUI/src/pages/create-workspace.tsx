@@ -1,5 +1,6 @@
 import { createSignal, Show } from 'solid-js';
-import { CreateWorkspaceStatus, postCreateWorkspace } from '../api/GiantTeam.Data.Api';
+import { CreateWorkspaceStatus } from '../api/GiantTeam';
+import { postCreateWorkspace } from '../api/GiantTeam.Data.Api';
 import { createId } from '../utils/elementHelpers';
 import { createUrl } from '../utils/urlHelpers';
 
@@ -9,8 +10,8 @@ export default function CreateWorkspace() {
   const [workspaceName, workspaceNameSetter] = createSignal("");
 
   // Output
-  const [errorMessage, errorMessageSetter] = createSignal("");
-  const [successMessage, successMessageSetter] = createSignal("");
+  const [status, statusSetter] = createSignal<CreateWorkspaceStatus>(null);
+  const [message, messageSetter] = createSignal("");
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -21,15 +22,14 @@ export default function CreateWorkspace() {
 
     console.log(output);
 
+    statusSetter(output.status);
     switch (output.status) {
       case CreateWorkspaceStatus.Success:
-        errorMessageSetter("");
-        successMessageSetter("Workspace created! Taking you to it now…");
+        messageSetter("Workspace created! Taking you to it now…");
         location.assign(createUrl("/workspace", { workspaceId: output.workspaceId }));
         break;
       case CreateWorkspaceStatus.Problem:
-        errorMessageSetter(output.message);
-        successMessageSetter("");
+        messageSetter(output.message);
         break;
       default:
         throw Error(`Unsupported CreateWorkspaceStatus ${output.status}.`);
@@ -41,15 +41,9 @@ export default function CreateWorkspace() {
 
       <h1>Create Workspace</h1>
 
-      <Show when={errorMessage()}>
-        <p class="text-red">
-          {errorMessage()}
-        </p>
-      </Show>
-
-      <Show when={successMessage()}>
-        <p class="text-green">
-          {successMessage()}
+      <Show when={message()}>
+        <p class={(status() == CreateWorkspaceStatus.Success ? "text-green" : "text-red")}>
+          {message()}
         </p>
       </Show>
 
