@@ -1,4 +1,5 @@
-﻿using GiantTeam.RecordsManagement.Data;
+﻿using GiantTeam.Crypto;
+using GiantTeam.RecordsManagement.Data;
 using GiantTeam.WorkspaceAdministration.Data;
 
 namespace GiantTeam.UserManagement.Services
@@ -25,7 +26,7 @@ namespace GiantTeam.UserManagement.Services
             // Create a new database login with a random password and a lifespan
             // that matches the cookie authentication ticket's lifespan
             string dbLogin = await wa.CreateDatabaseLoginAsync(user.DbRoleId);
-            string dbPassword = PasswordHelper.Base64Url();
+            string dbPassword = PasswordHelper.GeneratePassword();
             await wa.SetDatabasePasswordsAsync(dbLogin, dbPassword, validUntil);
 
             // Build a session user

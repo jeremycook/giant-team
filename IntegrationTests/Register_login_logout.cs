@@ -1,4 +1,4 @@
-using GiantTeam.UserManagement.Services;
+using GiantTeam.Crypto;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;
@@ -22,7 +22,7 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
         var client = _factory.CreateClient();
         DateTimeOffset utcNow = DateTimeOffset.UtcNow;
         string username = $"Test {GetType().Name} {DateTime.Now:ddHHmmss}";
-        string password = PasswordHelper.Base64Url();
+        string password = PasswordHelper.GeneratePassword();
         Guid userId = Guid.Empty;
 
         try

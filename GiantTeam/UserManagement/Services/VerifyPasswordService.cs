@@ -64,7 +64,7 @@ namespace GiantTeam.UserManagement.Services
 
             if (userPassword is not null &&
                 !string.IsNullOrEmpty(userPassword.PasswordDigest) &&
-                HashingHelper.VerifyHashedPlaintext(userPassword.PasswordDigest, input.Password))
+                PasswordHelper.VerifyHashedPlaintext(userPassword.PasswordDigest, input.Password))
             {
                 return new(VerifyPasswordStatus.Success)
                 {

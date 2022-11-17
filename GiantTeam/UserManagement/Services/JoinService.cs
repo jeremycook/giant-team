@@ -81,7 +81,7 @@ namespace GiantTeam.UserManagement.Services
             UserPassword userPassword = new()
             {
                 UserId = user.UserId,
-                PasswordDigest = HashingHelper.HashPlaintext(joinInputModel.Password),
+                PasswordDigest = PasswordHelper.HashPlaintext(joinInputModel.Password),
             };
 
             validationService.ValidateAll(dbRole, user, userPassword);
