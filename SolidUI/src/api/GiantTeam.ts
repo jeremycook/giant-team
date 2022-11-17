@@ -3,13 +3,13 @@
 
 export interface DbRole {
     roleId: string;
-    created: string;
+    created: Date;
 }
 
 export interface Team {
     teamId: string;
     name: string;
-    created: string;
+    created: Date;
     dbRoleId: string;
     dbRole?: DbRole;
     users?: TeamUser[];
@@ -20,7 +20,7 @@ export interface TeamUser {
     team?: Team;
     userId: string;
     user?: User;
-    created: string;
+    created: Date;
 }
 
 export interface User {
@@ -31,7 +31,7 @@ export interface User {
     passwordDigest: string;
     email: string;
     emailVerified: boolean;
-    created: string;
+    created: Date;
     dbRoleId: string;
     dbRole?: DbRole;
     teams?: TeamUser[];
@@ -43,7 +43,7 @@ export interface Workspace {
     ownerId: string;
     owner?: Team;
     recycle: boolean;
-    created: string;
+    created: Date;
 }
 
 export interface CreateTeamInput {

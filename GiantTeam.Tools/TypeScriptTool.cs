@@ -282,7 +282,8 @@ namespace GiantTeam.Tools
             }
             return (
                 type == typeof(Guid) ? "string" :
-                type == typeof(DateTimeOffset) ? "string" :
+                type == typeof(DateTime) ? "Date" :
+                type == typeof(DateTimeOffset) ? "Date" :
                 type.Namespace == "System" ? type.Name.ToLower() :
                 type.Name
             ) + (isArray ? "[]" : string.Empty);
