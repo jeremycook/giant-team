@@ -1,11 +1,14 @@
-﻿using GiantTeam.Asp.Services;
+﻿using GiantTeam.UserManagement;
+using GiantTeam.UserManagement.Services;
+using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using static GiantTeam.UserManagement.Services.VerifyPasswordService;
 
 namespace GiantTeam.Authentication.Api.Controllers;
 
@@ -38,52 +41,61 @@ public class LoginController : ControllerBase
     public enum LoginStatus
     {
         /// <summary>
-        /// Something about the input is invalid.
-        /// Clients should present the <see cref="LoginOutput.Message"/>.
+        /// Authentication failed.
+        /// Check the <see cref="LoginOutput.Message"/>.
         /// </summary>
         Problem = 400,
 
         /// <summary>
-        /// An HttpOnly authentication cookie is in the response.
-        /// Clients should send the authentication cookie with requests.
-        /// Web clients may need to refresh the web page to be able to use the authentication cookie.
+        /// Authentication succeeded.
+        /// An HttpOnly authentication cookie is in the response that clients can use for authenticated requests.
         /// </summary>
         Success = 200,
     }
 
     [HttpPost("/api/[Controller]")]
     public async Task<LoginOutput> Post(
-        [FromServices] PasswordAuthenticationService passwordAuthenticationService,
+        [FromServices] VerifyPasswordService verifyPasswordService,
+        [FromServices] IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions,
+        [FromServices] BuildSessionUserService buildSessionUserService,
         LoginInput input)
     {
-        if (ModelState.IsValid)
+        var output = await verifyPasswordService.VerifyAsync(new VerifyPasswordInput
         {
-            try
-            {
-                ClaimsPrincipal principal = await passwordAuthenticationService.AuthenticateAsync(new PasswordAuthenticationInput
-                {
-                    Username = input.Username!,
-                    Password = input.Password!,
-                });
+            Username = input.Username!,
+            Password = input.Password!,
+        });
 
-                AuthenticationProperties properties = new()
+        switch (output.Status)
+        {
+            case VerifyPasswordStatus.Problem:
+                return new(LoginStatus.Problem)
                 {
-                    IsPersistent = input.RemainLoggedIn,
+                    Message = output.Message,
                 };
-
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
-
-                return new(LoginStatus.Success);
-            }
-            catch (ValidationException ex)
-            {
-                ModelState.AddModelError("", ex.Message);
-            }
+            case VerifyPasswordStatus.Success:
+                // OK, continue
+                break;
+            default:
+                throw new NotSupportedException($"Unsupported {nameof(VerifyPasswordStatus)}: {nameof(output.Status)}.");
         }
 
-        return new(LoginStatus.Problem)
+        // Build a session user
+        DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
+        SessionUser sessionUser = await buildSessionUserService.BuildAsync(output.UserId!.Value, validUntil);
+
+        // Create a principal from the session user
+        ClaimsPrincipal principal = new(sessionUser.CreateIdentity(PrincipalHelper.AuthenticationTypes.Password));
+
+        // TODO: Log authentication success
+
+        AuthenticationProperties properties = new()
         {
-            Message = string.Join(" ", ModelState.SelectMany(e => e.Value?.Errors ?? Enumerable.Empty<ModelError>()).Select(e => e.ErrorMessage)),
+            IsPersistent = input.RemainLoggedIn,
         };
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
+
+        return new(LoginStatus.Success);
     }
 }

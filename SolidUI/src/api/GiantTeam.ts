@@ -28,7 +28,6 @@ export interface User {
     name: string;
     username: string;
     invariantUsername: string;
-    passwordDigest: string;
     email: string;
     emailVerified: boolean;
     created: Date;
@@ -70,6 +69,22 @@ export interface JoinInput {
 
 export interface JoinOutput {
     userId: string;
+}
+
+export interface VerifyPasswordInput {
+    username: string;
+    password: string;
+}
+
+export interface VerifyPasswordOutput {
+    status: VerifyPasswordStatus;
+    message?: string;
+    userId?: string;
+}
+
+export enum VerifyPasswordStatus {
+    Success = 200,
+    Problem = 400,
 }
 
 export interface CreateWorkspaceInput {

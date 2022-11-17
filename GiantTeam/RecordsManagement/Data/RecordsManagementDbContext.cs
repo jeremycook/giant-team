@@ -37,6 +37,7 @@ namespace GiantTeam.RecordsManagement.Data
         public DbSet<DbRole> DbRoles => Set<DbRole>();
         public DbSet<Team> Teams => Set<Team>();
         public DbSet<User> Users => Set<User>();
+        internal DbSet<UserPassword> UserPasswords => Set<UserPassword>();
         public DbSet<Workspace> Workspaces => Set<Workspace>();
     }
 }

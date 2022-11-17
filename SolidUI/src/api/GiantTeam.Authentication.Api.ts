@@ -41,8 +41,6 @@ export interface SessionOutput {
     userId?: string;
     username?: string;
     name?: string;
-    email?: string;
-    emailVerified?: boolean;
 }
 
 export enum SessionStatus {

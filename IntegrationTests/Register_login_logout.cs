@@ -1,4 +1,4 @@
-using GiantTeam.Asp.Services;
+using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;

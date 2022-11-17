@@ -22,14 +22,6 @@ namespace GiantTeam.UserManagement.Services
                     identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Name)?.Value ??
                     throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Name}\" claim."),
 
-                email:
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Email)?.Value ??
-                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Email}\" claim."),
-
-                emailVerified: "true" == (
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.EmailVerified)?.Value
-                ),
-
                 // Database stuff
 
                 dbLogin:
@@ -52,8 +44,6 @@ namespace GiantTeam.UserManagement.Services
             string sub,
             string username,
             string name,
-            string email,
-            bool emailVerified,
             string dbLogin,
             string dbPassword,
             string dbRole)
@@ -61,18 +51,16 @@ namespace GiantTeam.UserManagement.Services
             Sub = sub;
             Username = username;
             Name = name;
-            Email = email;
-            EmailVerified = emailVerified;
 
             DbLogin = dbLogin;
             DbPassword = dbPassword;
             DbRole = dbRole;
         }
 
-        public ClaimsIdentity CreateIdentity()
+        public ClaimsIdentity CreateIdentity(string authenticationType)
         {
             ClaimsIdentity identity = new(
-                authenticationType: PrincipalHelper.AuthenticationTypes.Password,
+                authenticationType: authenticationType,
                 nameType: PrincipalHelper.ClaimTypes.Username,
                 roleType: PrincipalHelper.ClaimTypes.Role
             );
@@ -81,8 +69,6 @@ namespace GiantTeam.UserManagement.Services
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Sub, Sub));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Name, Name));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Username, Username));
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.Email, Email));
-            if (EmailVerified) identity.AddClaim(new(PrincipalHelper.ClaimTypes.EmailVerified, "true"));
 
             // Database claims
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbLogin, DbLogin));
@@ -101,8 +87,6 @@ namespace GiantTeam.UserManagement.Services
         public string Sub { get; }
         public string Username { get; }
         public string Name { get; }
-        public string Email { get; }
-        public bool EmailVerified { get; }
 
         // Database
 

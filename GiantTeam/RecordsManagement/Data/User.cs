@@ -18,8 +18,6 @@ namespace GiantTeam.RecordsManagement.Data
         public string Username { get; set; } = null!;
         public string InvariantUsername { get => Username?.ToLowerInvariant()!; private set { } }
 
-        public string PasswordDigest { get; set; } = null!;
-
         [EmailAddress]
         [StringLength(200)]
         public string Email { get; set; } = null!;

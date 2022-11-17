@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Cryptography;
 
-namespace GiantTeam.Asp.Services
+namespace GiantTeam.UserManagement.Services
 {
     public static class PasswordHelper
     {

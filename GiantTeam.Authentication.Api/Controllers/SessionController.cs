@@ -19,8 +19,6 @@ public class SessionController : ControllerBase
         public Guid? UserId { get; set; }
         public string? Username { get; set; }
         public string? Name { get; set; }
-        public string? Email { get; set; }
-        public bool? EmailVerified { get; set; }
     }
 
     public enum SessionStatus
@@ -34,7 +32,7 @@ public class SessionController : ControllerBase
     }
 
     [HttpPost("/api/[Controller]")]
-    public async Task<SessionOutput> Post(
+    public SessionOutput Post(
         [FromServices] SessionService sessionService)
     {
         if (User.Identity is null || !User.Identity.IsAuthenticated)
@@ -49,8 +47,6 @@ public class SessionController : ControllerBase
                 UserId = user.UserId,
                 Name = user.Name,
                 Username = user.Username,
-                Email = user.Email,
-                EmailVerified = user.EmailVerified,
             };
         }
     }

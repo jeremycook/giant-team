@@ -71,23 +71,28 @@ namespace GiantTeam.UserManagement.Services
             };
             User user = new()
             {
+                UserId = Guid.NewGuid(),
                 Name = joinInputModel.Name,
                 Email = joinInputModel.Email,
                 Username = joinInputModel.Username,
-                PasswordDigest = HashingHelper.HashPlaintext(joinInputModel.Password),
                 Created = DateTimeOffset.UtcNow,
                 DbRoleId = dbRole.RoleId,
             };
+            UserPassword userPassword = new()
+            {
+                UserId = user.UserId,
+                PasswordDigest = HashingHelper.HashPlaintext(joinInputModel.Password),
+            };
+
+            validationService.ValidateAll(dbRole, user, userPassword);
+            recordsManagementDbContext.DbRoles.Add(dbRole);
+            recordsManagementDbContext.Users.Add(user);
+            recordsManagementDbContext.UserPasswords.Add(userPassword);
 
             // Create user record
             using var recordsManagementTx = await recordsManagementDbContext.Database.BeginTransactionAsync();
             try
             {
-                recordsManagementDbContext.DbRoles.Add(dbRole);
-                recordsManagementDbContext.Users.Add(user);
-
-                // Validate and then save changes
-                validationService.ValidateAll(dbRole, user);
                 await recordsManagementDbContext.SaveChangesAsync();
             }
             catch (DbUpdateException ex)

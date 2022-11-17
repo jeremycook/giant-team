@@ -1,9 +1,13 @@
-using GiantTeam.Asp.Services;
+using GiantTeam.UserManagement;
+using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using static GiantTeam.UserManagement.Services.VerifyPasswordService;
 
 namespace GiantTeam.Asp.UI.Pages
 {
@@ -22,29 +26,43 @@ namespace GiantTeam.Asp.UI.Pages
         }
 
         public async Task<ActionResult> OnPost(
-            [FromServices] PasswordAuthenticationService passwordAuthenticationService)
+            [FromServices] VerifyPasswordService verifyPasswordService,
+            [FromServices] IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions,
+            [FromServices] BuildSessionUserService buildSessionUserService)
         {
             if (ModelState.IsValid)
             {
-                try
+                var output = await verifyPasswordService.VerifyAsync(new VerifyPasswordInput
                 {
-                    var principal = await passwordAuthenticationService.AuthenticateAsync(new PasswordAuthenticationInput
-                    {
-                        Username = Form.Username,
-                        Password = Form.Password,
-                    });
+                    Username = Form.Username!,
+                    Password = Form.Password!,
+                });
 
-                    return SignIn(principal, new Microsoft.AspNetCore.Authentication.AuthenticationProperties()
-                    {
-                        RedirectUri = Url.IsLocalUrl(ReturnUrl) ?
-                            ReturnUrl :
-                            Url.Page("Profile"),
-                    }, CookieAuthenticationDefaults.AuthenticationScheme);
-                }
-                catch (ValidationException ex)
+                switch (output.Status)
                 {
-                    ModelState.AddModelError("", ex.Message);
+                    case VerifyPasswordStatus.Problem:
+                        ModelState.AddModelError(string.Empty, output.Message ?? "Invalid username or password.");
+                        return Page();
+                    case VerifyPasswordStatus.Success:
+                        // OK, continue
+                        break;
+                    default:
+                        throw new NotSupportedException($"Unsupported {nameof(VerifyPasswordStatus)}: {nameof(output.Status)}.");
                 }
+
+                // Build a session user
+                DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
+                SessionUser sessionUser = await buildSessionUserService.BuildAsync(output.UserId!.Value, validUntil);
+
+                // Create a principal from the session user
+                ClaimsPrincipal principal = new(sessionUser.CreateIdentity(PrincipalHelper.AuthenticationTypes.Password));
+
+                return SignIn(principal, new Microsoft.AspNetCore.Authentication.AuthenticationProperties()
+                {
+                    RedirectUri = Url.IsLocalUrl(ReturnUrl) ?
+                        ReturnUrl :
+                        Url.Page("Profile"),
+                }, CookieAuthenticationDefaults.AuthenticationScheme);
             }
 
             return Page();
