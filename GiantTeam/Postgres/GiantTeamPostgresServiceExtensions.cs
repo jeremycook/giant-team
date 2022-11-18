@@ -37,7 +37,6 @@ namespace GiantTeam.Postgres
 
             // Build SQL
             StringBuilder sql = new();
-            sql.Append("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;\n\n");
             sql.Append(scripter.Script(database).TrimEnd('\n') + "\n\n");
 
             // Build connection

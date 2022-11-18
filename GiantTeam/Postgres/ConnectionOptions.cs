@@ -11,6 +11,27 @@ namespace GiantTeam.Postgres
         public string? SetRole { get; set; }
         public string? MaintenanceDatabase { get; set; }
 
+        public NpgsqlConnection CreateOpenConnection()
+        {
+            NpgsqlConnectionStringBuilder connectionStringBuilder = ToConnectionStringBuilder();
+
+            NpgsqlConnection connection = new(connectionStringBuilder.ToString());
+
+            if (!string.IsNullOrEmpty(CaCertificate))
+            {
+                connection.ConfigureCaCertificateValidation(CaCertificate);
+            }
+
+            connection.Open();
+
+            if (!string.IsNullOrEmpty(SetRole))
+            {
+                connection.SetRole(SetRole);
+            }
+
+            return connection;
+        }
+
         public async Task<NpgsqlConnection> CreateOpenConnectionAsync()
         {
             NpgsqlConnectionStringBuilder connectionStringBuilder = ToConnectionStringBuilder();

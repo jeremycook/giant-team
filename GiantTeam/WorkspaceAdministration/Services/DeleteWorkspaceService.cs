@@ -10,9 +10,8 @@ namespace GiantTeam.WorkspaceAdministration.Services
 {
     public class DeleteWorkspaceService
     {
-        private readonly SessionService sessionService;
+        private readonly FetchWorkspaceService fetchWorkspaceService;
         private readonly WorkspaceConnectionService connectionService;
-        private readonly RecordsManagementDbContext recordsManagementDbContext;
         private readonly ValidationService validationService;
 
         public class DeleteWorkspaceInput
@@ -42,26 +41,18 @@ namespace GiantTeam.WorkspaceAdministration.Services
             Problem = 400,
 
             /// <summary>
-            /// Workspace not found.
-            /// Clients should present the <see cref="DeleteWorkspaceOutput.Message"/>.
-            /// </summary>
-            NotFound = 404,
-
-            /// <summary>
             /// Workspace deleted.
             /// </summary>
             Success = 200,
         }
 
         public DeleteWorkspaceService(
-            SessionService sessionService,
+            FetchWorkspaceService fetchWorkspaceService,
             WorkspaceConnectionService connectionService,
-            RecordsManagementDbContext recordsManagementDbContext,
             ValidationService validationService)
         {
-            this.sessionService = sessionService;
+            this.fetchWorkspaceService = fetchWorkspaceService;
             this.connectionService = connectionService;
-            this.recordsManagementDbContext = recordsManagementDbContext;
             this.validationService = validationService;
         }
 
@@ -80,54 +71,18 @@ namespace GiantTeam.WorkspaceAdministration.Services
                 };
             }
 
-            var workspaceId = input.WorkspaceId!;
-
-
-            var workspace = await recordsManagementDbContext
-                .Workspaces
-                .FirstOrDefaultAsync(o => o.WorkspaceId == workspaceId);
-
-            if (workspace is null)
+            var workspaceInfo = await fetchWorkspaceService.FetchWorkspaceAsync(new()
             {
-                return new(DeleteWorkspaceStatus.NotFound)
-                {
-                    Message = "Workspace not found."
-                };
-            }
-            else if (workspace.OwnerId != sessionService.User.UserId)
-            {
-                return new(DeleteWorkspaceStatus.Problem)
-                {
-                    Message = "A workspace can only be deleted by its owner."
-                };
-            }
-            else if (!workspace.Recycle)
-            {
-                return new(DeleteWorkspaceStatus.Problem)
-                {
-                    Message = "The workspace is not flagged for recycling. The recycle flag must be set before it can be deleted."
-                };
-            }
+                WorkspaceName = input.WorkspaceId,
+            });
 
-            // Continue and delete the entire workspace
-
-            using var workspaceConnection = await connectionService.OpenMaintenanceConnectionAsync(workspaceId);
+            // This will fail if the session user is not a member of the database owner role
+            using var workspaceConnection = await connectionService.OpenMaintenanceConnectionAsync(workspaceInfo.WorkspaceOwner);
 
             // Delete the database
             var droppedDatabases = await workspaceConnection.ExecuteAsync($"""
-DROP DATABASE IF EXISTS {PgQuote.Identifier(workspaceId)};
+DROP DATABASE IF EXISTS {PgQuote.Identifier(workspaceInfo.WorkspaceName)};
 """);
-
-            // Delete the database owner
-            var droppedRoles = await workspaceConnection.ExecuteAsync($"""
-DROP ROLE IF EXISTS {PgQuote.Identifier(workspaceId)};
-""");
-
-            // Delete workspace record
-            var deletedWorkspaces = await recordsManagementDbContext
-                .Workspaces
-                .Where(o => o.WorkspaceId == workspaceId)
-                .ExecuteDeleteAsync();
 
             return new(DeleteWorkspaceStatus.Success);
         }

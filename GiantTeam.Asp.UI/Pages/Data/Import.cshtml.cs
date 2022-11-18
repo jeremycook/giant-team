@@ -164,12 +164,12 @@ namespace GiantTeam.Asp.UI.Pages.Data
 
                                 logger.LogInformation("Execute migration script: {CommandText}", migrationScript);
 
-                                using NpgsqlConnection designConnection = await databaseConnectionService.OpenAdminConnectionAsync(WorkspaceId);
+                                using NpgsqlConnection designConnection = await databaseConnectionService.OpenConnectionAsync(WorkspaceId);
                                 await designConnection.ExecuteAsync(migrationScript);
                             }
 
                             Dictionary<string, (string column_name, string data_type, bool is_nullable)> columnMap;
-                            using (NpgsqlConnection queryConnection = await databaseConnectionService.OpenUserConnectionAsync(WorkspaceId))
+                            using (NpgsqlConnection queryConnection = await databaseConnectionService.OpenConnectionAsync(WorkspaceId))
                             {
                                 var schema = await queryConnection.QueryAsync<(string column_name, string data_type, bool is_nullable)>(
 @"SELECT
@@ -190,7 +190,7 @@ new
                                 columnMap = schema.ToDictionary(o => o.column_name);
                             }
 
-                            using (NpgsqlConnection manipulateConnection = await databaseConnectionService.OpenUserConnectionAsync(WorkspaceId))
+                            using (NpgsqlConnection manipulateConnection = await databaseConnectionService.OpenConnectionAsync(WorkspaceId))
                             {
                                 string insertSql =
 $@"INSERT INTO {PgQuote.Identifier(schemaName, tableName)} ({string.Join(",", fieldNames.Select(PgQuote.Identifier))})
@@ -232,7 +232,7 @@ FROM unnest({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => 
 
         private async Task PopulateOptionsAsync()
         {
-            NpgsqlConnection queryConnection = await databaseConnectionService.OpenUserConnectionAsync(WorkspaceId);
+            NpgsqlConnection queryConnection = await databaseConnectionService.OpenConnectionAsync(WorkspaceId);
 
             ExistingTableOptions.AddRange(await queryConnection.QueryAsync<SelectListItem>($@"
 SELECT

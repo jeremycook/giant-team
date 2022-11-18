@@ -7,3 +7,10 @@ export const createUrl = (url: string, params?: Record<string, string>) => {
         return new URL(url, location.href);
     }
 }
+
+/** Returns the matching apram from location.search. */
+export const getParam = (name: string) => {
+    const params = new URLSearchParams(location.search);
+    const value = params.get(name);
+    return value;
+}

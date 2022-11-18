@@ -1,6 +1,5 @@
 ﻿using GiantTeam.Postgres;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
 
 namespace GiantTeam.RecordsManagement.Data
 {
@@ -25,19 +24,10 @@ namespace GiantTeam.RecordsManagement.Data
             user.Property(o => o.UserId).HasDefaultValueSql();
             user.Property(o => o.InvariantUsername).HasComputedColumnSql($"LOWER({PgQuote.Identifier(nameof(User.Username))})", stored: true);
             user.Property(o => o.Created).HasDefaultValueSql();
-
-            var team = modelBuilder.Entity<Team>();
-            team.Property(o => o.TeamId).HasDefaultValueSql();
-            team.Property(o => o.Created).HasDefaultValueSql();
-
-            var teamUser = modelBuilder.Entity<TeamUser>();
-            teamUser.Property(o => o.Created).HasDefaultValueSql();
         }
 
         public DbSet<DbRole> DbRoles => Set<DbRole>();
-        public DbSet<Team> Teams => Set<Team>();
         public DbSet<User> Users => Set<User>();
         internal DbSet<UserPassword> UserPasswords => Set<UserPassword>();
-        public DbSet<Workspace> Workspaces => Set<Workspace>();
     }
 }

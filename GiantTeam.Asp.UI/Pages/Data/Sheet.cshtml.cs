@@ -30,7 +30,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
         {
             try
             {
-                using NpgsqlConnection connection = await databaseConnectionService.OpenUserConnectionAsync(DatabaseName);
+                using NpgsqlConnection connection = await databaseConnectionService.OpenConnectionAsync(DatabaseName);
 
                 string select = $@"SELECT * FROM {PgQuote.Identifier(SchemaName, TableName)}";
 

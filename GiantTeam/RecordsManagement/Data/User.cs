@@ -28,7 +28,5 @@ namespace GiantTeam.RecordsManagement.Data
 
         public string DbRoleId { get; set; } = null!;
         public DbRole? DbRole { get; private set; }
-
-        public List<TeamUser>? Teams { get; set; }
     }
 }

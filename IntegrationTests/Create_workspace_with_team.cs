@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;
-using static GiantTeam.Data.Api.Controllers.GetWorkspaceController;
-using static GiantTeam.WorkspaceAdministration.Services.CreateWorkspaceService;
 using static GiantTeam.UserManagement.Services.CreateTeamService;
+using static GiantTeam.WorkspaceAdministration.Services.CreateWorkspaceService;
+using static GiantTeam.WorkspaceAdministration.Services.FetchWorkspaceService;
 
 namespace IntegrationTests;
 
@@ -22,8 +22,7 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
         // Arrange
         var client = _factory.CreateClient();
         string workspaceName = $"Test {GetType().Name} {DateTime.Now:ddHHmmss}";
-        string workspaceId = string.Empty;
-        Guid teamId = Guid.Empty;
+        string workspaceOwner = workspaceName + " Team";
 
         // Register and login with fixed credentials
         // Ignore responses, user may already exist and that's fine
@@ -66,12 +65,10 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
             var createTeamOutput = await createTeamResponse.Content.ReadFromJsonAsync<CreateTeamOutput>();
 
             Assert.NotNull(createTeamOutput);
-            Assert.Null(createTeamOutput.Message);
-            Assert.Equal(CreateTeamStatus.Success, createTeamOutput.Status);
             Assert.NotNull(createTeamOutput.TeamId);
 
             // Save for later
-            teamId = createTeamOutput.TeamId.Value;
+            workspaceOwner = createTeamOutput.TeamId;
         }
 
         // Create workspace
@@ -79,7 +76,7 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
             using var createWorkspaceResponse = await client.PostAsJsonAsync("/api/create-workspace", new CreateWorkspaceInput()
             {
                 WorkspaceName = workspaceName,
-                OwningTeamId = teamId,
+                WorkspaceOwner = workspaceOwner,
             });
             createWorkspaceResponse.EnsureSuccessStatusCode();
             var createWorkspaceOutput = await createWorkspaceResponse.Content.ReadFromJsonAsync<CreateWorkspaceOutput>();
@@ -87,27 +84,21 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
             Assert.NotNull(createWorkspaceOutput);
             Assert.Null(createWorkspaceOutput.Message);
             Assert.Equal(CreateWorkspaceStatus.Success, createWorkspaceOutput.Status);
-            Assert.NotNull(createWorkspaceOutput.WorkspaceId);
-
-            // Save for later
-            workspaceId = createWorkspaceOutput.WorkspaceId;
+            Assert.Equal(workspaceName, createWorkspaceOutput.WorkspaceName);
         }
 
         // Get workspace
         {
-            using var getWorkspaceResponse = await client.PostAsJsonAsync("/api/get-workspace", new GetWorkspaceInput()
+            using var fetchWorkspaceResponse = await client.PostAsJsonAsync("/api/fetch-workspace", new FetchWorkspaceInput()
             {
-                WorkspaceId = workspaceId,
+                WorkspaceName = workspaceName,
             });
-            getWorkspaceResponse.EnsureSuccessStatusCode();
-            var getWorkspaceOutput = await getWorkspaceResponse.Content.ReadFromJsonAsync<GetWorkspaceOutput>();
+            fetchWorkspaceResponse.EnsureSuccessStatusCode();
+            var fetchWorkspaceOutput = await fetchWorkspaceResponse.Content.ReadFromJsonAsync<FetchWorkspaceOutput>();
 
-            Assert.NotNull(getWorkspaceOutput);
-            Assert.Null(getWorkspaceOutput.Message);
-            Assert.Equal(GetWorkspaceStatus.Success, getWorkspaceOutput.Status);
-            Assert.NotNull(getWorkspaceOutput.Workspace);
-            Assert.Equal(workspaceId, getWorkspaceOutput.Workspace.WorkspaceId);
-            Assert.Equal(workspaceName, getWorkspaceOutput.Workspace.WorkspaceName);
+            Assert.NotNull(fetchWorkspaceOutput);
+            Assert.Equal(workspaceName, fetchWorkspaceOutput.WorkspaceName);
+            Assert.Equal(workspaceOwner, fetchWorkspaceOutput.WorkspaceOwner);
         }
     }
 }

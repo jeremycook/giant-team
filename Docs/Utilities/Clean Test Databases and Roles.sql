@@ -1,4 +1,4 @@
-SELECT format('DROP DATABASE IF EXISTS %I;', datname)
+SELECT format('DROP DATABASE IF EXISTS %I (FORCE);', datname)
 FROM pg_database
 WHERE datname ILIKE '%test%'
 
@@ -9,4 +9,4 @@ FROM pg_roles
 WHERE rolname ILIKE '%test%'
 -- AND rolname <> 'test-user'
 
--- \gexec
+\gexec

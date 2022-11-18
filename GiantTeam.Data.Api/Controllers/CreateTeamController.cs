@@ -10,5 +10,5 @@ public class CreateTeamController : ControllerBase
     public async Task<CreateTeamOutput> Post(
         [FromServices] CreateTeamService service,
         CreateTeamInput input) =>
-        await service.CreateAsync(input);
+        await service.CreateTeamAsync(input);
 }

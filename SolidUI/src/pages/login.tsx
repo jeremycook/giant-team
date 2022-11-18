@@ -1,6 +1,6 @@
 import { createSignal, Show } from 'solid-js';
 import { postLogin, LoginStatus } from '../api/GiantTeam.Authentication.Api';
-import { createId } from '../utils/elementHelpers';
+import { createId } from '../utils/htmlHelpers';
 
 export default function Login() {
   // Input
@@ -19,8 +19,6 @@ export default function Login() {
       password: password(),
       remainLoggedIn: remainLoggedIn(),
     });
-
-    console.log(output);
 
     switch (output.status) {
       case LoginStatus.Success:

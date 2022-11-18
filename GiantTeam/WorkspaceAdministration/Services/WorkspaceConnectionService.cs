@@ -16,7 +16,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
             this.sessionService = sessionService;
         }
 
-        public NpgsqlConnection OpenMaintenanceConnection(string workspaceId)
+        public NpgsqlConnection OpenMaintenanceConnection(string setRole)
         {
             string? maintenanceDatabase =
                 options.Value.WorkspaceConnection.MaintenanceDatabase ??
@@ -24,11 +24,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
             NpgsqlConnection connection = CreateConnection(maintenanceDatabase);
             connection.Open();
-            connection.SetRole(workspaceId);
+            connection.SetRole(setRole);
             return connection;
         }
 
-        public async Task<NpgsqlConnection> OpenMaintenanceConnectionAsync(string workspaceId)
+        public async Task<NpgsqlConnection> OpenMaintenanceConnectionAsync(string setRole)
         {
             string? maintenanceDatabase =
                 options.Value.WorkspaceConnection.MaintenanceDatabase ??
@@ -36,53 +36,59 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
             NpgsqlConnection connection = CreateConnection(maintenanceDatabase);
             await connection.OpenAsync();
-            await connection.SetRoleAsync(workspaceId);
+            await connection.SetRoleAsync(setRole);
             return connection;
         }
 
-        public NpgsqlConnection OpenAdminConnection(string workspaceId)
+        public NpgsqlConnection OpenConnection(string databaseName, string setRole)
         {
-            NpgsqlConnection connection = CreateConnection(workspaceId);
+            NpgsqlConnection connection = CreateConnection(databaseName);
             connection.Open();
-            connection.SetRole(workspaceId);
+            connection.SetRole(setRole);
             return connection;
         }
 
-        public async Task<NpgsqlConnection> OpenAdminConnectionAsync(string workspaceId)
+        public async Task<NpgsqlConnection> OpenConnectionAsync(string databaseName, string setRole)
         {
-            NpgsqlConnection connection = CreateConnection(workspaceId);
+            NpgsqlConnection connection = CreateConnection(databaseName);
             await connection.OpenAsync();
-            await connection.SetRoleAsync(workspaceId);
+            await connection.SetRoleAsync(setRole);
             return connection;
         }
 
-        public NpgsqlConnection OpenUserConnection(string workspaceId)
+        public NpgsqlConnection OpenConnection(string databaseName)
         {
             SessionUser user = sessionService.User;
 
-            NpgsqlConnection connection = CreateConnection(workspaceId);
+            NpgsqlConnection connection = CreateConnection(databaseName);
             connection.Open();
             connection.SetRole(user.DbRole);
             return connection;
         }
 
-        public async Task<NpgsqlConnection> OpenUserConnectionAsync(string workspaceId)
+        /// <summary>
+        /// Open a connection to the <paramref name="databaseName"/>
+        /// with role set to <see cref="SessionUser.DbRole"/>.
+        /// </summary>
+        /// <param name="databaseName"></param>
+        /// <returns></returns>
+        public async Task<NpgsqlConnection> OpenConnectionAsync(string databaseName)
         {
             SessionUser user = sessionService.User;
 
-            NpgsqlConnection connection = CreateConnection(workspaceId);
+            NpgsqlConnection connection = CreateConnection(databaseName);
             await connection.OpenAsync();
             await connection.SetRoleAsync(user.DbRole);
             return connection;
         }
 
-        public NpgsqlConnection CreateConnection(string workspaceId)
+        public NpgsqlConnection CreateConnection(string databaseName)
         {
             SessionUser user = sessionService.User;
             var workspaceConnection = options.Value.WorkspaceConnection;
 
             NpgsqlConnectionStringBuilder connectionStringBuilder = workspaceConnection.ToConnectionStringBuilder();
-            connectionStringBuilder.Database = workspaceId;
+            connectionStringBuilder.Database = databaseName;
             connectionStringBuilder.Username = user.DbLogin;
             connectionStringBuilder.Password = user.DbPassword;
 

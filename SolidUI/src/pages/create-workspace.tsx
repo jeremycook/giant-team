@@ -1,13 +1,10 @@
-import { createSignal, Show } from 'solid-js';
-import { CreateWorkspaceStatus } from '../api/GiantTeam';
+import { createSignal, from, Show } from 'solid-js';
+import { CreateWorkspaceInput, CreateWorkspaceStatus } from '../api/GiantTeam';
 import { postCreateWorkspace } from '../api/GiantTeam.Data.Api';
-import { createId } from '../utils/elementHelpers';
+import { createId } from '../utils/htmlHelpers';
 import { createUrl } from '../utils/urlHelpers';
 
 export default function CreateWorkspace() {
-
-  // Input
-  const [workspaceName, workspaceNameSetter] = createSignal("");
 
   // Output
   const [status, statusSetter] = createSignal<CreateWorkspaceStatus>(null);
@@ -16,23 +13,24 @@ export default function CreateWorkspace() {
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
 
-    const output = await postCreateWorkspace({
-      workspaceName: workspaceName()
-    });
+    const form = e.target as HTMLFormElement;
 
-    console.log(output);
+    const output = await postCreateWorkspace({
+      workspaceName: form.workspaceName.value,
+      workspaceOwner: form.workspaceOwner.value,
+    });
 
     statusSetter(output.status);
     switch (output.status) {
       case CreateWorkspaceStatus.Success:
         messageSetter("Workspace created! Taking you to it now…");
-        location.assign(createUrl("/workspace", { workspaceId: output.workspaceId }));
+        location.assign(createUrl("/workspace", { workspaceName: output.workspaceName }));
         break;
       case CreateWorkspaceStatus.Problem:
         messageSetter(output.message);
         break;
       default:
-        throw Error(`Unsupported CreateWorkspaceStatus ${output.status}.`);
+        throw Error(`Unsupported CreateWorkspaceStatus: ${output.status}.`);
     }
   };
 
@@ -55,11 +53,25 @@ export default function CreateWorkspace() {
           </label>
           <input
             id={createId("workspaceName")}
-            value={workspaceName()}
-            onChange={e => workspaceNameSetter(e.currentTarget.value)}
+            name="workspaceName"
             required
             autofocus
           />
+        </div>
+
+        <div>
+          <label for={createId("workspaceOwner")}>
+            Workspace Owner
+          </label>
+          <input
+            id={createId("workspaceOwner")}
+            name="workspaceOwner"
+            required
+          />
+        </div>
+
+        <div>
+          <label><input type="checkbox" name="isPublic" /> Public workspace</label>
         </div>
 
         <button type="submit">

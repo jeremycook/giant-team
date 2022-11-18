@@ -52,8 +52,7 @@ CREATE ROLE {PgQuote.Identifier(user)} WITH NOLOGIN INHERIT;
         /// <returns></returns>
         public async Task<string> CreateDatabaseLoginAsync(string user)
         {
-            int slot = Random.Shared.Next();
-            string login = $"l:{user}:{slot:D10}";
+            string login = $"{user}:l:{DateTime.UtcNow:yymmddHHmmss}";
             await Database.ExecuteSqlRawAsync($"""
 -- Create a login for a user
 CREATE ROLE {PgQuote.Identifier(login)} WITH LOGIN NOINHERIT IN ROLE {PgQuote.Identifier(user)};

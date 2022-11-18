@@ -40,9 +40,15 @@ const App: Component = () => {
           </li>
           <li class="py-2 px-4">
             <Switch fallback={
-              <Link href="/login" class="no-underline hover:underline">
-                Login
-              </Link>
+              <>
+                <Link href="/login" class="no-underline hover:underline">
+                  Login
+                </Link>
+                {" • "}
+                <Link href="/join" class="no-underline hover:underline">
+                  Join
+                </Link>
+              </>
             }>
               <Match when={session().status == SessionStatus.Authenticated}>
                 <Link href="/logout" class="no-underline hover:underline">

@@ -6,23 +6,6 @@ export interface DbRole {
     created: Date;
 }
 
-export interface Team {
-    teamId: string;
-    name: string;
-    created: Date;
-    dbRoleId: string;
-    dbRole?: DbRole;
-    users?: TeamUser[];
-}
-
-export interface TeamUser {
-    teamId: string;
-    team?: Team;
-    userId: string;
-    user?: User;
-    created: Date;
-}
-
 export interface User {
     userId: string;
     name: string;
@@ -33,16 +16,6 @@ export interface User {
     created: Date;
     dbRoleId: string;
     dbRole?: DbRole;
-    teams?: TeamUser[];
-}
-
-export interface Workspace {
-    workspaceId: string;
-    workspaceName: string;
-    ownerId: string;
-    owner?: Team;
-    recycle: boolean;
-    created: Date;
 }
 
 export interface CreateTeamInput {
@@ -50,14 +23,7 @@ export interface CreateTeamInput {
 }
 
 export interface CreateTeamOutput {
-    status: CreateTeamStatus;
-    message?: string;
     teamId?: string;
-}
-
-export enum CreateTeamStatus {
-    Success = 200,
-    Problem = 400,
 }
 
 export interface JoinInput {
@@ -89,13 +55,13 @@ export enum VerifyPasswordStatus {
 
 export interface CreateWorkspaceInput {
     workspaceName?: string;
-    owningTeamId?: string;
+    workspaceOwner?: string;
 }
 
 export interface CreateWorkspaceOutput {
     status: CreateWorkspaceStatus;
     message?: string;
-    workspaceId?: string;
+    workspaceName?: string;
 }
 
 export enum CreateWorkspaceStatus {
@@ -115,20 +81,31 @@ export interface DeleteWorkspaceOutput {
 export enum DeleteWorkspaceStatus {
     Success = 200,
     Problem = 400,
-    NotFound = 404,
 }
 
-export interface RecycleWorkspaceInput {
-    workspaceId?: string;
+export interface FetchRoleInput {
+    roleName?: string;
 }
 
-export interface RecycleWorkspaceOutput {
-    status: RecycleWorkspaceStatus;
-    message?: string;
+export interface FetchRoleMemberOutput {
+    roleName: string;
+    inherit: boolean;
+    teamAdmin: boolean;
 }
 
-export enum RecycleWorkspaceStatus {
-    Success = 200,
-    Problem = 400,
-    NotFound = 404,
+export interface FetchRoleOutput {
+    roleName: string;
+    canLogin: boolean;
+    createDb: boolean;
+    inherit: boolean;
+    members: FetchRoleMemberOutput[];
+}
+
+export interface FetchWorkspaceInput {
+    workspaceName?: string;
+}
+
+export interface FetchWorkspaceOutput {
+    workspaceName: string;
+    workspaceOwner: string;
 }

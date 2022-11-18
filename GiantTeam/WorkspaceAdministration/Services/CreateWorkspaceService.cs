@@ -1,10 +1,11 @@
-﻿using GiantTeam.ComponentModel;
+﻿using Dapper;
+using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.UserManagement.Services;
-using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.WorkspaceAdministration.Services
@@ -18,7 +19,10 @@ namespace GiantTeam.WorkspaceAdministration.Services
             [StringLength(50, MinimumLength = 3)]
             public string? WorkspaceName { get; set; }
 
-            public Guid? OwningTeamId { get; set; }
+            [Required]
+            [PgLaxIdentifier]
+            [StringLength(50, MinimumLength = 3)]
+            public string? WorkspaceOwner { get; set; }
         }
 
         public class CreateWorkspaceOutput
@@ -32,7 +36,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
             public string? Message { get; init; }
 
-            public string? WorkspaceId { get; set; }
+            public string? WorkspaceName { get; set; }
         }
 
         public enum CreateWorkspaceStatus
@@ -45,29 +49,29 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
             /// <summary>
             /// Created the workspace.
-            /// Check out the <see cref="CreateWorkspaceOutput.WorkspaceId"/>.
+            /// Check out the <see cref="CreateWorkspaceOutput.WorkspaceName"/>.
             /// </summary>
             Success = 200,
         }
 
-        private readonly WorkspaceAdministrationDbContext wa;
+        private readonly ILogger<CreateWorkspaceService> logger;
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
-        private readonly RecordsManagementDbContext db;
-        private readonly CreateTeamService createTeamService;
+        private readonly FetchRoleService fetchTeamService;
+        private readonly WorkspaceConnectionService connectionService;
 
         public CreateWorkspaceService(
-            WorkspaceAdministrationDbContext workspaceAdministrationDbContext,
+            ILogger<CreateWorkspaceService> logger,
             ValidationService validationService,
             SessionService sessionService,
-            RecordsManagementDbContext recordsManagementDbContext,
-            CreateTeamService createTeamService)
+            FetchRoleService fetchTeamService,
+            WorkspaceConnectionService connectionService)
         {
-            db = recordsManagementDbContext;
-            wa = workspaceAdministrationDbContext;
+            this.connectionService = connectionService;
+            this.logger = logger;
             this.validationService = validationService;
             this.sessionService = sessionService;
-            this.createTeamService = createTeamService;
+            this.fetchTeamService = fetchTeamService;
         }
 
         public async Task<CreateWorkspaceOutput> CreateWorkspaceAsync(CreateWorkspaceInput input)
@@ -83,10 +87,13 @@ namespace GiantTeam.WorkspaceAdministration.Services
                     Message = ex.Message,
                 };
             }
-            catch (Exception)
+            catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
-                // TODO: Handle key constraint violations gracefully
-                throw;
+                logger.LogInformation(exception, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetType(), ex.Message);
+                return new(CreateWorkspaceStatus.Problem)
+                {
+                    Message = $"The \"{input.WorkspaceName}\" workspace was not created: {ex.MessageText.TrimEnd('.')}. {ex.Detail}",
+                };
             }
         }
 
@@ -99,61 +106,30 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
             validationService.Validate(input);
 
-            Guid teamId;
-            if (input.OwningTeamId is not null)
+            string workspaceName = input.WorkspaceName!;
+            string workspaceOwner = input.WorkspaceOwner!;
+
+            using var maintenance = await connectionService.OpenMaintenanceConnectionAsync(workspaceOwner);
+            try
             {
-                teamId = input.OwningTeamId.Value;
+                await maintenance.ExecuteAsync($"CREATE DATABASE {PgQuote.Identifier(workspaceName)} OWNER {PgQuote.Identifier(workspaceOwner)};");
+
+                using var workspaceDb = await connectionService.OpenConnectionAsync(workspaceName, workspaceOwner);
+                await workspaceDb.ExecuteAsync("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
             }
-            else
+            catch (Exception)
             {
-                string candiateTeamName = input.WorkspaceName + " Owners";
-                var createTeamOutput = await createTeamService.CreateAsync(new()
-                {
-                    TeamName = candiateTeamName,
-                });
+                // Cleanup
+                try
+                { await maintenance.ExecuteAsync($"DROP DATABASE IF EXISTS {PgQuote.Identifier(workspaceName)};"); }
+                catch (Exception) { }
 
-                if (createTeamOutput.Status != CreateTeamService.CreateTeamStatus.Success)
-                {
-                    throw new DetailedValidationException($"A workspace was not created because a team named \"{candiateTeamName}\" could be not created for the workspace. " + createTeamOutput.Message);
-                }
-
-                teamId = createTeamOutput.TeamId!.Value;
+                throw;
             }
-
-            var sessionUser = sessionService.User;
-            var owner = await db.Teams
-                .Where(o => o.TeamId == teamId && o.Users!.Any(u => u.UserId == sessionUser.UserId))
-                .SingleOrDefaultAsync() ??
-                throw new DetailedValidationException("The owning team was either not found, or you are not an immediate member of it.");
-
-            var workspace = new Workspace()
-            {
-                WorkspaceId = input.WorkspaceName!,
-                WorkspaceName = input.WorkspaceName!,
-                OwnerId = owner.TeamId,
-                Created = DateTimeOffset.UtcNow,
-            };
-            validationService.ValidateAll(workspace);
-            db.Workspaces.Add(workspace);
-
-            using var tx = await db.Database.BeginTransactionAsync();
-            await db.SaveChangesAsync();
-
-            string owningTeamRoleQuoted = PgQuote.Identifier(owner.DbRoleId);
-            string databaseNameQuoted = PgQuote.Identifier(workspace.WorkspaceId);
-
-            // Create the database
-            await wa.Database.ExecuteSqlRawAsync($"""
-GRANT {owningTeamRoleQuoted} TO CURRENT_USER;
-CREATE DATABASE {databaseNameQuoted} OWNER {owningTeamRoleQuoted};
-REVOKE {owningTeamRoleQuoted} FROM CURRENT_USER;
-""");
-
-            await tx.CommitAsync();
 
             return new(CreateWorkspaceStatus.Success)
             {
-                WorkspaceId = workspace.WorkspaceId,
+                WorkspaceName = workspaceName,
             };
         }
     }
