@@ -82,8 +82,6 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
             var createWorkspaceOutput = await createWorkspaceResponse.Content.ReadFromJsonAsync<CreateWorkspaceOutput>();
 
             Assert.NotNull(createWorkspaceOutput);
-            Assert.Null(createWorkspaceOutput.Message);
-            Assert.Equal(CreateWorkspaceStatus.Success, createWorkspaceOutput.Status);
             Assert.Equal(workspaceName, createWorkspaceOutput.WorkspaceName);
         }
 

@@ -1,8 +1,7 @@
-import { createEffect, createSignal, createUniqueId, Show } from 'solid-js';
-import { postRegister, RegisterStatus } from '../api/GiantTeam.Authentication.Api';
-
-const getId = (suffix: string) =>
-  createUniqueId() + "_" + suffix;
+import { createEffect, createSignal, Show } from 'solid-js';
+import { postRegister } from '../api/GiantTeam.Authentication.Api';
+import { createId } from '../utils/htmlHelpers';
+import { createUrl } from '../utils/urlHelpers';
 
 export default function Register() {
   // Input
@@ -13,6 +12,7 @@ export default function Register() {
   const [passwordConfirmation, passwordConfirmationSetter] = createSignal("");
 
   // Output
+  const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
 
   createEffect(() => {
@@ -31,18 +31,14 @@ export default function Register() {
       passwordConfirmation: passwordConfirmation(),
     });
 
-    console.log(output);
+    okSetter(output.ok);
 
-    switch (output.status) {
-      case RegisterStatus.Success:
-        messageSetter("Success! Redirecting to the login page…");
-        location.replace("/login");
-        break;
-      case RegisterStatus.Problem:
-        messageSetter(output.message);
-        break;
-      default:
-        throw Error(`Unsupported RegisterStatus ${output.status}.`);
+    if (output.ok) {
+      messageSetter("Success! Redirecting to the login page…");
+      // TODO: Redirect to page that triggered login flow
+      location.replace(createUrl("/login", { username: username() }));
+    } else {
+      messageSetter(output.message);
     }
   };
 
@@ -52,19 +48,19 @@ export default function Register() {
       <h1>Register</h1>
 
       <Show when={message()}>
-        <div class="text-red">
+        <p class={(ok() ? "text-green" : "text-red")}>
           {message()}
-        </div>
+        </p>
       </Show>
 
       <form onSubmit={formSubmit}>
 
         <div>
-          <label for={getId("Name")}>
+          <label for={createId("name")}>
             Name
           </label>
           <input
-            id={getId("Name")}
+            id={createId("name")}
             value={name()}
             onChange={e => nameSetter(e.currentTarget.value)}
             required
@@ -73,11 +69,11 @@ export default function Register() {
         </div>
 
         <div>
-          <label for={getId("Email")}>
+          <label for={createId("email")}>
             Email
           </label>
           <input
-            id={getId("Email")}
+            id={createId("email")}
             value={email()}
             onChange={e => emailSetter(e.currentTarget.value)}
             required
@@ -86,11 +82,11 @@ export default function Register() {
         </div>
 
         <div>
-          <label for={getId("Username")}>
+          <label for={createId("username")}>
             Username
           </label>
           <input
-            id={getId("Username")}
+            id={createId("username")}
             value={username()}
             onChange={e => usernameSetter(e.currentTarget.value)}
             required
@@ -98,11 +94,11 @@ export default function Register() {
         </div>
 
         <div>
-          <label for={getId("Password")}>
+          <label for={createId("password")}>
             Password
           </label>
           <input
-            id={getId("Password")}
+            id={createId("password")}
             value={password()}
             onChange={e => passwordSetter(e.currentTarget.value)}
             required
@@ -111,11 +107,11 @@ export default function Register() {
         </div>
 
         <div>
-          <label for={getId("PasswordConfirmation")}>
+          <label for={createId("passwordConfirmation")}>
             Password Confirmation
           </label>
           <input
-            id={getId("PasswordConfirmation")}
+            id={createId("passwordConfirmation")}
             value={passwordConfirmation()}
             onChange={e => passwordConfirmationSetter(e.currentTarget.value)}
             required

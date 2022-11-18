@@ -1,31 +1,26 @@
 import { createSignal, Show } from 'solid-js';
 import { FetchWorkspaceInput, FetchWorkspaceOutput } from '../api/GiantTeam';
 import { postFetchWorkspace } from '../api/GiantTeam.Data.Api';
-import { HttpStatusCode, postJson } from '../utils/fetchHelpers';
+import { postJson } from '../utils/httpHelpers';
 import { getParam } from '../utils/urlHelpers';
 
 export default function WorkspacePage() {
 
-  // Input
-
-  // Output
-  const [status, statusSetter] = createSignal<number>(null);
+  const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
-  const [workspace, workspaceSetter] = createSignal<FetchWorkspaceOutput>();
+  const [data, dataSetter] = createSignal<FetchWorkspaceOutput>();
 
   const fetchWorkspace = async () => {
 
     const workspaceName = getParam("workspaceName");
 
-    const output = await postJson<FetchWorkspaceInput, FetchWorkspaceOutput>(
-      "/api/fetch-workspace",
-      {
-        workspaceName: workspaceName
-      });
+    const output = await postFetchWorkspace({
+      workspaceName: workspaceName
+    });
 
-    statusSetter(output.status);
-    messageSetter(output.message ?? "");
-    workspaceSetter(output.data ?? null);
+    okSetter(output.ok);
+    messageSetter(output.message);
+    dataSetter(output.data);
   };
 
   fetchWorkspace();
@@ -36,13 +31,13 @@ export default function WorkspacePage() {
       <h1>Workspace</h1>
 
       <Show when={message()}>
-        <p class={(status() == HttpStatusCode.Ok ? "text-green" : "text-red")}>
+        <p class={(ok() ? "text-green" : "text-red")}>
           {message()}
         </p>
       </Show>
 
-      <Show when={typeof workspace() === "object"}>
-        <pre>{JSON.stringify(workspace())}</pre>
+      <Show when={ok()}>
+        <pre>{JSON.stringify(data())}</pre>
       </Show>
 
     </section>

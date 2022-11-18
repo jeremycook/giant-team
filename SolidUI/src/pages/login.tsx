@@ -1,35 +1,32 @@
 import { createSignal, Show } from 'solid-js';
-import { postLogin, LoginStatus } from '../api/GiantTeam.Authentication.Api';
+import { postLogin } from '../api/GiantTeam.Authentication.Api';
 import { createId } from '../utils/htmlHelpers';
 
 export default function Login() {
-  // Input
-  const [username, usernameSetter] = createSignal("");
-  const [password, passwordSetter] = createSignal("");
-  const [remainLoggedIn, remainLoggedInSetter] = createSignal(false);
 
-  // Output
+  const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
 
     const output = await postLogin({
-      username: username(),
-      password: password(),
-      remainLoggedIn: remainLoggedIn(),
+      username: form.username.value,
+      password: form.password.value,
+      remainLoggedIn: form.remainLoggedIn.checked,
     });
 
-    switch (output.status) {
-      case LoginStatus.Success:
-        messageSetter("Logging you in…");
-        location.replace("/");
-        break;
-      case LoginStatus.Problem:
-        messageSetter(output.message);
-        break;
-      default:
-        throw Error(`Unsupported LoginStatus ${output.status}.`);
+    console.log(output);
+
+    okSetter(output.ok);
+
+    if (output.ok) {
+      messageSetter("Logging you in…");
+      // TODO: Redirect to page that triggered login flow
+      location.replace("/");
+    } else {
+      messageSetter(output.message);
     }
   };
 
@@ -39,44 +36,41 @@ export default function Login() {
       <h1>Login</h1>
 
       <Show when={message()}>
-        <div class="text-red">
+        <p class={(ok() ? "text-green" : "text-red")}>
           {message()}
-        </div>
+        </p>
       </Show>
 
       <form onSubmit={formSubmit}>
 
         <div>
-          <label for={createId("Username")}>
+          <label for={createId("username")}>
             Username
           </label>
           <input
-            id={createId("Username")}
-            value={username()}
-            onChange={e => usernameSetter(e.currentTarget.value)}
+            id={createId("username")}
+            name="username"
             required
             autofocus
           />
         </div>
 
         <div>
-          <label for={createId("Password")}>
+          <label for={createId("password")}>
             Password
           </label>
           <input
-            id={createId("Password")}
+            id={createId("password")}
+            name="password"
             type="password"
-            value={password()}
-            onChange={e => passwordSetter(e.currentTarget.value)}
             required
           />
         </div>
 
         <div>
           <label><input
+            name="remainLoggedIn"
             type="checkbox"
-            checked={remainLoggedIn()}
-            onChange={e => remainLoggedInSetter(e.currentTarget.checked)}
           /> Keep me logged in</label>
         </div>
 

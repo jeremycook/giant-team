@@ -11,7 +11,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
     {
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
-        private readonly WorkspaceConnectionService connectionService;
+        private readonly UserConnectionService connectionService;
 
         public class FetchRoleInput
         {
@@ -40,13 +40,19 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public FetchRoleService(
             ValidationService validationService,
             SessionService sessionService,
-            WorkspaceConnectionService connectionService)
+            UserConnectionService connectionService)
         {
             this.validationService = validationService;
             this.sessionService = sessionService;
             this.connectionService = connectionService;
         }
 
+        /// <summary>
+        /// Fetch the requested role. Throws <see cref="DetailedValidationException"/> if not found.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        /// <exception cref="DetailedValidationException">Role not found.</exception>
         public async Task<FetchRoleOutput> FetchRoleAsync(FetchRoleInput input)
         {
             validationService.Validate(input);
@@ -81,7 +87,7 @@ new
 
             if (output is null)
             {
-                throw new DetailedValidationException(404, $"Role not found.");
+                throw new DetailedValidationException($"Role not found.");
             }
 
             output.Members = await gridReader.ReadAsync<FetchRoleMemberOutput>();

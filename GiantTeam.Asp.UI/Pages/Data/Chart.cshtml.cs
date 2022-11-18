@@ -33,7 +33,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
         }
 
         public async Task<ActionResult> OnGet(
-            [FromServices] WorkspaceConnectionService databaseConnectionService)
+            [FromServices] UserConnectionService databaseConnectionService)
         {
             try
             {

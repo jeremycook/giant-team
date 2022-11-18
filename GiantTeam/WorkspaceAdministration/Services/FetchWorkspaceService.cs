@@ -9,7 +9,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
     public class FetchWorkspaceService
     {
         private readonly ValidationService validationService;
-        private readonly WorkspaceConnectionService connectionService;
+        private readonly UserConnectionService connectionService;
 
         public class FetchWorkspaceInput
         {
@@ -27,7 +27,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
         public FetchWorkspaceService(
             ValidationService validationService,
-            WorkspaceConnectionService connectionService)
+            UserConnectionService connectionService)
         {
             this.validationService = validationService;
             this.connectionService = connectionService;
@@ -37,7 +37,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
         {
             validationService.Validate(input);
 
-            using var connection = await connectionService.OpenConnectionAsync(input.WorkspaceName!);
+            using var connection = await connectionService.OpenMaintenanceConnectionAsync();
 
             var output = await connection.QuerySingleOrDefaultAsync<FetchWorkspaceOutput>($"""
 SELECT
@@ -54,7 +54,7 @@ new
 
             if (output is null)
             {
-                throw new DetailedValidationException(404, $"Workspace not found.");
+                throw new DetailedValidationException($"Workspace not found.");
             }
 
             return output;

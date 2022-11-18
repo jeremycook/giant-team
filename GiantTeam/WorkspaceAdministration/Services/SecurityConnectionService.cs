@@ -6,11 +6,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
     /// <summary>
     /// Create connections based on <see cref="GiantTeamOptions.WorkspaceAdministrationConnection"/>.
     /// </summary>
-    public class WorkspaceAdministrationService
+    public class SecurityConnectionService
     {
         private readonly IOptions<GiantTeamOptions> options;
 
-        public WorkspaceAdministrationService(IOptions<GiantTeamOptions> options)
+        public SecurityConnectionService(IOptions<GiantTeamOptions> options)
         {
             this.options = options;
         }
@@ -19,7 +19,6 @@ namespace GiantTeam.WorkspaceAdministration.Services
         /// Returns a new and open connection based on <see cref="GiantTeamOptions.WorkspaceAdministrationConnection"/>.
         /// </summary>
         /// <returns></returns>
-        [Obsolete(WorkspaceConstants.SecurityAdministration)]
         public NpgsqlConnection OpenConnection()
         {
             var adminConnectionOptions = options.Value.WorkspaceAdministrationConnection;
@@ -31,7 +30,6 @@ namespace GiantTeam.WorkspaceAdministration.Services
         /// Returns a new and open connection based on <see cref="GiantTeamOptions.WorkspaceAdministrationConnection"/>.
         /// </summary>
         /// <returns></returns>
-        [Obsolete(WorkspaceConstants.SecurityAdministration)]
         public async Task<NpgsqlConnection> OpenConnectionAsync()
         {
             var adminConnectionOptions = options.Value.WorkspaceAdministrationConnection;

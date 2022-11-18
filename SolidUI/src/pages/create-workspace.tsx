@@ -1,18 +1,17 @@
-import { createSignal, from, Show } from 'solid-js';
-import { CreateWorkspaceInput, CreateWorkspaceStatus } from '../api/GiantTeam';
-import { postCreateWorkspace } from '../api/GiantTeam.Data.Api';
+import { createSignal, Show } from 'solid-js';
+import { CreateWorkspaceInput, CreateWorkspaceOutput } from '../api/GiantTeam';
+import { HttpStatusCode, postJson } from '../utils/httpHelpers';
 import { createId } from '../utils/htmlHelpers';
 import { createUrl } from '../utils/urlHelpers';
+import { postCreateWorkspace } from '../api/GiantTeam.Data.Api';
 
 export default function CreateWorkspace() {
 
-  // Output
-  const [status, statusSetter] = createSignal<CreateWorkspaceStatus>(null);
+  const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
-
     const form = e.target as HTMLFormElement;
 
     const output = await postCreateWorkspace({
@@ -20,17 +19,14 @@ export default function CreateWorkspace() {
       workspaceOwner: form.workspaceOwner.value,
     });
 
-    statusSetter(output.status);
-    switch (output.status) {
-      case CreateWorkspaceStatus.Success:
-        messageSetter("Workspace created! Taking you to it now…");
-        location.assign(createUrl("/workspace", { workspaceName: output.workspaceName }));
-        break;
-      case CreateWorkspaceStatus.Problem:
-        messageSetter(output.message);
-        break;
-      default:
-        throw Error(`Unsupported CreateWorkspaceStatus: ${output.status}.`);
+    okSetter(output.ok);
+
+    if (output.ok) {
+      messageSetter("Workspace created! Taking you to it now…");
+      location.assign(createUrl("/workspace", { workspaceName: output.data.workspaceName }));
+    }
+    else {
+      messageSetter(output.message);
     }
   };
 
@@ -40,7 +36,7 @@ export default function CreateWorkspace() {
       <h1>Create Workspace</h1>
 
       <Show when={message()}>
-        <p class={(status() == CreateWorkspaceStatus.Success ? "text-green" : "text-red")}>
+        <p class={(ok() ? "text-green" : "text-red")}>
           {message()}
         </p>
       </Show>
@@ -68,10 +64,6 @@ export default function CreateWorkspace() {
             name="workspaceOwner"
             required
           />
-        </div>
-
-        <div>
-          <label><input type="checkbox" name="isPublic" /> Public workspace</label>
         </div>
 
         <button type="submit">

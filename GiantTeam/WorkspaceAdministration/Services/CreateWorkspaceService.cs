@@ -27,51 +27,27 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
         public class CreateWorkspaceOutput
         {
-            public CreateWorkspaceOutput(CreateWorkspaceStatus status)
-            {
-                Status = status;
-            }
-
-            public CreateWorkspaceStatus Status { get; }
-
-            public string? Message { get; init; }
-
-            public string? WorkspaceName { get; set; }
-        }
-
-        public enum CreateWorkspaceStatus
-        {
-            /// <summary>
-            /// Creation was not successful.
-            /// Check out <see cref="CreateWorkspaceOutput.Message"/>.
-            /// </summary>
-            Problem = 400,
-
-            /// <summary>
-            /// Created the workspace.
-            /// Check out the <see cref="CreateWorkspaceOutput.WorkspaceName"/>.
-            /// </summary>
-            Success = 200,
+            public string WorkspaceName { get; set; } = null!;
         }
 
         private readonly ILogger<CreateWorkspaceService> logger;
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
-        private readonly FetchRoleService fetchTeamService;
-        private readonly WorkspaceConnectionService connectionService;
+        private readonly FetchRoleService fetchRoleService;
+        private readonly UserConnectionService connectionService;
 
         public CreateWorkspaceService(
             ILogger<CreateWorkspaceService> logger,
             ValidationService validationService,
             SessionService sessionService,
             FetchRoleService fetchTeamService,
-            WorkspaceConnectionService connectionService)
+            UserConnectionService connectionService)
         {
             this.connectionService = connectionService;
             this.logger = logger;
             this.validationService = validationService;
             this.sessionService = sessionService;
-            this.fetchTeamService = fetchTeamService;
+            this.fetchRoleService = fetchTeamService;
         }
 
         public async Task<CreateWorkspaceOutput> CreateWorkspaceAsync(CreateWorkspaceInput input)
@@ -80,20 +56,9 @@ namespace GiantTeam.WorkspaceAdministration.Services
             {
                 return await ProcessAsync(input);
             }
-            catch (ValidationException ex)
-            {
-                return new(CreateWorkspaceStatus.Problem)
-                {
-                    Message = ex.Message,
-                };
-            }
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
-                logger.LogInformation(exception, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetType(), ex.Message);
-                return new(CreateWorkspaceStatus.Problem)
-                {
-                    Message = $"The \"{input.WorkspaceName}\" workspace was not created: {ex.MessageText.TrimEnd('.')}. {ex.Detail}",
-                };
+                throw new ValidationException($"The \"{input.WorkspaceName}\" workspace was not created: {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
             }
         }
 
@@ -109,10 +74,29 @@ namespace GiantTeam.WorkspaceAdministration.Services
             string workspaceName = input.WorkspaceName!;
             string workspaceOwner = input.WorkspaceOwner!;
 
+            try
+            {
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            var role = await fetchRoleService.FetchRoleAsync(new()
+            {
+                RoleName = workspaceOwner,
+            });
+
+            if (!role.Inherit || role.CanLogin)
+            {
+                throw new ValidationException("The workspace owner must be a team role. It appears to be a user role.");
+            }
+
             using var maintenance = await connectionService.OpenMaintenanceConnectionAsync(workspaceOwner);
             try
             {
-                await maintenance.ExecuteAsync($"CREATE DATABASE {PgQuote.Identifier(workspaceName)} OWNER {PgQuote.Identifier(workspaceOwner)};");
+                await maintenance.ExecuteAsync($"CREATE DATABASE {PgQuote.Identifier(workspaceName)};");
 
                 using var workspaceDb = await connectionService.OpenConnectionAsync(workspaceName, workspaceOwner);
                 await workspaceDb.ExecuteAsync("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
@@ -127,7 +111,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
                 throw;
             }
 
-            return new(CreateWorkspaceStatus.Success)
+            return new()
             {
                 WorkspaceName = workspaceName,
             };

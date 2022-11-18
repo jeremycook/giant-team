@@ -190,16 +190,9 @@ namespace GiantTeam.Tools
                             path = $"/api/{controllerSlug}/{actionSlug}";
                         }
 
-                        sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}){(returnTypeName != string.Empty ? $": Promise<{returnTypeName}>" : "")} => {{\n");
-                        sb.Append($"    const response = await fetch(\"{path}\", {{\n");
-                        sb.Append($"        method: \"POST\",\n");
-                        sb.Append($"        headers: {{ \"Content-Type\": \"application/json\" }},\n");
-                        if (parameters.Any())
-                        { sb.Append($"        body: JSON.stringify({string.Join(", ", parameters.Select(p => p.Name))})\n"); }
-                        sb.Append($"    }});\n");
-                        if (returnTypeName != string.Empty)
-                        { sb.Append($"    return response.json();\n"); }
-                        sb.Append($"}}\n\n");
+                        sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}){(returnTypeName != string.Empty ? $": Promise<DataResponse<{returnTypeName}>>" : "")} => \n");
+                        sb.Append($"    await postJson({string.Join(", ", parameters.Select(p => p.Name).Prepend($"\"{path}\""))});");
+                        sb.Append($"\n\n");
                     }
                 }
 

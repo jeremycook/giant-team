@@ -5,12 +5,12 @@ using Npgsql;
 
 namespace GiantTeam.WorkspaceAdministration.Services
 {
-    public class WorkspaceConnectionService
+    public class UserConnectionService
     {
         private readonly IOptions<GiantTeamOptions> options;
         private readonly SessionService sessionService;
 
-        public WorkspaceConnectionService(IOptions<GiantTeamOptions> options, SessionService sessionService)
+        public UserConnectionService(IOptions<GiantTeamOptions> options, SessionService sessionService)
         {
             this.options = options;
             this.sessionService = sessionService;
@@ -28,6 +28,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
             return connection;
         }
 
+        public NpgsqlConnection OpenMaintenanceConnection()
+        {
+            return OpenMaintenanceConnection(sessionService.User.DbRole);
+        }
+
         public async Task<NpgsqlConnection> OpenMaintenanceConnectionAsync(string setRole)
         {
             string? maintenanceDatabase =
@@ -38,6 +43,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
             await connection.OpenAsync();
             await connection.SetRoleAsync(setRole);
             return connection;
+        }
+
+        public async Task<NpgsqlConnection> OpenMaintenanceConnectionAsync()
+        {
+            return await OpenMaintenanceConnectionAsync(sessionService.User.DbRole);
         }
 
         public NpgsqlConnection OpenConnection(string databaseName, string setRole)
@@ -82,6 +92,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
             return connection;
         }
 
+        /// <summary>
+        /// Creates a connection with <see cref="SessionUser.DbLogin"/> username.
+        /// </summary>
+        /// <param name="databaseName"></param>
+        /// <returns></returns>
         public NpgsqlConnection CreateConnection(string databaseName)
         {
             SessionUser user = sessionService.User;

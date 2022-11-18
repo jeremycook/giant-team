@@ -10,12 +10,12 @@ namespace GiantTeam.WorkspaceInteraction.Data
 {
     public class WorkspaceDbContext : DbContext
     {
-        private readonly WorkspaceConnectionService databaseConnectionService;
+        private readonly UserConnectionService databaseConnectionService;
         private readonly SessionService sessionService;
         private readonly string databaseName;
 
         public WorkspaceDbContext(
-            WorkspaceConnectionService databaseConnectionService,
+            UserConnectionService databaseConnectionService,
             SessionService sessionService,
             string databaseName)
         {

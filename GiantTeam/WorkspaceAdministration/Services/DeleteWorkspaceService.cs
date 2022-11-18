@@ -11,7 +11,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
     public class DeleteWorkspaceService
     {
         private readonly FetchWorkspaceService fetchWorkspaceService;
-        private readonly WorkspaceConnectionService connectionService;
+        private readonly UserConnectionService connectionService;
         private readonly ValidationService validationService;
 
         public class DeleteWorkspaceInput
@@ -48,7 +48,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
         public DeleteWorkspaceService(
             FetchWorkspaceService fetchWorkspaceService,
-            WorkspaceConnectionService connectionService,
+            UserConnectionService connectionService,
             ValidationService validationService)
         {
             this.fetchWorkspaceService = fetchWorkspaceService;

@@ -20,7 +20,7 @@ export default defineConfig({
     target: 'esnext',
   },
   esbuild: {
-    // Drop console and debugger code when building: https://esbuild.github.io/api/#drop
-    drop: ["console", "debugger"],
+    // TODO: Drop console and debugger code when building: https://esbuild.github.io/api/#drop
+    // drop: ["console", "debugger"],
   },
 });

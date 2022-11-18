@@ -2,7 +2,6 @@
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
-using GiantTeam.WorkspaceAdministration;
 using GiantTeam.WorkspaceAdministration.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -14,7 +13,7 @@ namespace GiantTeam.UserManagement.Services
     {
         private readonly ILogger<CreateTeamService> logger;
         private readonly SessionService sessionService;
-        private readonly WorkspaceAdministrationService wa;
+        private readonly SecurityConnectionService security;
         private readonly ValidationService validationService;
 
         public class CreateTeamInput
@@ -27,22 +26,21 @@ namespace GiantTeam.UserManagement.Services
 
         public class CreateTeamOutput
         {
-            public string? TeamId { get; set; }
+            public string TeamId { get; set; } = null!;
         }
 
         public CreateTeamService(
             ILogger<CreateTeamService> logger,
             SessionService sessionService,
-            WorkspaceAdministrationService wa,
+            SecurityConnectionService admin,
             ValidationService validationService)
         {
             this.logger = logger;
             this.sessionService = sessionService;
-            this.wa = wa;
+            this.security = admin;
             this.validationService = validationService;
         }
 
-        [Obsolete(WorkspaceConstants.SecurityAdministration)]
         public async Task<CreateTeamOutput> CreateTeamAsync(CreateTeamInput input)
         {
             try
@@ -59,14 +57,8 @@ namespace GiantTeam.UserManagement.Services
             }
         }
 
-        [Obsolete(WorkspaceConstants.SecurityAdministration)]
         private async Task<CreateTeamOutput> ProcessAsync(CreateTeamInput input)
         {
-            if (input is null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
             validationService.Validate(input);
 
             var sessionUser = sessionService.User;
@@ -74,7 +66,7 @@ namespace GiantTeam.UserManagement.Services
 
             // Create the team's database role
             // with the session user an ADMIN of it.
-            using var connection = await wa.OpenConnectionAsync();
+            using var connection = await security.OpenConnectionAsync();
             string sql = $"""
 CREATE ROLE {PgQuote.Identifier(teamName)} CREATEDB INHERIT ADMIN {PgQuote.Identifier(sessionUser.DbRole)};
 """;

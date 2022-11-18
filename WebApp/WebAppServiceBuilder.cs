@@ -1,4 +1,5 @@
 ﻿using GiantTeam.Asp;
+using GiantTeam.Asp.Filters;
 using GiantTeam.Asp.Routing;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
@@ -97,6 +98,9 @@ namespace WebApp
 
             services.AddControllers(options =>
             {
+                // Exception filters we control
+                options.Filters.Add<GiantTeamExceptionFilter>();
+
                 // Slugify paths
                 options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
             });
