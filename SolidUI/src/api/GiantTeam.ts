@@ -43,14 +43,7 @@ export interface VerifyPasswordInput {
 }
 
 export interface VerifyPasswordOutput {
-    status: VerifyPasswordStatus;
-    message?: string;
-    userId?: string;
-}
-
-export enum VerifyPasswordStatus {
-    Success = 200,
-    Problem = 400,
+    userId: string;
 }
 
 export interface CreateWorkspaceInput {

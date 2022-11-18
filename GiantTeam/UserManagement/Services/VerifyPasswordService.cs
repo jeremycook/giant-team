@@ -18,31 +18,7 @@ namespace GiantTeam.UserManagement.Services
 
         public class VerifyPasswordOutput
         {
-            public VerifyPasswordOutput(VerifyPasswordStatus status)
-            {
-                Status = status;
-            }
-
-            public VerifyPasswordStatus Status { get; }
-
-            public string? Message { get; init; }
-
-            public Guid? UserId { get; set; }
-        }
-
-        public enum VerifyPasswordStatus
-        {
-            /// <summary>
-            /// Problem authenticating.
-            /// Check <see cref="VerifyPasswordOutput.Message"/>.
-            /// </summary>
-            Problem = 400,
-
-            /// <summary>
-            /// User authenticated.
-            /// Check <see cref="VerifyPasswordOutput.UserId"/>.
-            /// </summary>
-            Success = 200,
+            public Guid UserId { get; set; }
         }
 
         private readonly RecordsManagementDbContext db;
@@ -53,7 +29,14 @@ namespace GiantTeam.UserManagement.Services
             this.db = db;
         }
 
-        public async Task<VerifyPasswordOutput> VerifyAsync(VerifyPasswordInput input)
+        /// <summary>
+        /// Returns a <see cref="VerifyPasswordOutput"/> if the credentials are valid.
+        /// Throws <see cref="ValidationException"/> if they are not.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        /// <exception cref="ValidationException"></exception>
+        public async Task<VerifyPasswordOutput> VerifyUsernameAndPasswordAsync(VerifyPasswordInput input)
         {
             var userPassword = await (
                 from u in db.Users
@@ -66,7 +49,8 @@ namespace GiantTeam.UserManagement.Services
                 !string.IsNullOrEmpty(userPassword.PasswordDigest) &&
                 PasswordHelper.VerifyHashedPlaintext(userPassword.PasswordDigest, input.Password))
             {
-                return new(VerifyPasswordStatus.Success)
+                // TODO: Log verification success
+                return new()
                 {
                     UserId = userPassword.UserId,
                 };
@@ -74,10 +58,7 @@ namespace GiantTeam.UserManagement.Services
             else
             {
                 // TODO: Log verification failure
-                return new(VerifyPasswordStatus.Problem)
-                {
-                    Message = $"The username or password is incorrect.",
-                };
+                throw new ValidationException($"The username or password is incorrect.");
             }
         }
     }

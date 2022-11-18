@@ -32,27 +32,15 @@ namespace GiantTeam.Asp.UI.Pages
         {
             if (ModelState.IsValid)
             {
-                var output = await verifyPasswordService.VerifyAsync(new VerifyPasswordInput
+                var output = await verifyPasswordService.VerifyUsernameAndPasswordAsync(new VerifyPasswordInput
                 {
                     Username = Form.Username!,
                     Password = Form.Password!,
                 });
 
-                switch (output.Status)
-                {
-                    case VerifyPasswordStatus.Problem:
-                        ModelState.AddModelError(string.Empty, output.Message ?? "Invalid username or password.");
-                        return Page();
-                    case VerifyPasswordStatus.Success:
-                        // OK, continue
-                        break;
-                    default:
-                        throw new NotSupportedException($"Unsupported {nameof(VerifyPasswordStatus)}: {nameof(output.Status)}.");
-                }
-
                 // Build a session user
                 DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
-                SessionUser sessionUser = await buildSessionUserService.BuildAsync(output.UserId!.Value, validUntil);
+                SessionUser sessionUser = await buildSessionUserService.BuildSessionUserAsync(output.UserId, validUntil);
 
                 // Create a principal from the session user
                 ClaimsPrincipal principal = new(sessionUser.CreateIdentity(PrincipalHelper.AuthenticationTypes.Password));

@@ -32,26 +32,15 @@ public class LoginController : ControllerBase
         [FromServices] BuildSessionUserService buildSessionUserService,
         LoginInput input)
     {
-        var output = await verifyPasswordService.VerifyAsync(new VerifyPasswordInput
+        var output = await verifyPasswordService.VerifyUsernameAndPasswordAsync(new VerifyPasswordInput
         {
             Username = input.Username!,
             Password = input.Password!,
         });
 
-        switch (output.Status)
-        {
-            case VerifyPasswordStatus.Problem:
-                throw new ValidationException(output.Message);
-            case VerifyPasswordStatus.Success:
-                // OK, continue
-                break;
-            default:
-                throw new NotSupportedException($"Unsupported {nameof(VerifyPasswordStatus)}: {nameof(output.Status)}.");
-        }
-
         // Build a session user
         DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
-        SessionUser sessionUser = await buildSessionUserService.BuildAsync(output.UserId!.Value, validUntil);
+        SessionUser sessionUser = await buildSessionUserService.BuildSessionUserAsync(output.UserId, validUntil);
 
         // Create a principal from the session user
         ClaimsPrincipal principal = new(sessionUser.CreateIdentity(PrincipalHelper.AuthenticationTypes.Password));

@@ -16,8 +16,16 @@ namespace GiantTeam.UserManagement.Services
             this.wa = wa;
         }
 
-        public async Task<SessionUser> BuildAsync(Guid userId, DateTimeOffset validUntil)
+        /// <summary>
+        /// Returns a <see cref="SessionUser"/> with new database login credentials.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="validUntil"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async Task<SessionUser> BuildSessionUserAsync(Guid userId, DateTimeOffset validUntil)
         {
+            // Find the user
             User user =
                 await rm.Users.FindAsync(userId) ??
                 throw new ArgumentException($"The provided {nameof(userId)} did not match a user.");

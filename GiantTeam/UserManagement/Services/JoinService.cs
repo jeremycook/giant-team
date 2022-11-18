@@ -39,18 +39,18 @@ namespace GiantTeam.UserManagement.Services
 
         private readonly ILogger<JoinService> logger;
         private readonly RecordsManagementDbContext recordsManagementDbContext;
-        private readonly DatabaseSecurityService workspaceAdministrationDbContext;
+        private readonly DatabaseSecurityService security;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
             RecordsManagementDbContext recordsManagementDbContext,
-            DatabaseSecurityService workspaceAdministrationDbContext,
+            DatabaseSecurityService databaseSecurityService,
             ValidationService validationService)
         {
             this.logger = logger;
             this.recordsManagementDbContext = recordsManagementDbContext;
-            this.workspaceAdministrationDbContext = workspaceAdministrationDbContext;
+            this.security = databaseSecurityService;
             this.validationService = validationService;
         }
 
@@ -103,7 +103,7 @@ namespace GiantTeam.UserManagement.Services
             // Create database user
             try
             {
-                await workspaceAdministrationDbContext.CreateUserAsync(user.DbRoleId);
+                await security.CreateUserAsync(user.DbRoleId);
             }
             catch (PostgresException ex) when (ex.SqlState == "42710")
             {
