@@ -1,4 +1,6 @@
-﻿namespace GiantTeam.UserManagement
+﻿using System.Security.Claims;
+
+namespace GiantTeam.UserManagement
 {
     public static class PrincipalHelper
     {
@@ -18,7 +20,13 @@
 
             public const string DbLogin = "dbl";
             public const string DbPassword = "dbp";
-            public const string DbRole = "dbr";
+        }
+
+        public static string FindRequiredValue(this IEnumerable<Claim> claims, string type)
+        {
+            return
+                claims.FirstOrDefault(o => o.Type == type)?.Value ??
+                throw new InvalidOperationException($"Missing required value of \"{type}\" claim.");
         }
     }
 }

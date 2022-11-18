@@ -9,32 +9,19 @@ namespace GiantTeam.UserManagement.Services
             if (identity is null)
                 throw new ArgumentNullException(nameof(identity));
 
+            string dbLogin = identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.DbLogin);
+            string dbRole = dbLogin[..dbLogin.IndexOf(':')];
+
             SessionUser sessionUser = new(
-                sub:
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Sub)?.Value ??
-                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Sub}\" claim."),
+                // Common claims
+                sub: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Sub),
+                username: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Username),
+                name: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Name),
 
-                username:
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Username)?.Value ??
-                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Username}\" claim."),
-
-                name:
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.Name)?.Value ??
-                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.Name}\" claim."),
-
-                // Database stuff
-
-                dbLogin:
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DbLogin)?.Value ??
-                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DbLogin}\" claim."),
-
-                dbPassword:
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DbPassword)?.Value ??
-                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DbPassword}\" claim."),
-
-                dbRole:
-                    identity.Claims.FirstOrDefault(o => o.Type == PrincipalHelper.ClaimTypes.DbRole)?.Value ??
-                    throw new InvalidOperationException($"Missing \"{PrincipalHelper.ClaimTypes.DbRole}\" claim.")
+                // Database access claims
+                dbRole: dbRole,
+                dbLogin: dbLogin,
+                dbPassword: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.DbPassword)
             );
 
             return sessionUser;
@@ -44,17 +31,21 @@ namespace GiantTeam.UserManagement.Services
             string sub,
             string username,
             string name,
+            string dbRole,
             string dbLogin,
-            string dbPassword,
-            string dbRole)
+            string dbPassword)
         {
-            Sub = sub;
-            Username = username;
-            Name = name;
+            Sub = sub ?? throw new ArgumentNullException(nameof(sub));
+            Username = username ?? throw new ArgumentNullException(nameof(username));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            DbRole = dbRole ?? throw new ArgumentNullException(nameof(dbRole));
+            DbLogin = dbLogin ?? throw new ArgumentNullException(nameof(dbLogin));
+            DbPassword = dbPassword ?? throw new ArgumentNullException(nameof(dbPassword));
 
-            DbLogin = dbLogin;
-            DbPassword = dbPassword;
-            DbRole = dbRole;
+            if (!DbLogin.StartsWith(DbRole + ':'))
+            {
+                throw new ArgumentException($"The {nameof(DbLogin)} must start with {DbRole + ':'}.");
+            }
         }
 
         public ClaimsIdentity CreateIdentity(string authenticationType)
@@ -73,7 +64,6 @@ namespace GiantTeam.UserManagement.Services
             // Database claims
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbLogin, DbLogin));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbPassword, DbPassword));
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbRole, DbRole));
 
             return identity;
         }
@@ -90,8 +80,8 @@ namespace GiantTeam.UserManagement.Services
 
         // Database
 
+        public string DbRole { get; }
         public string DbLogin { get; }
         public string DbPassword { get; }
-        public string DbRole { get; }
     }
 }

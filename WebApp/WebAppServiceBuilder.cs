@@ -4,7 +4,6 @@ using GiantTeam.Asp.Routing;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
-using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -72,16 +71,14 @@ namespace WebApp
                         {
                             SessionService sessionService = context.HttpContext.RequestServices
                                 .GetRequiredService<SessionService>();
-                            WorkspaceAdministrationDbContext db = context.HttpContext.RequestServices
-                                .GetRequiredService<WorkspaceAdministrationDbContext>();
+                            DatabaseSecurityService security = context.HttpContext.RequestServices
+                                .GetRequiredService<DatabaseSecurityService>();
 
                             // Synchronize the lifespan of the passwords with the authentication cookie
-                            DateTimeOffset databasePasswordValidUntil = DateTimeOffset.UtcNow.Add(context.Options.ExpireTimeSpan).AddMinutes(1);
-
-                            // TODO: Verify that the login hasn't expired
+                            DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(context.Options.ExpireTimeSpan).AddMinutes(1);
 
                             // Extend life of db login's password
-                            await db.Database.ExecuteSqlRawAsync($"ALTER ROLE {PgQuote.Identifier(sessionService.User.DbLogin)} VALID UNTIL {{0}};", databasePasswordValidUntil);
+                            await security.SetLoginExpirationAsync(sessionService.User, validUntil);
                         }
                     };
                 });

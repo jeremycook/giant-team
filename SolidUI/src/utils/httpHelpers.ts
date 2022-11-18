@@ -13,11 +13,11 @@ export interface DataResponse<TData> {
     ok: boolean,
     status: number,
     message: string,
-    data?: TData | undefined,
+    data?: TData,
     errorData?: any,
 }
 
-export const postJson = async <TInput, TData>(url: string, input?: TInput): Promise<DataResponse<TData>> => {
+export const postJson = async <TInput, TData>(url: string, input: TInput = null): Promise<DataResponse<TData>> => {
     try {
 
         const body = input ? JSON.stringify(input) : null;

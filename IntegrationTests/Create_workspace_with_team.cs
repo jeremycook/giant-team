@@ -45,10 +45,6 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
                 Password = Constants.Password,
             });
             loginResponse.EnsureSuccessStatusCode();
-            var loginOutput = await loginResponse.Content.ReadFromJsonAsync<LoginOutput>();
-            Assert.NotNull(loginOutput);
-            Assert.Null(loginOutput.Message);
-            Assert.Equal(LoginStatus.Success, loginOutput.Status);
 
             // Authenticate next request with cookie
             var setCookie = loginResponse.Headers.GetValues("Set-Cookie");

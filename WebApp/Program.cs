@@ -3,7 +3,6 @@ using GiantTeam.Asp.Startup;
 using GiantTeam.DataProtection;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
-using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.Extensions.Options;
 
 namespace WebApp
@@ -47,7 +46,6 @@ namespace WebApp
                     {
                         await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migratorConnectionOptions, dataProtectionOptions.DataProtectionConnection);
                         await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migratorConnectionOptions, giantTeamOptions.RecordsManagementConnection);
-                        await app.Services.MigrateDbContextAsync<WorkspaceAdministrationDbContext>(migratorConnectionOptions, giantTeamOptions.WorkspaceAdministrationConnection);
                     }
                     catch (Exception ex)
                     {

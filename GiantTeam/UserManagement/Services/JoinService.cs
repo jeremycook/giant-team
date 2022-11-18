@@ -2,7 +2,6 @@
 using GiantTeam.Crypto;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
-using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
@@ -40,13 +39,13 @@ namespace GiantTeam.UserManagement.Services
 
         private readonly ILogger<JoinService> logger;
         private readonly RecordsManagementDbContext recordsManagementDbContext;
-        private readonly WorkspaceAdministrationDbContext workspaceAdministrationDbContext;
+        private readonly DatabaseSecurityService workspaceAdministrationDbContext;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
             RecordsManagementDbContext recordsManagementDbContext,
-            WorkspaceAdministrationDbContext workspaceAdministrationDbContext,
+            DatabaseSecurityService workspaceAdministrationDbContext,
             ValidationService validationService)
         {
             this.logger = logger;
@@ -104,7 +103,7 @@ namespace GiantTeam.UserManagement.Services
             // Create database user
             try
             {
-                await workspaceAdministrationDbContext.CreateDatabaseUserAsync(user.DbRoleId);
+                await workspaceAdministrationDbContext.CreateUserAsync(user.DbRoleId);
             }
             catch (PostgresException ex) when (ex.SqlState == "42710")
             {

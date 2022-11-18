@@ -190,7 +190,7 @@ namespace GiantTeam.Tools
                             path = $"/api/{controllerSlug}/{actionSlug}";
                         }
 
-                        sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}){(returnTypeName != string.Empty ? $": Promise<DataResponse<{returnTypeName}>>" : "")} => \n");
+                        sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}): Promise<DataResponse<{(returnTypeName != string.Empty ? returnTypeName : "null")}>> => \n");
                         sb.Append($"    await postJson({string.Join(", ", parameters.Select(p => p.Name).Prepend($"\"{path}\""))});");
                         sb.Append($"\n\n");
                     }

@@ -1,6 +1,5 @@
 ﻿using GiantTeam.UserManagement;
 using GiantTeam.UserManagement.Services;
-using GiantTeam.WorkspaceAdministration.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -26,35 +25,8 @@ public class LoginController : ControllerBase
         public bool RemainLoggedIn { get; set; } = false;
     }
 
-    public class LoginOutput
-    {
-        public LoginOutput(LoginStatus status)
-        {
-            Status = status;
-        }
-
-        public LoginStatus Status { get; }
-
-        public string? Message { get; init; }
-    }
-
-    public enum LoginStatus
-    {
-        /// <summary>
-        /// Authentication failed.
-        /// Check the <see cref="LoginOutput.Message"/>.
-        /// </summary>
-        Problem = 400,
-
-        /// <summary>
-        /// Authentication succeeded.
-        /// An HttpOnly authentication cookie is in the response that clients can use for authenticated requests.
-        /// </summary>
-        Success = 200,
-    }
-
     [HttpPost("/api/[Controller]")]
-    public async Task<LoginOutput> Post(
+    public async Task<OkResult> Post(
         [FromServices] VerifyPasswordService verifyPasswordService,
         [FromServices] IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions,
         [FromServices] BuildSessionUserService buildSessionUserService,
@@ -69,10 +41,7 @@ public class LoginController : ControllerBase
         switch (output.Status)
         {
             case VerifyPasswordStatus.Problem:
-                return new(LoginStatus.Problem)
-                {
-                    Message = output.Message,
-                };
+                throw new ValidationException(output.Message);
             case VerifyPasswordStatus.Success:
                 // OK, continue
                 break;
@@ -96,6 +65,6 @@ public class LoginController : ControllerBase
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
 
-        return new(LoginStatus.Success);
+        return Ok();
     }
 }

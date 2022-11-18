@@ -9,16 +9,6 @@ export interface LoginInput {
     remainLoggedIn: boolean;
 }
 
-export interface LoginOutput {
-    status: LoginStatus;
-    message?: string;
-}
-
-export enum LoginStatus {
-    Success = 200,
-    Problem = 400,
-}
-
 export interface RegisterInput {
     name: string;
     email: string;
@@ -50,10 +40,10 @@ export enum SessionStatus {
     Authenticated = 1,
 }
 
-export const postLogin = async (input: LoginInput): Promise<DataResponse<LoginOutput>> => 
+export const postLogin = async (input: LoginInput): Promise<DataResponse<null>> => 
     await postJson("/api/login", input);
 
-export const postLogout = async () => 
+export const postLogout = async (): Promise<DataResponse<null>> => 
     await postJson("/api/logout");
 
 export const postRegister = async (input: RegisterInput): Promise<DataResponse<RegisterOutput>> => 
