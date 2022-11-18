@@ -23,12 +23,18 @@ export default function Register() {
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
 
+    // Client-side validation
+    if (password() !== passwordConfirmation()) {
+      okSetter(false);
+      messageSetter("The password and password confirmation fields must match.");
+      return;
+    }
+
     const output = await postRegister({
       name: name(),
       email: email(),
       username: username(),
       password: password(),
-      passwordConfirmation: passwordConfirmation(),
     });
 
     okSetter(output.ok);

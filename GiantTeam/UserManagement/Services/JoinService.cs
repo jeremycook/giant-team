@@ -56,11 +56,6 @@ namespace GiantTeam.UserManagement.Services
 
         public async Task<JoinOutput> JoinAsync(JoinInput joinInputModel)
         {
-            if (joinInputModel is null)
-            {
-                throw new ArgumentNullException(nameof(joinInputModel));
-            }
-
             validationService.Validate(joinInputModel);
 
             DbRole dbRole = new()

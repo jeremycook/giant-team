@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.Authentication.Api.Controllers.RegisterController;
 using static GiantTeam.Authentication.Api.Controllers.SessionController;
+using static GiantTeam.UserManagement.Services.JoinService;
 
 namespace IntegrationTests;
 
@@ -29,23 +30,20 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
         {
             // Register
             {
-                using var registerResponse = await client.PostAsJsonAsync("/api/register", new RegisterInput()
+                using var registerResponse = await client.PostAsJsonAsync("/api/register", new JoinInput()
                 {
                     Name = $"Test User {utcNow:yy-MM-dd HHmmss}",
                     Email = $"test.user+{utcNow:yyMMddHHmmss}@example.com",
                     Username = username,
                     Password = password,
-                    PasswordConfirmation = password,
                 });
                 registerResponse.EnsureSuccessStatusCode();
-                var registerOutput = await registerResponse.Content.ReadFromJsonAsync<RegisterOutput>();
+                var registerOutput = await registerResponse.Content.ReadFromJsonAsync<JoinOutput>();
                 Assert.NotNull(registerOutput);
-                Assert.Null(registerOutput.Message);
-                Assert.Equal(RegisterStatus.Success, registerOutput.Status);
-                Assert.NotNull(registerOutput.UserId);
+                Assert.NotEqual(Guid.Empty, registerOutput.UserId);
 
                 // Save for later
-                userId = registerOutput.UserId.Value;
+                userId = registerOutput.UserId;
             }
 
             // Login
