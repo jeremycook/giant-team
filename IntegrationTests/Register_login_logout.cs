@@ -1,7 +1,6 @@
 using GiantTeam.Crypto;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
-using static GiantTeam.Authentication.Api.Controllers.RegisterController;
 using static GiantTeam.Authentication.Api.Controllers.SessionController;
 using static GiantTeam.UserManagement.Services.JoinService;
 

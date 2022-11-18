@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
-using static GiantTeam.Authentication.Api.Controllers.RegisterController;
 using static GiantTeam.UserManagement.Services.CreateTeamService;
+using static GiantTeam.UserManagement.Services.JoinService;
 using static GiantTeam.WorkspaceAdministration.Services.CreateWorkspaceService;
 using static GiantTeam.WorkspaceAdministration.Services.FetchWorkspaceService;
 
@@ -24,19 +24,17 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
         string workspaceName = $"Test {GetType().Name} {DateTime.Now:ddHHmmss}";
         string workspaceOwner = workspaceName + " Team";
 
-        // Register and login with fixed credentials
-        // Ignore responses, user may already exist and that's fine
+        // Register and login with fixed credentials that may already exist
         {
             // Register
-            using var registerResponse = await client.PostAsJsonAsync("/api/register", new RegisterInput()
+            using var registerResponse = await client.PostAsJsonAsync("/api/register", new JoinInput()
             {
                 Name = "Test User",
                 Email = "testuser@example.com",
                 Username = Constants.Username,
                 Password = Constants.Password,
-                PasswordConfirmation = Constants.Password,
             });
-            registerResponse.EnsureSuccessStatusCode();
+            // Ignore registration response
 
             // Login
             using var loginResponse = await client.PostAsJsonAsync("/api/login", new LoginInput()
