@@ -34,7 +34,7 @@ namespace WebApp
             if (app.Environment.IsDevelopment())
             {
                 ConnectionOptions? migratorConnectionOptions = app.Configuration
-                    .GetSection("GiantTeam.MigratorConnection")
+                    .GetSection("GiantTeam:MigratorConnection")
                     .Get<ConnectionOptions>();
 
                 if (migratorConnectionOptions is not null)

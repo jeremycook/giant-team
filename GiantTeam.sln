@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Tools", "GiantTea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Data.Api", "GiantTeam.Data.Api\GiantTeam.Data.Api.csproj", "{77FA17AD-75FC-44B7-AAF4-B568FD9814F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{8C578197-BC3D-4D2F-A853-8EDBECC78B8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

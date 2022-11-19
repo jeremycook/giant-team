@@ -15,7 +15,7 @@ namespace GiantTeam.DataProtection
     {
         public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
-            IConfigurationSection dataProtectionSection = configuration.GetRequiredSection("GiantTeam.DataProtection");
+            IConfigurationSection dataProtectionSection = configuration.GetRequiredSection("GiantTeam:DataProtection");
             services.Configure<DataProtectionOptions>(dataProtectionSection);
 
             services.AddDbContextPool<DataProtectionDbContext>((services, options) =>
