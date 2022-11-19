@@ -23,7 +23,7 @@ export default function CreateWorkspace() {
 
     if (output.ok) {
       messageSetter("Workspace created! Taking you to it now…");
-      location.assign(createUrl("/workspace", { workspaceName: output.data.workspaceName }));
+      location.assign(createUrl("/workspace", { workspace_name: output.data.workspaceName }));
     }
     else {
       messageSetter(output.message);

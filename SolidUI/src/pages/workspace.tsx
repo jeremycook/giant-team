@@ -12,7 +12,7 @@ export default function WorkspacePage() {
 
   const fetchWorkspace = async () => {
 
-    const workspaceName = getParam("workspaceName");
+    const workspaceName = getParam("workspace_name");
 
     const output = await postFetchWorkspace({
       workspaceName: workspaceName
