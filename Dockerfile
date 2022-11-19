@@ -24,4 +24,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY --from=build_ui /src/dist wwwroot/
+ENV IN_CONTAINER=true
 ENTRYPOINT ["dotnet", "WebApp.dll"]

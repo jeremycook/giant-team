@@ -1,8 +1,8 @@
 ﻿using GiantTeam.Asp;
 using GiantTeam.Asp.Filters;
 using GiantTeam.Asp.Routing;
-using GiantTeam.Postgres;
 using GiantTeam.Startup;
+using GiantTeam.Startup.EnvVarFiles;
 using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -17,9 +17,15 @@ namespace WebApp
     public class WebAppServiceBuilder : IServiceBuilder
     {
         public WebAppServiceBuilder(
+            ConfigurationManager configurationManager,
             IServiceCollection services,
             GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IN_CONTAINER")))
+            {
+                configurationManager.AddEnvVarFiles("/run/secrets");
+            }
+
             services.AddHttpContextAccessor();
 
             services.AddCookiePolicy(options =>
