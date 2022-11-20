@@ -21,10 +21,7 @@ namespace WebApp
             IServiceCollection services,
             GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IN_CONTAINER")))
-            {
-                configurationManager.AddEnvVarFiles("/run/secrets");
-            }
+            configurationManager.AddEnvVarFiles("/run/secrets");
 
             services.AddHttpContextAccessor();
 
