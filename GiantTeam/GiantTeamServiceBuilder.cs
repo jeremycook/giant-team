@@ -12,14 +12,14 @@ public class GiantTeamServiceBuilder : IServiceBuilder
 {
     public GiantTeamServiceBuilder(IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<GiantTeamOptions>(configuration.GetRequiredSection("GiantTeam"));
+        services.Configure<GiantTeamOptions>(configuration);
 
         services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
         services.AddDbContextPool<RecordsManagementDbContext>((services, options) =>
         {
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
-            var connectionOptions = giantTeamOptions.RecordsManagementConnection;
+            var connectionOptions = giantTeamOptions.MgmtConnection;
 
             options.UseNpgsql(connectionOptions);
         });

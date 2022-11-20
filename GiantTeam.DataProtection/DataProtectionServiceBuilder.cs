@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Encodings.Web;
 
 namespace GiantTeam.DataProtection
 {
@@ -15,7 +14,7 @@ namespace GiantTeam.DataProtection
     {
         public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
-            IConfigurationSection dataProtectionSection = configuration.GetRequiredSection("GiantTeam:DataProtection");
+            IConfiguration dataProtectionSection = configuration;
             services.Configure<DataProtectionOptions>(dataProtectionSection);
 
             services.AddDbContextPool<DataProtectionDbContext>((services, options) =>

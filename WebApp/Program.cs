@@ -34,7 +34,7 @@ namespace WebApp
             if (app.Environment.IsDevelopment())
             {
                 ConnectionOptions? migratorConnectionOptions = app.Configuration
-                    .GetSection("GiantTeam:MigratorConnection")
+                    .GetSection("MigratorConnection")
                     .Get<ConnectionOptions>();
 
                 if (migratorConnectionOptions is not null)
@@ -45,7 +45,7 @@ namespace WebApp
                     try
                     {
                         await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migratorConnectionOptions, dataProtectionOptions.DataProtectionConnection);
-                        await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migratorConnectionOptions, giantTeamOptions.RecordsManagementConnection);
+                        await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migratorConnectionOptions, giantTeamOptions.MgmtConnection);
                     }
                     catch (Exception ex)
                     {

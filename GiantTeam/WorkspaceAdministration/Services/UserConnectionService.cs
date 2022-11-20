@@ -19,7 +19,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public NpgsqlConnection OpenMaintenanceConnection(string setRole)
         {
             string? maintenanceDatabase =
-                options.Value.WorkspaceConnection.MaintenanceDatabase ??
+                options.Value.UserConnection.MaintenanceDatabase ??
                 throw new InvalidOperationException("Maintenance database not set.");
 
             NpgsqlConnection connection = CreateConnection(maintenanceDatabase);
@@ -36,7 +36,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public async Task<NpgsqlConnection> OpenMaintenanceConnectionAsync(string setRole)
         {
             string? maintenanceDatabase =
-                options.Value.WorkspaceConnection.MaintenanceDatabase ??
+                options.Value.UserConnection.MaintenanceDatabase ??
                 throw new InvalidOperationException("Maintenance database not set.");
 
             NpgsqlConnection connection = CreateConnection(maintenanceDatabase);
@@ -100,7 +100,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public NpgsqlConnection CreateConnection(string databaseName)
         {
             SessionUser user = sessionService.User;
-            var workspaceConnection = options.Value.WorkspaceConnection;
+            var workspaceConnection = options.Value.UserConnection;
 
             NpgsqlConnectionStringBuilder connectionStringBuilder = workspaceConnection.ToConnectionStringBuilder();
             connectionStringBuilder.Database = databaseName;
