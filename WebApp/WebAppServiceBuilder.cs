@@ -2,7 +2,6 @@
 using GiantTeam.Asp.Filters;
 using GiantTeam.Asp.Routing;
 using GiantTeam.Startup;
-using GiantTeam.Startup.EnvVarFiles;
 using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -21,8 +20,6 @@ namespace WebApp
             IServiceCollection services,
             GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
-            configurationManager.AddEnvVarFiles("/run/secrets");
-
             services.AddHttpContextAccessor();
 
             services.AddCookiePolicy(options =>

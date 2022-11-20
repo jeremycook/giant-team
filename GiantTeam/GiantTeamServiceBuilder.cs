@@ -1,6 +1,7 @@
 ﻿using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup;
+using GiantTeam.Startup.EnvVarFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,8 +11,14 @@ namespace GiantTeam;
 
 public class GiantTeamServiceBuilder : IServiceBuilder
 {
-    public GiantTeamServiceBuilder(IServiceCollection services, IConfiguration configuration)
+    public GiantTeamServiceBuilder(IServiceCollection services, ConfigurationManager configurationManager, IConfiguration configuration)
     {
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IN_CONTAINER")))
+        {
+            // Call this as early as possible!
+            configurationManager.AddEnvVarFiles("/run/secrets");
+        }
+
         services.Configure<GiantTeamOptions>(configuration);
 
         services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
