@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace GiantTeam.DataProtection
 {
@@ -30,8 +31,15 @@ namespace GiantTeam.DataProtection
                 throw new InvalidOperationException();
             if (dataProtectionOptions.DataProtectionCertificate is not null)
             {
-                var bytes = Encoding.UTF8.GetBytes(dataProtectionOptions.DataProtectionCertificate);
-                var certificate = new X509Certificate2(bytes);
+                // Unwrap the certificate text
+                var certText = dataProtectionOptions.DataProtectionCertificate;
+                certText = Regex.Replace(certText, "^-.+", "", RegexOptions.Multiline);
+                certText = Regex.Replace(certText, @"\s", "");
+
+                var certBytes = Convert.FromBase64String(certText);
+
+                var certificate = new X509Certificate2(certBytes);
+
                 services
                     .AddDataProtection()
                     .ProtectKeysWithCertificate(certificate)
