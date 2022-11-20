@@ -20,8 +20,7 @@ internal class EnvVarFilesConfigurationsSource : IConfigurationSource
     {
         return new EnvVarFilesConfigurationProvider(
             searchDirectory,
-            envVarSectionSeparator,
-            new PhysicalFileProvider("/")
+            envVarSectionSeparator
         );
     }
 }
