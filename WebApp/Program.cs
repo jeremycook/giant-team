@@ -31,26 +31,23 @@ namespace WebApp
                 app.UseHttpsRedirection();
             }
 
-            if (app.Environment.IsDevelopment())
+            ConnectionOptions? migrationConnectionOptions = app.Configuration
+                .GetSection("MigrationConnection")
+                .Get<ConnectionOptions>();
+
+            if (migrationConnectionOptions is not null)
             {
-                ConnectionOptions? migratorConnectionOptions = app.Configuration
-                    .GetSection("MigratorConnection")
-                    .Get<ConnectionOptions>();
+                DataProtectionOptions dataProtectionOptions = app.Services.GetRequiredService<IOptions<DataProtectionOptions>>().Value;
+                GiantTeamOptions giantTeamOptions = app.Services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
 
-                if (migratorConnectionOptions is not null)
+                try
                 {
-                    DataProtectionOptions dataProtectionOptions = app.Services.GetRequiredService<IOptions<DataProtectionOptions>>().Value;
-                    GiantTeamOptions giantTeamOptions = app.Services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
-
-                    try
-                    {
-                        await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migratorConnectionOptions, dataProtectionOptions.DataProtectionConnection);
-                        await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migratorConnectionOptions, giantTeamOptions.MgmtConnection);
-                    }
-                    catch (Exception ex)
-                    {
-                        app.Logger.LogError(ex, "Suppressed migration exception {Exception}: {ExceptionMessage}", ex.GetBaseException(), ex.GetBaseException().Message);
-                    }
+                    await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migrationConnectionOptions, dataProtectionOptions.DataProtectionConnection);
+                    await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migrationConnectionOptions, giantTeamOptions.MgmtConnection);
+                }
+                catch (Exception ex)
+                {
+                    app.Logger.LogError(ex, "Suppressed migration exception {Exception}: {ExceptionMessage}", ex.GetBaseException(), ex.GetBaseException().Message);
                 }
             }
 
