@@ -29,7 +29,7 @@ namespace GiantTeam.DataProtection
             DataProtectionOptions dataProtectionOptions =
                 dataProtectionSection.Get<DataProtectionOptions>() ??
                 throw new InvalidOperationException();
-            if (dataProtectionOptions.DataProtectionCertificate is not null)
+            if (!string.IsNullOrEmpty(dataProtectionOptions.DataProtectionCertificate))
             {
                 // Unwrap the certificate text
                 var certText = dataProtectionOptions.DataProtectionCertificate;
@@ -38,7 +38,7 @@ namespace GiantTeam.DataProtection
 
                 var certBytes = Convert.FromBase64String(certText);
 
-                var certificate = new X509Certificate2(certBytes);
+                var certificate = new X509Certificate2(certBytes, string.Empty);
 
                 services
                     .AddDataProtection()
