@@ -38,7 +38,8 @@ RUN npm run build
 
 
 # Build the main entrypoint
-FROM mcr.microsoft.com/dotnet/aspnet:7.0
+#FROM mcr.microsoft.com/dotnet/aspnet:7.0
+FROM mcr.microsoft.com/dotnet/nightly/aspnet:7.0-jammy-chiseled
 WORKDIR /app
 COPY --from=publish_web_app /app .
 COPY --from=build_solid_ui /src/dist wwwroot/
