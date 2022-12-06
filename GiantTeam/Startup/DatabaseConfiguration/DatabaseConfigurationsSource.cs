@@ -9,7 +9,7 @@ namespace GiantTeam.Startup.DatabaseConfiguration
 
         public DatabaseConfigurationsSource(ConnectionOptions connectionOptions)
         {
-            this.connectionOptions = connectionOptions;
+            this.connectionOptions = connectionOptions ?? throw new ArgumentNullException(nameof(connectionOptions));
         }
 
         public IConfigurationProvider Build(IConfigurationBuilder builder)

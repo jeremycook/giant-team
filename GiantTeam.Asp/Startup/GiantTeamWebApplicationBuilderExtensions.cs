@@ -30,10 +30,8 @@ namespace GiantTeam.Asp.Startup
             var rootServiceBuilder = typeof(TRootServiceBuilder);
 
             var services = new ServiceDictionary()
-                .Add<WebApplicationBuilder>(builder)
-                .Add<IHostEnvironment>(builder.Environment)
                 .Add<IServiceCollection>(builder.Services)
-                .Add<IConfigurationBuilder>(builder.Configuration)
+                .Add<IHostEnvironment>(builder.Environment)
                 .Add<IConfiguration>(builder.Configuration);
 
             // Discover service builders starting from the root service builder
@@ -51,13 +49,14 @@ namespace GiantTeam.Asp.Startup
             // Resolve service builders in the correct order
             serviceBuilderTypes.RemoveAll(t => !typeof(IServiceBuilder).IsAssignableFrom(t));
             serviceBuilderTypes.Reverse();
+            Console.WriteLine($"Applying Service Builders: {string.Join("\n\t", serviceBuilderTypes.Select(t => t.AssemblyQualifiedName))}");
             foreach (var type in serviceBuilderTypes)
             {
                 var ctor = type.GetConstructors().Single();
                 var args = ctor.GetParameters()
                     .Select(param => services.TryGetValue(param.ParameterType, out var service) ?
                         service :
-                        throw new ArgumentException($"Unable to resolve ({param.ParameterType} {param.Name}) constructor parameter of the \"{type.AssemblyQualifiedName}\" service.", param.Name))
+                        throw new ArgumentException($"Unable to resolve ({param.ParameterType} {param.Name}) constructor parameter of the \"{type.AssemblyQualifiedName}\" service builder.", param.Name))
                     .ToArray();
 
                 var serviceBuilder = (IServiceBuilder)Activator.CreateInstance(type, args)!;

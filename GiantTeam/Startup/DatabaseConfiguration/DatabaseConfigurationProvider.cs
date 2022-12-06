@@ -12,7 +12,7 @@ namespace GiantTeam.Startup.DatabaseConfiguration
 
         public DatabaseConfigurationProvider(ConnectionOptions connectionOptions)
         {
-            this.connectionOptions = connectionOptions;
+            this.connectionOptions = connectionOptions ?? throw new ArgumentNullException(nameof(connectionOptions));
         }
 
         public override IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string? parentPath)
@@ -23,6 +23,7 @@ namespace GiantTeam.Startup.DatabaseConfiguration
         public override void Load()
         {
             using var connection = connectionOptions.CreateOpenConnection();
+
             var list = connection.Query<KeyValuePair<string, string>>("""
 SELECT key "Key", value "Value"
 FROM appsettings
@@ -46,7 +47,10 @@ ORDER BY key;
                         item.Key +
                         (item.Key != string.Empty && pair.Key != string.Empty ? ":" : string.Empty) +
                         pair.Key;
+
                     Data[key] = pair.Value;
+
+                    keys.Add(key);
                 }
             }
 

@@ -3,6 +3,7 @@ using GiantTeam.Asp.Startup;
 using GiantTeam.DataProtection;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
+using GiantTeam.Startup.DatabaseConfiguration;
 using Microsoft.Extensions.Options;
 
 namespace WebApp
@@ -12,6 +13,11 @@ namespace WebApp
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Configuration.AddDatabase(
+                builder.Configuration,
+                builder.Environment,
+                optional: builder.Environment.IsDevelopment());
 
             builder.ConfigureWithServiceBuilders<WebAppServiceBuilder>();
 

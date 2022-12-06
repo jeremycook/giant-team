@@ -1,12 +1,9 @@
 ﻿using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup;
-using GiantTeam.Startup.DatabaseConfiguration;
-using GiantTeam.Startup.EnvVarFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace GiantTeam;
@@ -14,37 +11,9 @@ namespace GiantTeam;
 public class GiantTeamServiceBuilder : IServiceBuilder
 {
     public GiantTeamServiceBuilder(
-        IHostEnvironment environment,
         IServiceCollection services,
-        IConfigurationBuilder configurationBuilder,
         IConfiguration configuration)
     {
-        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IN_CONTAINER")))
-        {
-            // Call this as early as possible!
-            configurationBuilder.AddEnvVarFiles("/run/secrets");
-        }
-
-        var file = configuration.GetValue<string>("APPSETTINGS_CONNECTION_OPTIONS_FILE");
-        if (!string.IsNullOrEmpty(file))
-        {
-            if (!File.Exists(file))
-            {
-                throw new FileNotFoundException($"The APPSETTINGS_CONNECTION_OPTIONS_FILE was not found at: {file}.");
-            }
-
-            var connectionConfiguration = new ConfigurationBuilder()
-                .SetBasePath(environment.ContentRootPath)
-                .AddJsonFile(file)
-                .Build();
-
-            var connectionOptions =
-                connectionConfiguration.Get<ConnectionOptions>() ??
-                throw new NullReferenceException();
-
-            configurationBuilder.AddDatabase(connectionOptions);
-        }
-
         services.Configure<GiantTeamOptions>(configuration);
 
         services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
