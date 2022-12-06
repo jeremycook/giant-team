@@ -45,7 +45,7 @@ namespace GiantTeam.DataProtection
             }
             else
             {
-                throw new ApplicationException("Data protection keys must be protected with a certificate.");
+                throw new ApplicationException("Data protection keys must be protected with a certificate. A \"DataProtectionCertificateFile\" or \"DataProtectionCertificate\" configuration value must be provided.");
             }
 
             // Unwrap the certificate text
