@@ -20,10 +20,10 @@ namespace GiantTeam.Startup.DatabaseConfiguration
             return base.GetChildKeys(earlierKeys, parentPath);
         }
 
-        public override async void Load()
+        public override void Load()
         {
-            using var connection = await connectionOptions.CreateOpenConnectionAsync();
-            var list = await connection.QueryAsync<KeyValuePair<string, string>>("""
+            using var connection = connectionOptions.CreateOpenConnection();
+            var list = connection.Query<KeyValuePair<string, string>>("""
 SELECT key "Key", value "Value"
 FROM appsettings
 WHERE client = CURRENT_ROLE
@@ -36,7 +36,6 @@ ORDER BY key;
                 var result = JsonConfigurationFileParser.Parse(stream);
                 foreach (var pair in result)
                 {
-
                     string key =
                         item.Key +
                         (item.Key != string.Empty && pair.Key != string.Empty ? ":" : string.Empty) +
