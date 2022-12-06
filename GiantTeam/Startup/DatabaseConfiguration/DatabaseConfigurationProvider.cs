@@ -32,9 +32,10 @@ ORDER BY key;
 
             if (!list.Any())
             {
-                throw new ApplicationException("No results were returned from the appsettings table.");
+                Console.Error.WriteLine("No configuration was loaded from the database.");
             }
 
+            var keys = new SortedSet<string>();
             foreach (var item in list)
             {
                 using var stream = new MemoryStream(Encoding.UTF8.GetBytes(item.Value));
@@ -48,6 +49,8 @@ ORDER BY key;
                     Data[key] = pair.Value;
                 }
             }
+
+            Console.WriteLine($"Loaded configuration from database for these keys: {string.Join(", ", keys)}");
         }
 
         public override void Set(string key, string? value)
