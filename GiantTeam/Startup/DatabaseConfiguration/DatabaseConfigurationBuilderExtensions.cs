@@ -32,7 +32,7 @@ namespace GiantTeam.Startup.DatabaseConfiguration
             if (environment is null)
                 throw new ArgumentNullException(nameof(environment));
 
-            var file = configuration.GetValue<string>("DatabaseConfigurationOptionsFile");
+            var file = configuration.GetValue<string>("ConfigurationConnectionFile");
             if (!string.IsNullOrEmpty(file))
             {
                 if (!File.Exists(file))
