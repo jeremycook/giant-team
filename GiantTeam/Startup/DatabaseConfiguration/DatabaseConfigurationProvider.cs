@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using GiantTeam.Logging;
 using GiantTeam.Postgres;
 using GiantTeam.Startup.Json;
 using Microsoft.Extensions.Configuration;
@@ -31,11 +32,6 @@ WHERE client = CURRENT_ROLE
 ORDER BY key;
 """);
 
-            if (!list.Any())
-            {
-                Console.Error.WriteLine("No configuration was loaded from the database.");
-            }
-
             var keys = new SortedSet<string>();
             foreach (var item in list)
             {
@@ -54,7 +50,14 @@ ORDER BY key;
                 }
             }
 
-            Console.WriteLine($"Loaded configuration from database for these keys: {string.Join(", ", keys)}");
+            if (list.Any())
+            {
+                Log.Debug<DatabaseConfigurationProvider>("Configuration from database: {ConfigurationKeys}", keys);
+            }
+            else
+            {
+                Log.Debug<DatabaseConfigurationProvider>("The configuration database returned nothing.");
+            }
         }
 
         public override void Set(string key, string? value)

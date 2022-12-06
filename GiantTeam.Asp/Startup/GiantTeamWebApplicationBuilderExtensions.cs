@@ -1,4 +1,5 @@
-﻿using GiantTeam.Startup;
+﻿using GiantTeam.Logging;
+using GiantTeam.Startup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,7 +50,7 @@ namespace GiantTeam.Asp.Startup
             // Resolve service builders in the correct order
             serviceBuilderTypes.RemoveAll(t => !typeof(IServiceBuilder).IsAssignableFrom(t));
             serviceBuilderTypes.Reverse();
-            Console.WriteLine($"Applying Service Builders: {string.Join("\n\t", serviceBuilderTypes.Select(t => t.AssemblyQualifiedName))}");
+            Log.Info(typeof(GiantTeamWebApplicationBuilderExtensions), "Applying Service Builders: {ServiceBuilders}", serviceBuilderTypes);
             foreach (var type in serviceBuilderTypes)
             {
                 var ctor = type.GetConstructors().Single();

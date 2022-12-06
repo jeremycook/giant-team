@@ -1,6 +1,7 @@
 using GiantTeam;
 using GiantTeam.Asp.Startup;
 using GiantTeam.DataProtection;
+using GiantTeam.Logging;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup.DatabaseConfiguration;
@@ -15,12 +16,26 @@ namespace WebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            Console.WriteLine("JsonConfigurationSources: " + string.Join("\n\t", builder.Configuration.Sources.OfType<JsonConfigurationSource>().Select(o => o.FileProvider.GetFileInfo(o.Path).PhysicalPath)));
+            Console.WriteLine("Initial Configuration Sources:\n\t" + string.Join("\n\t", builder.Configuration.Sources.Select(o => o switch
+            {
+                JsonConfigurationSource json => o.GetType().Name + ": " + json.FileProvider?.GetFileInfo(json?.Path ?? string.Empty).PhysicalPath,
+                _ => o.GetType().Name,
+            })));
+
+            Log.Factory = LoggerFactory.Create(options => options
+                .AddConfiguration(builder.Configuration.GetSection("Logging"))
+                .AddConsole());
 
             builder.Configuration.AddDatabase(
                 builder.Configuration,
                 builder.Environment,
                 optional: builder.Environment.IsDevelopment());
+
+            Log.Info<Program>("Final Configuration Sources: {ConfigurationSources}", builder.Configuration.Sources.Select(o => o switch
+            {
+                JsonConfigurationSource json => o.GetType().Name + ": " + json.FileProvider?.GetFileInfo(json?.Path ?? string.Empty).PhysicalPath,
+                _ => o.GetType().Name,
+            }));
 
             builder.ConfigureWithServiceBuilders<WebAppServiceBuilder>();
 
