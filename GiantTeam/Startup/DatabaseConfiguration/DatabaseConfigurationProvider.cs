@@ -30,6 +30,11 @@ WHERE client = CURRENT_ROLE
 ORDER BY key;
 """);
 
+            if (!list.Any())
+            {
+                throw new ApplicationException("No results were returned from the appsettings table.");
+            }
+
             foreach (var item in list)
             {
                 using var stream = new MemoryStream(Encoding.UTF8.GetBytes(item.Value));
