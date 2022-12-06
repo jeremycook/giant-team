@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GiantTeam.Asp
 {
-    public class GiantTeamAspServiceBuilder
+    public class GiantTeamAspServiceBuilder : IServiceBuilder
     {
         public GiantTeamAspServiceBuilder(
             IServiceCollection services,

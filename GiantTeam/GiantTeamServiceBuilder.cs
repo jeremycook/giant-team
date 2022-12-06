@@ -16,15 +16,16 @@ public class GiantTeamServiceBuilder : IServiceBuilder
     public GiantTeamServiceBuilder(
         IHostEnvironment environment,
         IServiceCollection services,
-        ConfigurationManager configurationManager)
+        IConfigurationBuilder configurationBuilder,
+        IConfiguration configuration)
     {
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IN_CONTAINER")))
         {
             // Call this as early as possible!
-            configurationManager.AddEnvVarFiles("/run/secrets");
+            configurationBuilder.AddEnvVarFiles("/run/secrets");
         }
 
-        var file = configurationManager.GetValue<string>("APPSETTINGS_CONNECTION_OPTIONS_FILE");
+        var file = configuration.GetValue<string>("APPSETTINGS_CONNECTION_OPTIONS_FILE");
         if (!string.IsNullOrEmpty(file))
         {
             if (!File.Exists(file))
@@ -41,10 +42,10 @@ public class GiantTeamServiceBuilder : IServiceBuilder
                 connectionConfiguration.Get<ConnectionOptions>() ??
                 throw new NullReferenceException();
 
-            configurationManager.AddDatabase(connectionOptions);
+            configurationBuilder.AddDatabase(connectionOptions);
         }
 
-        services.Configure<GiantTeamOptions>(configurationManager);
+        services.Configure<GiantTeamOptions>(configuration);
 
         services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 

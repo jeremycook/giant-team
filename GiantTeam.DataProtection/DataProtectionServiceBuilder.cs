@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace GiantTeam.DataProtection
 {
-    public class DataProtectionServiceBuilder
+    public class DataProtectionServiceBuilder : IServiceBuilder
     {
         public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {

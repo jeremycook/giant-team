@@ -16,7 +16,6 @@ namespace WebApp
     public class WebAppServiceBuilder : IServiceBuilder
     {
         public WebAppServiceBuilder(
-            ConfigurationManager configurationManager,
             IServiceCollection services,
             GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {

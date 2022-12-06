@@ -1,38 +1,40 @@
 ﻿using GiantTeam.Startup;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Collections.Immutable;
 
 namespace GiantTeam.Asp.Startup
 {
     public static class GiantTeamWebApplicationBuilderExtensions
     {
-        public static void ConfigureServicesWithServiceBuilders<TRootServiceBuilder>(this WebApplicationBuilder builder)
+
+        public class ServiceDictionary : Dictionary<Type, object>
+        {
+            public ServiceDictionary Add<TService>(TService implementation)
+            {
+                if (implementation is null)
+                {
+                    throw new ArgumentNullException(nameof(implementation), "Null argument.");
+                }
+
+                Add(typeof(TService), implementation);
+
+                return this;
+            }
+        }
+
+        public static void ConfigureWithServiceBuilders<TRootServiceBuilder>(this WebApplicationBuilder builder)
             where TRootServiceBuilder : IServiceBuilder
         {
             var rootServiceBuilder = typeof(TRootServiceBuilder);
 
-            var serviceBuilderCollection = new ServiceCollection();
-
-            // Add standard services
-            serviceBuilderCollection.AddSingleton(builder.Services);
-            serviceBuilderCollection.AddSingleton(builder.Environment);
-            serviceBuilderCollection.AddSingleton<IHostEnvironment>(builder.Environment);
-            serviceBuilderCollection.AddSingleton(builder.Configuration);
-            serviceBuilderCollection.AddSingleton<IConfiguration>(builder.Configuration);
-            serviceBuilderCollection.AddSingleton(builder.Logging);
-            serviceBuilderCollection.AddSingleton(builder.Host);
-            serviceBuilderCollection.AddSingleton<IHostBuilder>(builder.Host);
-            serviceBuilderCollection.AddSingleton(builder.WebHost);
-            serviceBuilderCollection.AddSingleton<IWebHostBuilder>(builder.WebHost);
-            serviceBuilderCollection.AddLogging();
-
-            var standardServiceTypes = serviceBuilderCollection
-                .Select(s => s.ServiceType)
-                .ToImmutableHashSet();
+            var services = new ServiceDictionary()
+                .Add<WebApplicationBuilder>(builder)
+                .Add<IHostEnvironment>(builder.Environment)
+                .Add<IServiceCollection>(builder.Services)
+                .Add<IConfigurationBuilder>(builder.Configuration)
+                .Add<IConfiguration>(builder.Configuration);
 
             // Discover service builders starting from the root service builder
             var serviceBuilderTypes = new List<Type>()
@@ -41,23 +43,28 @@ namespace GiantTeam.Asp.Startup
             };
             GetDependentTypes(rootServiceBuilder, serviceBuilderTypes);
 
-            // Remove the standard services
-            serviceBuilderTypes.RemoveAll(sb => standardServiceTypes.Contains(sb));
-
-            // Add service builders
-            foreach (var type in serviceBuilderTypes)
+            if (serviceBuilderTypes.Count != serviceBuilderTypes.Distinct().Count())
             {
-                serviceBuilderCollection.AddSingleton(type);
+                throw new InvalidOperationException("Duplicate service builder dependencies.");
             }
 
-            // Build the temporary container
-            var serviceBuilderServices = serviceBuilderCollection.BuildServiceProvider();
+            // Resolve service builders in the correct order
+            serviceBuilderTypes.RemoveAll(t => !typeof(IServiceBuilder).IsAssignableFrom(t));
+            serviceBuilderTypes.Reverse();
+            foreach (var type in serviceBuilderTypes)
+            {
+                var ctor = type.GetConstructors().Single();
+                var args = ctor.GetParameters()
+                    .Select(param => services.TryGetValue(param.ParameterType, out var service) ?
+                        service :
+                        throw new ArgumentException($"Unable to resolve ({param.ParameterType} {param.Name}) constructor parameter of the \"{type.AssemblyQualifiedName}\" service.", param.Name))
+                    .ToArray();
 
-            // Resolving the root service builder will cause all
-            // service builders it depends on to be resolved in
-            // the correct order, allowing them to do their work.
-            // The result does not matter.
-            serviceBuilderServices.GetService<TRootServiceBuilder>();
+                var serviceBuilder = (IServiceBuilder)Activator.CreateInstance(type, args)!;
+
+                // Service builders can depend on other service builders
+                services.Add(type, serviceBuilder);
+            }
         }
 
         private static void GetDependentTypes(Type type, ICollection<Type> serviceBuilderTypes)

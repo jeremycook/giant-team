@@ -13,7 +13,7 @@ namespace WebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.ConfigureServicesWithServiceBuilders<WebAppServiceBuilder>();
+            builder.ConfigureWithServiceBuilders<WebAppServiceBuilder>();
 
             var app = builder.Build();
 
