@@ -1,19 +1,18 @@
 ﻿using GiantTeam.Postgres;
+using GiantTeam.Startup;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace GiantTeam.DataProtection
 {
     public class DataProtectionServiceBuilder : IServiceBuilder
     {
-        public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+        public DataProtectionServiceBuilder(IServiceCollection services, IConfiguration configuration)
         {
             IConfiguration dataProtectionSection = configuration;
             services.Configure<DataProtectionOptions>(dataProtectionSection);
@@ -29,33 +28,38 @@ namespace GiantTeam.DataProtection
             DataProtectionOptions dataProtectionOptions =
                 dataProtectionSection.Get<DataProtectionOptions>() ??
                 throw new InvalidOperationException();
-            if (!string.IsNullOrEmpty(dataProtectionOptions.DataProtectionCertificate))
+
+            string certText;
+            if (!string.IsNullOrEmpty(dataProtectionOptions.DataProtectionCertificateFile) &&
+                !string.IsNullOrEmpty(dataProtectionOptions.DataProtectionCertificate))
             {
-                // Unwrap the certificate text
-                var certText = dataProtectionOptions.DataProtectionCertificate;
-                certText = Regex.Replace(certText, "^-.+", "", RegexOptions.Multiline);
-                certText = Regex.Replace(certText, @"\s", "");
-
-                var certBytes = Convert.FromBase64String(certText);
-
-                var certificate = new X509Certificate2(certBytes, string.Empty);
-
-                services
-                    .AddDataProtection()
-                    .ProtectKeysWithCertificate(certificate)
-                    .PersistKeysToDbContext<DataProtectionDbContext>();
+                throw new ApplicationException("Both \"DataProtectionCertificateFile\" and \"DataProtectionCertificate\" are set. Only one can be set at a time.");
             }
-            else if (environment.IsDevelopment())
+            else if (!string.IsNullOrEmpty(dataProtectionOptions.DataProtectionCertificateFile))
             {
-                // Keys can be persisted unencrypted in development
-                services
-                    .AddDataProtection()
-                    .PersistKeysToDbContext<DataProtectionDbContext>();
+                certText = File.ReadAllText(dataProtectionOptions.DataProtectionCertificateFile);
+            }
+            else if (!string.IsNullOrEmpty(dataProtectionOptions.DataProtectionCertificate))
+            {
+                certText = dataProtectionOptions.DataProtectionCertificate;
             }
             else
             {
-                throw new ApplicationException("Data protection keys must be encrypted at rest in non-development environments.");
+                throw new ApplicationException("Data protection keys must be protected with a certificate.");
             }
+
+            // Unwrap the certificate text
+            certText = Regex.Replace(certText, "^-.+", "", RegexOptions.Multiline);
+            certText = Regex.Replace(certText, @"\s", "");
+
+            var certBytes = Convert.FromBase64String(certText);
+
+            var certificate = new X509Certificate2(certBytes, string.Empty);
+
+            services
+                .AddDataProtection()
+                .ProtectKeysWithCertificate(certificate)
+                .PersistKeysToDbContext<DataProtectionDbContext>();
         }
     }
 }
