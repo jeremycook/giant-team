@@ -4,6 +4,7 @@ using GiantTeam.DataProtection;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup.DatabaseConfiguration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Options;
 
 namespace WebApp
@@ -13,6 +14,8 @@ namespace WebApp
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            Console.WriteLine("JsonConfigurationSources: " + string.Join("\n\t", builder.Configuration.Sources.OfType<JsonConfigurationSource>().Select(o => o.FileProvider.GetFileInfo(o.Path).PhysicalPath)));
 
             builder.Configuration.AddDatabase(
                 builder.Configuration,
