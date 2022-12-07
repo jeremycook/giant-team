@@ -58,26 +58,6 @@ namespace WebApp
                 });
             }
 
-
-            ConnectionOptions? migrationConnectionOptions = app.Configuration
-                .GetSection("MigrationConnection")
-                .Get<ConnectionOptions>();
-
-            if (migrationConnectionOptions is not null)
-            {
-                DataProtectionOptions dataProtectionOptions = app.Services.GetRequiredService<IOptions<DataProtectionOptions>>().Value;
-                GiantTeamOptions giantTeamOptions = app.Services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
-
-                try
-                {
-                    await app.Services.MigrateDbContextAsync<DataProtectionDbContext>(migrationConnectionOptions, dataProtectionOptions.DataProtectionConnection);
-                    await app.Services.MigrateDbContextAsync<RecordsManagementDbContext>(migrationConnectionOptions, giantTeamOptions.MgmtConnection);
-                }
-                catch (Exception ex)
-                {
-                    app.Logger.LogError(ex, "Suppressed migration exception {Exception}: {ExceptionMessage}", ex.GetBaseException(), ex.GetBaseException().Message);
-                }
-            }
             app.UseSwagger();
             app.UseSwaggerUI();
 

@@ -151,6 +151,8 @@ namespace WebApp
             });
 
             services.AddScopedFromAssembly(typeof(WebAppServiceBuilder).Assembly);
+
+            services.AddHostedService<StartupWorker>();
         }
     }
 }
