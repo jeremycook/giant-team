@@ -24,6 +24,9 @@ namespace GiantTeam.RecordsManagement.Data
             user.Property(o => o.UserId).HasDefaultValueSql();
             user.Property(o => o.InvariantUsername).HasComputedColumnSql($"LOWER({PgQuote.Identifier(nameof(User.Username))})", stored: true);
             user.Property(o => o.Created).HasDefaultValueSql();
+
+            var userPasswords = modelBuilder.Entity<UserPassword>();
+            userPasswords.HasOne(o => o.User).WithMany().HasForeignKey(o => o.UserId);
         }
 
         public DbSet<DbRole> DbRoles => Set<DbRole>();
