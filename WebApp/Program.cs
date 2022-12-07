@@ -68,7 +68,7 @@ namespace WebApp
                 {
                     // Everything under /assets/ can be cached Vite embeds a
                     // hash like "/assets/404.367b9fbf.js".
-                    if (ctx.Context.Request.Path.StartsWithSegments("assets"))
+                    if (ctx.Context.Request.Path.StartsWithSegments("/assets/"))
                     {
                         const int durationInSeconds = 60 * 60 * 24;
                         ctx.Context.Response.Headers[HeaderNames.CacheControl] =
