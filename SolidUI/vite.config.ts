@@ -1,19 +1,28 @@
+import UnocssPlugin from '@unocss/vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
-import UnocssPlugin from '@unocss/vite';
 
 export default defineConfig({
   plugins: [
+    basicSsl(),
     solidPlugin(),
     UnocssPlugin({
       // your config or in uno.config.ts
     }),
   ],
   server: {
-    port: 3000,
+    https: true,
+    // port: 5173,
     proxy: {
-      "/api": "http://localhost:5077",
-      "/swagger": "http://localhost:5077",
+      "/api": {
+        target: "http://localhost:5077",
+        xfwd: true
+      },
+      "/swagger": {
+        target: "http://localhost:5077",
+        xfwd: true
+      },
     }
   },
   build: {
