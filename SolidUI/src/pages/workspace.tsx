@@ -1,18 +1,15 @@
 import { createSignal, Show } from 'solid-js';
-import { FetchWorkspaceInput, FetchWorkspaceOutput } from '../api/GiantTeam';
+import { FetchWorkspaceOutput } from '../api/GiantTeam';
 import { postFetchWorkspace } from '../api/GiantTeam.Data.Api';
-import { postJson } from '../utils/httpHelpers';
 import { getParam } from '../utils/urlHelpers';
 
 export default function WorkspacePage() {
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
-  const [data, dataSetter] = createSignal<FetchWorkspaceOutput>();
+  const [data, dataSetter] = createSignal<FetchWorkspaceOutput | null>();
 
-  const fetchWorkspace = async () => {
-
-    const workspaceName = getParam("workspace_name");
+  const fetchWorkspace = async (workspaceName: string) => {
 
     const output = await postFetchWorkspace({
       workspaceName: workspaceName
@@ -23,7 +20,7 @@ export default function WorkspacePage() {
     dataSetter(output.data);
   };
 
-  fetchWorkspace();
+  fetchWorkspace(getParam("workspace_name")!);
 
   return (
     <section>

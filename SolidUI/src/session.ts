@@ -15,7 +15,7 @@ export const disconnectSession = async () => {
 /** Refresh the session from the server */
 export const refreshSession = async () => {
     var response = await postSession();
-    sessionSetter(response.data);
+    sessionSetter(response.data!);
 }
 
 refreshSession();

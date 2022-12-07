@@ -1,3 +1,6 @@
-:root {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+@import url("./style/normalize.css");
+@import url("./style/vars.css");
+@import url("./style/typo.css");
+@import url("./style/mods.css");
+@import url("./style/overrides.css");
+@import url("./style/theme.css");

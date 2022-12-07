@@ -1,14 +1,17 @@
-import UnocssPlugin from '@unocss/vite';
-import basicSsl from '@vitejs/plugin-basic-ssl';
-import { defineConfig } from 'vite';
-import solidPlugin from 'vite-plugin-solid';
+import { defineConfig } from 'vite'
+import basicSsl from '@vitejs/plugin-basic-ssl'
+import solidPlugin from 'vite-plugin-solid'
+import UnoCSS from 'unocss/vite'
+import { presetMini } from '@unocss/preset-mini'
 
 export default defineConfig({
   plugins: [
     basicSsl(),
     solidPlugin(),
-    UnocssPlugin({
-      // your config or in uno.config.ts
+    UnoCSS({
+      presets: [
+        presetMini()
+      ],
     }),
   ],
   server: {
@@ -27,6 +30,7 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    // polyfillDynamicImport: false,
   },
   esbuild: {
     // TODO: Drop console and debugger code when building: https://esbuild.github.io/api/#drop

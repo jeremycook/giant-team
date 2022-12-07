@@ -1,63 +1,61 @@
+import { Icon } from '@iconify-icon/solid';
+import chevronDown from '@iconify-icons/ion/chevron-down';
+import { Link, useRoutes } from 'solid-app-router';
 import { Component, Match, Switch } from 'solid-js';
-import { Link, useRoutes, useLocation } from 'solid-app-router';
-
-import { routes } from './routes';
-import { session, sessionSetter } from './session';
 import { SessionStatus } from './api/GiantTeam.Authentication.Api';
+import { routes } from './routes';
+import { session } from './session';
 
 const App: Component = () => {
-  const location = useLocation();
   const Route = useRoutes(routes);
 
   return (
     <>
-      <nav class="bg-gray-200 text-gray-900 px-4">
-        <ul class="flex items-center list-none">
-          <li class="py-2 px-4">
-            <Link href="/" class="no-underline hover:underline">
-              Home
-            </Link>
-          </li>
-          <li class="py-2 px-4">
-            <Link href="/about" class="no-underline hover:underline">
-              About
-            </Link>
-          </li>
-          <li class="py-2 px-4">
-            <Link href="/error" class="no-underline hover:underline">
-              Error
-            </Link>
-          </li>
+      <nav class="site-nav flex-right gap-0 menu d-print-none">
+        <Link href="/">
+          Home
+        </Link>
+        <div class="mr-auto dropdown">
+          <button class="dropdown-button text-nowrap" type="button" id="site-navbar-create-dropdown">
+            New 
+            <Icon icon={chevronDown} />
+          </button>
+          <div class="dropdown-content" aria-labelledby="site-navbar-create-dropdown">
+            <div class="card menu">
+              <Link href="/create-team">
+                Team
+              </Link>
+              <Link href="/create-workspace">
+                Workspace
+              </Link>
+            </div>
+          </div>
+        </div>
 
-          <li class="text-sm flex items-center space-x-1 ml-auto">
-            <span>URL:</span>
-            <input
-              class="w-75px p-1 bg-white text-sm rounded-lg"
-              type="text"
-              readOnly
-              value={location.pathname}
-            />
-          </li>
-          <li class="py-2 px-4">
-            <Switch fallback={
-              <>
-                <Link href="/login" class="no-underline hover:underline">
-                  Login
-                </Link>
-                {" • "}
-                <Link href="/join" class="no-underline hover:underline">
-                  Join
-                </Link>
-              </>
-            }>
-              <Match when={session().status == SessionStatus.Authenticated}>
-                <Link href="/logout" class="no-underline hover:underline">
-                  Logout {session().name}
-                </Link>
-              </Match>
-            </Switch>
-          </li>
-        </ul>
+        <Switch fallback={
+          <>
+            <Link href="/login">
+              Login
+            </Link>
+            {" • "}
+            <Link href="/join">
+              Join
+            </Link>
+          </>
+        }>
+          <Match when={session().status == SessionStatus.Authenticated}>
+            <div class="ml-auto dropdown dropdown-right">
+              <button class="dropdown-button" type="button" id="site-navbar-user-dropdown">
+                {session().username}
+              </button>
+              <div class="dropdown-content" aria-labelledby="site-navbar-user-dropdown">
+                <div class="card menu">
+                  <a href="/logout">Logout</a>
+                </div>
+              </div>
+            </div>
+          </Match>
+        </Switch>
       </nav>
 
       <main>

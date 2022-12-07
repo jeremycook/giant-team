@@ -21,14 +21,14 @@ export enum SessionStatus {
     Authenticated = 1,
 }
 
-export const postLogin = async (input: LoginInput): Promise<DataResponse<null>> => 
-    await postJson("/api/login", input);
+export const postLogin = async (input: LoginInput) =>
+    await postJson("/api/login", input) as DataResponse<null>;
 
-export const postLogout = async (): Promise<DataResponse<null>> => 
-    await postJson("/api/logout");
+export const postLogout = async () =>
+    await postJson("/api/logout") as DataResponse<null>;
 
-export const postRegister = async (input: JoinInput): Promise<DataResponse<JoinOutput>> => 
-    await postJson("/api/register", input);
+export const postRegister = async (input: JoinInput) =>
+    await postJson("/api/register", input) as DataResponse<JoinOutput>;
 
-export const postSession = async (): Promise<DataResponse<SessionOutput>> => 
-    await postJson("/api/session");
+export const postSession = async () =>
+    await postJson("/api/session") as DataResponse<SessionOutput>;
