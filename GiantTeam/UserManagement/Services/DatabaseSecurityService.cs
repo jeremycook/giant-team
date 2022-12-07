@@ -43,7 +43,7 @@ CREATE ROLE {PgQuote.Identifier(teamName)}
             await connection.ExecuteAsync($"""
 -- Create a user role that cannot login
 CREATE ROLE {PgQuote.Identifier(userName)}
-    WITH NOLOGIN INHERIT;
+    WITH NOLOGIN INHERIT CREATEDB;
 """);
         }
 
