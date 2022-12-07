@@ -17,7 +17,7 @@ namespace WebApp
     {
         public WebAppServiceBuilder(
             IServiceCollection services,
-            IWebHostEnvironment environment,
+            IHostEnvironment environment,
             GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
             if (!environment.IsDevelopment())
