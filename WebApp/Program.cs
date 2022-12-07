@@ -52,12 +52,6 @@ namespace WebApp
             else
             {
                 //app.UseExceptionHandler("/error");
-                //app.UseHsts();
-                app.UseForwardedHeaders(new ForwardedHeadersOptions
-                {
-                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
-                });
-                app.UseHttpsRedirection();
             }
 
             ConnectionOptions? migrationConnectionOptions = app.Configuration
@@ -79,6 +73,14 @@ namespace WebApp
                     app.Logger.LogError(ex, "Suppressed migration exception {Exception}: {ExceptionMessage}", ex.GetBaseException(), ex.GetBaseException().Message);
                 }
             }
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
+            });
+
+            //app.UseHsts();
+            app.UseHttpsRedirection();
 
             app.UseStaticFiles();
 
