@@ -5,6 +5,7 @@ using GiantTeam.Logging;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup.DatabaseConfiguration;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Options;
 
@@ -52,6 +53,10 @@ namespace WebApp
             {
                 //app.UseExceptionHandler("/error");
                 //app.UseHsts();
+                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
+                });
                 app.UseHttpsRedirection();
             }
 
