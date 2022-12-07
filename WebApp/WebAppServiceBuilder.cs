@@ -5,6 +5,7 @@ using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
@@ -26,12 +27,25 @@ namespace WebApp
                 services.Configure<ForwardedHeadersOptions>(forwardedHeaders);
                 services.Configure<ForwardedHeadersOptions>(binderOptions =>
                 {
+                    if (forwardedHeaders.GetSection("KnownNetworks").Get<string[]>() is string[] knownNetworks)
+                    {
+                        binderOptions.KnownNetworks.Clear();
+                        foreach (var value in knownNetworks)
+                        {
+                            var segments = value.Split('/');
+                            var prefix = IPAddress.Parse(segments[0]);
+                            var prefixLength = int.Parse(segments[1]);
+                            var network = new IPNetwork(prefix, prefixLength);
+                            binderOptions.KnownNetworks.Add(network);
+                        }
+                    }
                     if (forwardedHeaders.GetSection("KnownProxies").Get<string[]>() is string[] knownProxies)
                     {
-                        foreach (var item in knownProxies)
+                        binderOptions.KnownProxies.Clear();
+                        foreach (var value in knownProxies)
                         {
-                            if (IPAddress.TryParse(item, out var address))
-                                binderOptions.KnownProxies!.Add(address!);
+                            var address = IPAddress.Parse(value);
+                            binderOptions.KnownProxies.Add(address);
                         }
                     }
                 });
