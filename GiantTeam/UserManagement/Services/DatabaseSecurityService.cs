@@ -65,7 +65,7 @@ CREATE ROLE {PgQuote.Identifier(loginRole)}
     WITH LOGIN NOINHERIT
     IN ROLE {PgQuote.Identifier(userRole)}
     ENCRYPTED PASSWORD {PgQuote.Literal(encryptedPassword)}
-    VALID UNTIL {PgQuote.Literal(validUntil.ToString("u"))};
+    VALID UNTIL {PgQuote.Literal(validUntil)};
 
 -- Have login set the user role upon login
 ALTER ROLE {PgQuote.Identifier(loginRole)}
@@ -79,7 +79,7 @@ ALTER ROLE {PgQuote.Identifier(loginRole)}
             await connection.ExecuteAsync($"""
 -- Set login expiration
 ALTER ROLE {PgQuote.Identifier(user.DbLogin)}
-    VALID UNTIL {PgQuote.Literal(validUntil.ToString("u"))};
+    VALID UNTIL {PgQuote.Literal(validUntil)};
 """);
         }
     }

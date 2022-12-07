@@ -23,4 +23,8 @@ public static class PgQuote
     {
         return $"'{literal.Replace(quote, escapedQuote).Replace(backslash, escapedBackslash)}'";
     }
+    public static string Literal(DateTimeOffset moment)
+    {
+        return Literal(moment.ToString("u"));
+    }
 }
