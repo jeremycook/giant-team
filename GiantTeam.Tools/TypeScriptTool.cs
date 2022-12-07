@@ -23,6 +23,20 @@ namespace GiantTeam.Tools
             "*DbContext",
         }.Select(o => Regex.Escape(o).Replace("\\*", ".+")).ToArray();
 
+        static readonly Dictionary<Type, string> types = new()
+        {
+            { typeof(bool), "boolean" },
+            { typeof(DateTime), "Date" },
+            { typeof(DateTimeOffset), "Date" },
+            { typeof(decimal), "number" },
+            { typeof(double), "number" },
+            { typeof(float), "number" },
+            { typeof(int), "number" },
+            { typeof(long), "number" },
+            { typeof(Guid), "string" },
+            { typeof(string), "string" },
+        };
+
         public static void TypeScript(bool preview)
         {
             // Search up the path for the solution directory
@@ -276,10 +290,7 @@ namespace GiantTeam.Tools
                 type = enumerableItemType;
             }
             return (
-                type == typeof(Guid) ? "string" :
-                type == typeof(DateTime) ? "Date" :
-                type == typeof(DateTimeOffset) ? "Date" :
-                type.Namespace == "System" ? type.Name.ToLower() :
+                types.TryGetValue(type, out var typeName) ? typeName :
                 type.Name
             ) + (isArray ? "[]" : string.Empty);
         }
