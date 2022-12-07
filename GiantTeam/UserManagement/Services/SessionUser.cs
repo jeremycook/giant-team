@@ -16,7 +16,6 @@ namespace GiantTeam.UserManagement.Services
                 // Common claims
                 sub: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Sub),
                 username: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Username),
-                name: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Name),
 
                 // Database access claims
                 dbRole: dbRole,
@@ -30,14 +29,12 @@ namespace GiantTeam.UserManagement.Services
         public SessionUser(
             string sub,
             string username,
-            string name,
             string dbRole,
             string dbLogin,
             string dbPassword)
         {
             Sub = sub ?? throw new ArgumentNullException(nameof(sub));
             Username = username ?? throw new ArgumentNullException(nameof(username));
-            Name = name ?? throw new ArgumentNullException(nameof(name));
             DbRole = dbRole ?? throw new ArgumentNullException(nameof(dbRole));
             DbLogin = dbLogin ?? throw new ArgumentNullException(nameof(dbLogin));
             DbPassword = dbPassword ?? throw new ArgumentNullException(nameof(dbPassword));
@@ -58,7 +55,6 @@ namespace GiantTeam.UserManagement.Services
 
             // Common claims
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Sub, Sub));
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.Name, Name));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Username, Username));
 
             // Database claims
@@ -76,7 +72,6 @@ namespace GiantTeam.UserManagement.Services
 
         public string Sub { get; }
         public string Username { get; }
-        public string Name { get; }
 
         // Database
 

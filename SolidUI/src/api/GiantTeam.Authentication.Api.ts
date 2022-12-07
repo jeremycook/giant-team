@@ -14,7 +14,6 @@ export interface SessionOutput {
     status: SessionStatus;
     userId?: string;
     username?: string;
-    name?: string;
 }
 
 export enum SessionStatus {

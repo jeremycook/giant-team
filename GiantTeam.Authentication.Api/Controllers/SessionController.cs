@@ -18,7 +18,6 @@ public class SessionController : ControllerBase
 
         public Guid? UserId { get; set; }
         public string? Username { get; set; }
-        public string? Name { get; set; }
     }
 
     public enum SessionStatus
@@ -45,7 +44,6 @@ public class SessionController : ControllerBase
             return new(SessionStatus.Authenticated)
             {
                 UserId = user.UserId,
-                Name = user.Name,
                 Username = user.Username,
             };
         }

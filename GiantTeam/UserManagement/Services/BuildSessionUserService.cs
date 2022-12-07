@@ -34,7 +34,6 @@ namespace GiantTeam.UserManagement.Services
             SessionUser sessionUser = new(
                 sub: user.UserId.ToString(),
                 username: user.Username,
-                name: user.Name,
                 dbRole: user.DbRoleId,
                 dbLogin: $"{user.DbRoleId}:l:{DateTime.UtcNow:yymmddHHmmss}",
                 dbPassword: PasswordHelper.GeneratePassword()
