@@ -79,9 +79,6 @@ namespace WebApp
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
             });
 
-            //app.UseHsts();
-            app.UseHttpsRedirection();
-
             app.UseStaticFiles();
 
             app.UseRouting();

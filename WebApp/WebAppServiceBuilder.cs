@@ -20,11 +20,6 @@ namespace WebApp
             IHostEnvironment environment,
             GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
-            if (!environment.IsDevelopment())
-            {
-                services.AddHttpsRedirection(options => options.HttpsPort = 443);
-            }
-
             services.AddHttpContextAccessor();
 
             services.AddCookiePolicy(options =>
