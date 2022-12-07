@@ -7,6 +7,7 @@ using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup.DatabaseConfiguration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace WebApp
 {
@@ -61,7 +62,20 @@ namespace WebApp
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    // Everything under /assets/ can be cached Vite embeds a
+                    // hash like "/assets/404.367b9fbf.js".
+                    if (ctx.Context.Request.Path.StartsWithSegments("assets"))
+                    {
+                        const int durationInSeconds = 60 * 60 * 24;
+                        ctx.Context.Response.Headers[HeaderNames.CacheControl] =
+                            "public,max-age=" + durationInSeconds;
+                    }
+                }
+            });
 
             app.UseRouting();
 
