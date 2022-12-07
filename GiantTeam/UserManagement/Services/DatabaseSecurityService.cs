@@ -8,32 +8,39 @@ namespace GiantTeam.UserManagement.Services
 {
     public class DatabaseSecurityService
     {
+        private readonly ILogger<DatabaseSecurityService> logger;
         private readonly SecurityConnectionService security;
 
-        public DatabaseSecurityService(SecurityConnectionService security)
+        public DatabaseSecurityService(
+            ILogger<DatabaseSecurityService> logger,
+            SecurityConnectionService security)
         {
+            this.logger = logger;
             this.security = security;
         }
 
         /// <summary>
-        /// Create a team role that inherits, cannot login and has an admin.
+        /// Create a team role with an admin <see cref="SessionUser.DbRole"/> of <paramref name="adminUser"/> that inherits, and cannot login.
         /// </summary>
-        /// <param name="teamName"></param>
-        /// <param name="adminName"></param>
+        /// <param name="teamRole"></param>
+        /// <param name="adminRole"></param>
         /// <returns></returns>
-        public async Task CreateTeamAsync(string teamName, string adminName)
+        public async Task CreateTeamAsync(string teamRole, SessionUser adminUser)
         {
+            string adminRole = adminUser.DbRole;
+
             using var connection = await security.OpenConnectionAsync();
             await connection.ExecuteAsync($"""
 -- Create a team role that inherits, cannot login, and has an admin
-CREATE ROLE {PgQuote.Identifier(teamName)} 
+CREATE ROLE {PgQuote.Identifier(teamRole)} 
     WITH NOLOGIN INHERIT
-    ADMIN {PgQuote.Identifier(adminName)};
+    ADMIN {PgQuote.Identifier(adminRole)};
 """);
+            logger.LogInformation("Created team {TeamRole} with admin {AdminRole}.", teamRole, adminRole);
         }
 
         /// <summary>
-        /// Create a user role that inherits but cannot login.
+        /// Create a user role that inherits, can create databases, and cannot login.
         /// </summary>
         /// <param name="userName"></param>
         /// <returns></returns>
@@ -45,10 +52,12 @@ CREATE ROLE {PgQuote.Identifier(teamName)}
 CREATE ROLE {PgQuote.Identifier(userName)}
     WITH NOLOGIN INHERIT CREATEDB;
 """);
+            logger.LogInformation("Created user {UserRole}.", userName);
         }
 
         /// <summary>
-        /// Create a new database login for <paramref name="user"/>.
+        /// Create a new database login for <paramref name="user"/> that can login, does not inherit,
+        /// and is valid until <paramref name="validUntil"/>.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
@@ -71,16 +80,28 @@ CREATE ROLE {PgQuote.Identifier(loginRole)}
 ALTER ROLE {PgQuote.Identifier(loginRole)}
     SET ROLE {PgQuote.Identifier(userRole)};
 """);
+
+            logger.LogInformation("Created login {LoginRole} for {UserRole} that is valid until {ValidUntil}.", loginRole, userRole, validUntil);
         }
 
+        /// <summary>
+        /// Extend or expire the password of <paramref name="user"/>'s <see cref="SessionUser.DbLogin"/>
+        /// to <paramref name="validUntil"/>.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="validUntil"></param>
+        /// <returns></returns>
         public async Task SetLoginExpirationAsync(SessionUser user, DateTimeOffset validUntil)
         {
+            string loginRole = user.DbLogin;
+
             using var connection = await security.OpenConnectionAsync();
             await connection.ExecuteAsync($"""
 -- Set login expiration
-ALTER ROLE {PgQuote.Identifier(user.DbLogin)}
+ALTER ROLE {PgQuote.Identifier(loginRole)}
     VALID UNTIL {PgQuote.Literal(validUntil)};
 """);
+            logger.LogInformation("Changed the password of login {LoginRole} to be valid until {ValidUntil}.", loginRole, validUntil);
         }
     }
 }

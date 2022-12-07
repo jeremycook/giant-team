@@ -21,11 +21,14 @@ namespace GiantTeam.UserManagement.Services
             public Guid UserId { get; set; }
         }
 
+        private readonly ILogger<VerifyPasswordService> logger;
         private readonly RecordsManagementDbContext db;
 
         public VerifyPasswordService(
+            ILogger<VerifyPasswordService> logger,
             RecordsManagementDbContext db)
         {
+            this.logger = logger;
             this.db = db;
         }
 
@@ -49,7 +52,7 @@ namespace GiantTeam.UserManagement.Services
                 !string.IsNullOrEmpty(userPassword.PasswordDigest) &&
                 PasswordHelper.VerifyHashedPlaintext(userPassword.PasswordDigest, input.Password))
             {
-                // TODO: Log verification success
+                logger.LogInformation("Username and password verification succeeded for {Username}.", input.Username);
                 return new()
                 {
                     UserId = userPassword.UserId,
@@ -57,7 +60,7 @@ namespace GiantTeam.UserManagement.Services
             }
             else
             {
-                // TODO: Log verification failure
+                logger.LogInformation("Username and password verification failed for {Username}.", input.Username);
                 throw new ValidationException($"The username or password is incorrect.");
             }
         }

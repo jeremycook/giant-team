@@ -54,28 +54,28 @@ namespace GiantTeam.UserManagement.Services
             this.validationService = validationService;
         }
 
-        public async Task<JoinOutput> JoinAsync(JoinInput joinInputModel)
+        public async Task<JoinOutput> JoinAsync(JoinInput input)
         {
-            validationService.Validate(joinInputModel);
+            validationService.Validate(input);
 
             DbRole dbRole = new()
             {
-                RoleId = joinInputModel.Username,
+                RoleId = input.Username,
                 Created = DateTimeOffset.UtcNow,
             };
             User user = new()
             {
                 UserId = Guid.NewGuid(),
-                Name = joinInputModel.Name,
-                Email = joinInputModel.Email,
-                Username = joinInputModel.Username,
+                Name = input.Name,
+                Email = input.Email,
+                Username = input.Username,
                 Created = DateTimeOffset.UtcNow,
                 DbRoleId = dbRole.RoleId,
             };
             UserPassword userPassword = new()
             {
                 UserId = user.UserId,
-                PasswordDigest = PasswordHelper.HashPlaintext(joinInputModel.Password),
+                PasswordDigest = PasswordHelper.HashPlaintext(input.Password),
             };
 
             validationService.ValidateAll(dbRole, user, userPassword);
@@ -107,6 +107,8 @@ namespace GiantTeam.UserManagement.Services
             }
 
             await recordsManagementTx.CommitAsync();
+
+            logger.LogInformation("Registered {Username} with {UserId}.", input.Username, user.UserId);
 
             return new()
             {

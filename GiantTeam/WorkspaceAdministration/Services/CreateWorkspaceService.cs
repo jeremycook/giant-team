@@ -74,15 +74,6 @@ namespace GiantTeam.WorkspaceAdministration.Services
             string workspaceName = input.WorkspaceName!;
             string workspaceOwner = input.WorkspaceOwner!;
 
-            try
-            {
-
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
             var role = await fetchRoleService.FetchRoleAsync(new()
             {
                 RoleName = workspaceOwner,

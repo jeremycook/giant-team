@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -27,6 +28,7 @@ public class LoginController : ControllerBase
 
     [HttpPost("/api/[Controller]")]
     public async Task<OkResult> Post(
+        [FromServices] ILogger<LoginController> logger,
         [FromServices] VerifyPasswordService verifyPasswordService,
         [FromServices] IOptions<CookieAuthenticationOptions> cookieAuthenticationOptions,
         [FromServices] BuildSessionUserService buildSessionUserService,
@@ -45,14 +47,17 @@ public class LoginController : ControllerBase
         // Create a principal from the session user
         ClaimsPrincipal principal = new(sessionUser.CreateIdentity(PrincipalHelper.AuthenticationTypes.Password));
 
-        // TODO: Log authentication success
-
         AuthenticationProperties properties = new()
         {
             IsPersistent = input.RemainLoggedIn,
         };
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
+
+        logger.LogInformation("Signed in {Username} at {UserIp} with {AuthenticationScheme}.",
+            input.Username,
+            HttpContext.Connection.RemoteIpAddress,
+            CookieAuthenticationDefaults.AuthenticationScheme);
 
         return Ok();
     }
