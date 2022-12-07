@@ -145,19 +145,8 @@ namespace WebApp
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "GiantTeam API",
-                    Description = "TODO",
-                    TermsOfService = new Uri("/terms", UriKind.Relative),
-                    Contact = new OpenApiContact
-                    {
-                        Name = "Contact Us",
-                        Url = new Uri("/contact", UriKind.Relative)
-                    },
-                    License = new OpenApiLicense
-                    {
-                        Name = "License",
-                        Url = new Uri("/license", UriKind.Relative)
-                    },
+                    Title = "API",
+                    Description = "This API may change at anytime. It is provided \"as is\", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.",
                 });
             });
 

@@ -58,15 +58,6 @@ namespace WebApp
                 });
             }
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-            else
-            {
-                //app.UseExceptionHandler("/error");
-            }
 
             ConnectionOptions? migrationConnectionOptions = app.Configuration
                 .GetSection("MigrationConnection")
@@ -87,6 +78,8 @@ namespace WebApp
                     app.Logger.LogError(ex, "Suppressed migration exception {Exception}: {ExceptionMessage}", ex.GetBaseException(), ex.GetBaseException().Message);
                 }
             }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseStaticFiles();
 
