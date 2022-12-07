@@ -8,10 +8,9 @@ public class ReflectController : ControllerBase
 {
     public class ReflectOutput
     {
-        public string Scheme { get; set; } = null!;
-        public string Host { get; set; } = null!;
+        public string BaseUrl { get; set; } = null!;
         public string Protocol { get; set; } = null!;
-        public string? RemoteIpAddress { get; set; } = null!;
+        public string? Ip { get; set; } = null!;
     }
 
     [HttpGet("/api/[Controller]")]
@@ -19,10 +18,9 @@ public class ReflectController : ControllerBase
     {
         return new()
         {
-            Scheme = Request.Scheme,
-            Host = Request.Host.Value,
+            BaseUrl = Request.Scheme + "://" + Request.Host.Value + Request.PathBase,
             Protocol = Request.Protocol,
-            RemoteIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+            Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
         };
     }
 }
