@@ -5,7 +5,6 @@ using GiantTeam.Logging;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup.DatabaseConfiguration;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Options;
 
@@ -44,6 +43,21 @@ namespace WebApp
 
             // Configure the HTTP request pipeline.
 
+            if (builder.Configuration.GetSection("ForwardedHeaders").Exists())
+            {
+                app.UseForwardedHeaders();
+            }
+
+            if (app.Configuration.GetSection("ForceHttps").Get<bool>() == true)
+            {
+                const string https = "https";
+                app.Use((context, next) =>
+                {
+                    context.Request.Scheme = https;
+                    return next(context);
+                });
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -73,11 +87,6 @@ namespace WebApp
                     app.Logger.LogError(ex, "Suppressed migration exception {Exception}: {ExceptionMessage}", ex.GetBaseException(), ex.GetBaseException().Message);
                 }
             }
-
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
-            });
 
             app.UseStaticFiles();
 

@@ -17,9 +17,26 @@ namespace WebApp
     {
         public WebAppServiceBuilder(
             IServiceCollection services,
-            IHostEnvironment environment,
+            IConfiguration configuration,
             GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
+            if (configuration.GetSection("ForwardedHeaders") is var forwardedHeaders &&
+                forwardedHeaders.Exists())
+            {
+                services.Configure<ForwardedHeadersOptions>(forwardedHeaders);
+                services.Configure<ForwardedHeadersOptions>(binderOptions =>
+                {
+                    if (forwardedHeaders.GetSection("KnownProxies").Get<string[]>() is string[] knownProxies)
+                    {
+                        foreach (var item in knownProxies)
+                        {
+                            if (IPAddress.TryParse(item, out var address))
+                                binderOptions.KnownProxies!.Add(address!);
+                        }
+                    }
+                });
+            }
+
             services.AddHttpContextAccessor();
 
             services.AddCookiePolicy(options =>
