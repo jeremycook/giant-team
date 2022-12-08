@@ -1,7 +1,5 @@
-﻿using GiantTeam.ComponentModel;
-using GiantTeam.WorkspaceAdministration.Services;
+﻿using GiantTeam.WorkspaceAdministration.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using static GiantTeam.WorkspaceAdministration.Services.FetchWorkspaceService;
 
 namespace GiantTeam.Data.Api.Controllers;

@@ -10,6 +10,8 @@ namespace GiantTeam.WorkspaceAdministration.Services
         private readonly IOptions<GiantTeamOptions> options;
         private readonly SessionService sessionService;
 
+        public SessionUser User => sessionService.User;
+
         public UserConnectionService(IOptions<GiantTeamOptions> options, SessionService sessionService)
         {
             this.options = options;
