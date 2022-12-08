@@ -4,6 +4,7 @@ import {
     CreateTeamOutput,
     CreateWorkspaceInput,
     CreateWorkspaceOutput,
+    FetchRecordsOutput,
     FetchWorkspaceInput,
     FetchWorkspaceOutput
 } from "./GiantTeam";
@@ -16,6 +17,9 @@ export const postCreateTeam = async (input: CreateTeamInput) =>
 
 export const postCreateWorkspace = async (input: CreateWorkspaceInput) =>
     await postJson("/api/create-workspace", input) as DataResponse<CreateWorkspaceOutput>;
+
+export const postFetchRecords = async () =>
+    await postJson("/api/fetch-records") as DataResponse<FetchRecordsOutput>;
 
 export const postFetchWorkspace = async (input: FetchWorkspaceInput) =>
     await postJson("/api/fetch-workspace", input) as DataResponse<FetchWorkspaceOutput>;
