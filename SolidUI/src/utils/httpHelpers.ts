@@ -52,7 +52,29 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
             }
         }
         else {
-            if (isJsonResponse) {
+            if (response.status === 401) {
+                history.pushState({ returnUrl: location.href }, "", "/login");
+                location.reload();
+                return {
+                    ok: false,
+                    status: response.status,
+                    message: "Must be logged in to access the requested resource.",
+                    data: null,
+                    errorData: null
+                };
+            }
+            else if (response.status === 403) {
+                history.pushState({ returnUrl: location.href }, "", "/access-denied");
+                location.reload();
+                return {
+                    ok: false,
+                    status: response.status,
+                    message: "Must have permission to access the requested resource.",
+                    data: null,
+                    errorData: null
+                };
+            }
+            else if (isJsonResponse) {
                 const data = await response.json();
                 return {
                     ok: false,

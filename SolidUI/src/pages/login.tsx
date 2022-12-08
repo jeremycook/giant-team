@@ -23,8 +23,13 @@ export default function Login() {
 
     if (output.ok) {
       messageSetter("Logging you in…");
-      // TODO: Redirect to page that triggered login flow
-      location.replace("/");
+      if (typeof history.state === "object" && typeof history.state.returnUrl === "string") {
+        // Redirect to page that triggered login flow
+        location.replace(history.state.returnUrl);
+      }
+      else {
+        location.replace("/");
+      }
     } else {
       messageSetter(output.message);
     }
