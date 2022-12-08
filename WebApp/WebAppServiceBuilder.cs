@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Net;
+using System.Text.Json.Serialization;
 
 namespace WebApp
 {
@@ -116,25 +118,36 @@ namespace WebApp
 
             services.AddAuthorization(options =>
             {
-                // Use the fallback policy to require all users to be authenticated
-                // except when accessing Razor Pages, controllers or action methods
-                // with an authorization or anonymous attribute.
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
+                // Keep the default since it requires authenticated users
+                // options.DefaultPolicy = ...
             });
 
             services.AddControllers(options =>
             {
+                // Enforce the default authorization policy on controllers
+                options.Filters.Add(new AuthorizeFilter());
+
                 // Exception filters we control
                 options.Filters.Add<GiantTeamExceptionFilter>();
 
                 // Slugify paths
                 options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+            })
+            .AddJsonOptions(configure =>
+            {
+                // Ensure actions and action filters have access to formatter exception messages
+                configure.AllowInputFormatterExceptionMessages = true;
+
+                // Be more forgiving about input
+                configure.JsonSerializerOptions.AllowTrailingCommas = true;
+                configure.JsonSerializerOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
+                configure.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
+
             services.Configure<ApiBehaviorOptions>(options =>
             {
-                // Disabling the automatic validation
+                // Disabling the automatic model binding validation so that
+                // GiantTeamExceptionFilter will get used instead.
                 options.SuppressModelStateInvalidFilter = true;
             });
 

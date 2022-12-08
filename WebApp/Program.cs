@@ -1,12 +1,7 @@
-using GiantTeam;
 using GiantTeam.Asp.Startup;
-using GiantTeam.DataProtection;
 using GiantTeam.Logging;
-using GiantTeam.Postgres;
-using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup.DatabaseConfiguration;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace WebApp
