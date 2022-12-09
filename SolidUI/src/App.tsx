@@ -4,7 +4,7 @@ import { SessionStatus } from './api/GiantTeam.Authentication.Api';
 import { routes } from './routes';
 import { session } from './session';
 import { useTitle } from './title';
-import { ChevronDown, Profile } from './utils/iconHelpers';
+import { Profile } from './utils/iconHelpers';
 
 const App: Component = () => {
   const Route = useRoutes(routes);
