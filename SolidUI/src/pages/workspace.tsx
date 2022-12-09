@@ -1,9 +1,15 @@
+import { useLocation } from '@solidjs/router';
 import { createSignal, Show } from 'solid-js';
 import { FetchWorkspaceOutput } from '../api/GiantTeam';
 import { postFetchWorkspace } from '../api/GiantTeam.Data.Api';
-import { getParam } from '../utils/urlHelpers';
+import { authorize } from '../session';
+import { titleSetter } from '../title';
 
 export default function WorkspacePage() {
+  titleSetter("Logout");
+  authorize();
+
+  const location = useLocation();
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
@@ -12,7 +18,7 @@ export default function WorkspacePage() {
   const fetchWorkspace = async (workspaceName: string) => {
 
     const output = await postFetchWorkspace({
-      workspaceName: workspaceName
+      workspaceName
     });
 
     okSetter(output.ok);
@@ -20,10 +26,10 @@ export default function WorkspacePage() {
     dataSetter(output.data);
   };
 
-  fetchWorkspace(getParam("workspace_name")!);
+  fetchWorkspace(location.query.workspace_name);
 
   return (
-    <section>
+    <section class="card md:w-md">
 
       <h1>Workspace</h1>
 

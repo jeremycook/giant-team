@@ -141,7 +141,10 @@ namespace WebApp
                 // Be more forgiving about input
                 configure.JsonSerializerOptions.AllowTrailingCommas = true;
                 configure.JsonSerializerOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
-                configure.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                // TODO: Write a JsonEnumConverter that can deserialize from string or integer,
+                // and serialize to int. Since JsonStringEnumConverter serializes to string
+                // that is in conflict with using enums in TypeScript.
+                //configure.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
 
             services.Configure<ApiBehaviorOptions>(options =>

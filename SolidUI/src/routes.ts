@@ -1,5 +1,5 @@
 import { lazy } from 'solid-js';
-import type { RouteDefinition } from 'solid-app-router';
+import type { RouteDefinition } from '@solidjs/router';
 
 import Home from './pages/home';
 // import AboutData from './pages/about.data';
@@ -22,6 +22,10 @@ export const routes: RouteDefinition[] = [
   {
     path: '/workspace',
     component: lazy(() => import('./pages/workspace'))
+  },
+  {
+    path: '/workspaces',
+    component: lazy(() => import('./pages/workspaces'))
   },
 
   {

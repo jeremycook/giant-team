@@ -1,4 +1,4 @@
 import { createUniqueId } from "solid-js";
 
-/** Creates a unique but stable ID with a suffix */
-export const createId = (suffix: string) => createUniqueId() + "_" + suffix;
+/** Return a string with a random but fixed prefix followed by the provided suffix. */
+export const createId = ((prefix) => (suffix: string) => prefix ? prefix + "_" + suffix : suffix)(createUniqueId());

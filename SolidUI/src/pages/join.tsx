@@ -1,9 +1,12 @@
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postRegister } from '../api/GiantTeam.Authentication.Api';
+import { titleSetter } from '../title';
 import { createId } from '../utils/htmlHelpers';
 import { createUrl } from '../utils/urlHelpers';
 
 export default function Register() {
+  titleSetter("Join");
+
   // Input
   const [name, nameSetter] = createSignal("");
   const [email, emailSetter] = createSignal("");
@@ -49,7 +52,7 @@ export default function Register() {
   };
 
   return (
-    <section>
+    <section class="card md:w-md">
 
       <h1>Register</h1>
 

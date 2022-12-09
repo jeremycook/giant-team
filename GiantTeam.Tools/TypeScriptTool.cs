@@ -25,6 +25,7 @@ namespace GiantTeam.Tools
 
         static readonly Dictionary<Type, string> types = new()
         {
+            { typeof(object), "any" },
             { typeof(bool), "boolean" },
             { typeof(DateTime), "Date" },
             { typeof(DateTimeOffset), "Date" },
@@ -204,7 +205,7 @@ namespace GiantTeam.Tools
                             path = $"/api/{controllerSlug}/{actionSlug}";
                         }
 
-                        string returnTypeSignature = 
+                        string returnTypeSignature =
                             $" as DataResponse<{(returnTypeName != string.Empty ? returnTypeName : "null")}>";
 
                         sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}) =>\n");
@@ -286,16 +287,16 @@ namespace GiantTeam.Tools
 
         static string TypeScriptTypeName(Type type)
         {
-            bool isArray = false;
-            if (type.GetEnumerableItemType() is Type enumerableItemType)
+            var suffix = string.Empty;
+            while (type.GetEnumerableItemType() is Type enumerableItemType)
             {
-                isArray = true;
+                suffix += "[]";
                 type = enumerableItemType;
             }
             return (
                 types.TryGetValue(type, out var typeName) ? typeName :
                 type.Name
-            ) + (isArray ? "[]" : string.Empty);
+            ) + suffix;
         }
     }
 }

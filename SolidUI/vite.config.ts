@@ -1,18 +1,13 @@
 import { defineConfig } from 'vite'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import solidPlugin from 'vite-plugin-solid'
-import UnoCSS from 'unocss/vite'
-import { presetMini } from '@unocss/preset-mini'
+import Unocss from 'unocss/vite'
 
 export default defineConfig({
   plugins: [
     basicSsl(),
     solidPlugin(),
-    UnoCSS({
-      presets: [
-        presetMini()
-      ],
-    }),
+    Unocss('unocss.config.ts'),
   ],
   server: {
     https: true,

@@ -90,7 +90,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
                 await maintenance.ExecuteAsync($"CREATE DATABASE {PgQuote.Identifier(workspaceName)};");
 
                 using var workspaceDb = await connectionService.OpenConnectionAsync(workspaceName, workspaceOwner);
-                await workspaceDb.ExecuteAsync("REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;");
+                await workspaceDb.ExecuteAsync($"""
+GRANT ALL ON DATABASE {PgQuote.Identifier(workspaceName)} TO {PgQuote.Identifier(workspaceOwner)};
+REVOKE ALL ON DATABASE {PgQuote.Identifier(workspaceName)} FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
+""");
             }
             catch (Exception)
             {

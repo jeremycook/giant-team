@@ -1,8 +1,12 @@
+import { titleSetter } from "../title";
+
 export default function NotFound() {
+  titleSetter("404: Not Found");
+
   return (
-    <section class="text-gray-700 p-8">
-      <h1 class="text-2xl font-bold">404: Not Found</h1>
-      <p class="mt-4">It's gone 😞</p>
+    <section class="card md:w-md">
+      <h1>404: Not Found</h1>
+      <p>It's gone 😞</p>
     </section>
   );
 }

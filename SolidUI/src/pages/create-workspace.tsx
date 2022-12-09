@@ -2,8 +2,12 @@ import { createSignal, Show } from 'solid-js';
 import { createId } from '../utils/htmlHelpers';
 import { createUrl } from '../utils/urlHelpers';
 import { postCreateWorkspace } from '../api/GiantTeam.Data.Api';
+import { authorize } from '../session';
+import { titleSetter } from '../title';
 
 export default function CreateWorkspace() {
+  titleSetter("Create a Workspace");
+  authorize()
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
@@ -29,42 +33,39 @@ export default function CreateWorkspace() {
   };
 
   return (
-    <section class="m-2 card w-sm">
+    <section class="card md:w-md">
 
-      <h1>Create Workspace</h1>
+      <h1>Create a Workspace</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-green" : "text-red")}>
+        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
           {message()}
         </p>
       </Show>
 
-      <form onSubmit={formSubmit}>
+      <form onSubmit={formSubmit} class="form-grid">
 
-        <div class="input-group">
-          <label for={createId("workspaceName")}>
-            Workspace Name
-          </label>
-          <input
-            id={createId("workspaceName")}
-            name="workspaceName"
-            required
-            autofocus
-          />
-        </div>
+        <label for={createId("workspaceName")}>
+          Workspace Name
+        </label>
+        <input
+          id={createId("workspaceName")}
+          name="workspaceName"
+          required
+          autofocus
+        />
 
-        <div class="input-group">
-          <label for={createId("workspaceOwner")}>
-            Workspace Owner
-          </label>
-          <input
-            id={createId("workspaceOwner")}
-            name="workspaceOwner"
-            required
-          />
-        </div>
+        <label for={createId("workspaceOwner")}>
+          Workspace Owner
+        </label>
+        <input
+          id={createId("workspaceOwner")}
+          name="workspaceOwner"
+          required
+        />
 
-        <div class="input-group">
+        <div />
+        <div>
           <button type="submit" class="button">
             Create Workspace
           </button>

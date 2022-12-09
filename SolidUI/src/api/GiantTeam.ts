@@ -69,47 +69,6 @@ export enum DeleteWorkspaceStatus {
     Problem = 400,
 }
 
-export interface FetchRecordsInput {
-    verbose: boolean;
-    database?: string;
-    schema?: string;
-    table?: string;
-    columns?: string[];
-    filters?: FetchRecordsInputRangeFilter[];
-    orderBy?: FetchRecordsInputOrder[];
-    skip: number;
-    take: number;
-}
-
-export interface FetchRecordsInputFilter {
-    discriminator: string;
-    column: string;
-}
-
-export interface FetchRecordsInputOrder {
-    column: string;
-    asc: boolean;
-}
-
-export interface FetchRecordsInputRangeFilter {
-    lowerValue: string;
-    upperValue: string;
-    discriminator: string;
-    column: string;
-}
-
-export interface FetchRecordsOutput {
-    sql?: string;
-    columns: FetchRecordsOutputColumn[];
-    records: Object[][];
-}
-
-export interface FetchRecordsOutputColumn {
-    name: string;
-    dataType: string;
-    nullable: boolean;
-}
-
 export interface FetchRoleInput {
     roleName?: string;
 }
@@ -135,4 +94,50 @@ export interface FetchWorkspaceInput {
 export interface FetchWorkspaceOutput {
     workspaceName: string;
     workspaceOwner: string;
+}
+
+export interface FetchRecordsInput {
+    verbose?: boolean;
+    database: string;
+    schema: string;
+    table: string;
+    columns?: string[];
+    filters?: FetchRecordsInputRangeFilter[];
+    orderBy?: FetchRecordsInputOrder[];
+    skip?: number;
+    take?: number;
+}
+
+export interface FetchRecordsInputColumn {
+    column: string;
+    alias?: string;
+}
+
+export interface FetchRecordsInputFilter {
+    discriminator: string;
+    column: string;
+}
+
+export interface FetchRecordsInputOrder {
+    column: string;
+    asc?: boolean;
+}
+
+export interface FetchRecordsInputRangeFilter {
+    lowerValue: string;
+    upperValue: string;
+    discriminator: string;
+    column: string;
+}
+
+export interface FetchRecordsOutput {
+    sql?: string;
+    columns: FetchRecordsOutputColumn[];
+    records: any[][];
+}
+
+export interface FetchRecordsOutputColumn {
+    name: string;
+    dataType: string;
+    nullable: boolean;
 }
