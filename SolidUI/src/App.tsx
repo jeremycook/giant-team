@@ -18,8 +18,8 @@ const App: Component = () => {
           <span class="sr-only">Home</span>
         </A>
         <form action='/search' class='flex'>
-          <input name='q' class='rounded-l' placeholder='Search…'  />
-          <button type='submit' class='button rounded-0 rounded-r'>
+          <input name='q' class='rounded-bl' placeholder='Search…'  />
+          <button type='submit' class='button rounded-0 rounded-br'>
             <SearchIcon />
             <span class="sr-only">Search</span>
           </button>
