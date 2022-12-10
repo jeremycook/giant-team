@@ -8,8 +8,8 @@ import { createUrl } from '../utils/urlHelpers';
 import Table from '../widgets/Table';
 
 export default function WorkspacePage() {
-  titleSetter("Your Workspaces");
   authorize();
+  titleSetter("Your Workspaces");
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
@@ -18,7 +18,7 @@ export default function WorkspacePage() {
   const fetchWorkspaces = async () => {
 
     const output = await postFetchRecords({
-      database: 'maintenance',
+      database: 'info',
       schema: 'public',
       table: 'gt_database',
       orderBy: [
@@ -29,7 +29,6 @@ export default function WorkspacePage() {
     okSetter(output.ok);
     messageSetter(output.message);
     dataSetter(output.data);
-    console.log(data());
   };
 
   fetchWorkspaces();

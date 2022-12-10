@@ -77,7 +77,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
             });
 
             // This will fail if the session user is not a member of the database owner role
-            using var workspaceConnection = await connectionService.OpenMaintenanceConnectionAsync(workspaceInfo.WorkspaceOwner);
+            using var workspaceConnection = await connectionService.OpenInfoConnectionAsync(workspaceInfo.WorkspaceOwner);
 
             // Delete the database
             var droppedDatabases = await workspaceConnection.ExecuteAsync($"""

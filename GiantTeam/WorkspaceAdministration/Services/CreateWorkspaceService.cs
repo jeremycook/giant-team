@@ -84,7 +84,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
                 throw new ValidationException("The workspace owner must be a team role. It appears to be a user role.");
             }
 
-            using var maintenance = await connectionService.OpenMaintenanceConnectionAsync(workspaceOwner);
+            using var maintenance = await connectionService.OpenInfoConnectionAsync(workspaceOwner);
             try
             {
                 await maintenance.ExecuteAsync($"CREATE DATABASE {PgQuote.Identifier(workspaceName)};");

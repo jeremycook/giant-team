@@ -18,11 +18,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
             this.sessionService = sessionService;
         }
 
-        public NpgsqlConnection OpenMaintenanceConnection(string setRole)
+        public NpgsqlConnection OpenInfoConnection(string setRole)
         {
             string? maintenanceDatabase =
-                options.Value.UserConnection.MaintenanceDatabase ??
-                throw new InvalidOperationException("Maintenance database not set.");
+                options.Value.InfoDatabaseName ??
+                throw new InvalidOperationException("InfoDatabaseName not set.");
 
             NpgsqlConnection connection = CreateConnection(maintenanceDatabase);
             connection.Open();
@@ -30,16 +30,16 @@ namespace GiantTeam.WorkspaceAdministration.Services
             return connection;
         }
 
-        public NpgsqlConnection OpenMaintenanceConnection()
+        public NpgsqlConnection OpenInfoConnection()
         {
-            return OpenMaintenanceConnection(sessionService.User.DbRole);
+            return OpenInfoConnection(sessionService.User.DbRole);
         }
 
-        public async Task<NpgsqlConnection> OpenMaintenanceConnectionAsync(string setRole)
+        public async Task<NpgsqlConnection> OpenInfoConnectionAsync(string setRole)
         {
             string? maintenanceDatabase =
-                options.Value.UserConnection.MaintenanceDatabase ??
-                throw new InvalidOperationException("Maintenance database not set.");
+                options.Value.InfoDatabaseName ??
+                throw new InvalidOperationException("InfoDatabaseName not set.");
 
             NpgsqlConnection connection = CreateConnection(maintenanceDatabase);
             await connection.OpenAsync();
@@ -47,9 +47,9 @@ namespace GiantTeam.WorkspaceAdministration.Services
             return connection;
         }
 
-        public async Task<NpgsqlConnection> OpenMaintenanceConnectionAsync()
+        public async Task<NpgsqlConnection> OpenInfoConnectionAsync()
         {
-            return await OpenMaintenanceConnectionAsync(sessionService.User.DbRole);
+            return await OpenInfoConnectionAsync(sessionService.User.DbRole);
         }
 
         public NpgsqlConnection OpenConnection(string databaseName, string setRole)

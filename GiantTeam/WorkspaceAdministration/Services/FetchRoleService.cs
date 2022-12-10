@@ -59,7 +59,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
             var user = sessionService.User;
 
-            using var connection = await connectionService.OpenMaintenanceConnectionAsync(user.DbRole);
+            using var connection = await connectionService.OpenInfoConnectionAsync(user.DbRole);
 
             var gridReader = await connection.QueryMultipleAsync($"""
 select rolname {PgQuote.Identifier(nameof(FetchRoleOutput.RoleName))},

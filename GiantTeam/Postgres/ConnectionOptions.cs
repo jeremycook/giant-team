@@ -9,7 +9,6 @@ namespace GiantTeam.Postgres
         public string? Username { get; set; }
         public string? Password { get; set; }
         public string? SetRole { get; set; }
-        public string? MaintenanceDatabase { get; set; }
 
         public NpgsqlConnection CreateOpenConnection()
         {

@@ -37,7 +37,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
         {
             validationService.Validate(input);
 
-            using var connection = await connectionService.OpenMaintenanceConnectionAsync();
+            using var connection = await connectionService.OpenInfoConnectionAsync();
 
             var output = await connection.QuerySingleOrDefaultAsync<FetchWorkspaceOutput>($"""
 SELECT
