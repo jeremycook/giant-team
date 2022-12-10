@@ -1,12 +1,23 @@
 import { For } from "solid-js";
 import { JSX } from "solid-js/web/types/jsx";
-import { FetchRecordsOutput } from "../api/GiantTeam";
 
-export default function Table({ data, rowLeader }: { data: FetchRecordsOutput, rowLeader?: (record: any[]) => JSX.Element }) {
+export interface TableData {
+    columns: TableColumn[];
+    records: any[][];
+}
+
+export interface TableColumn {
+    name: string;
+    dataType: string;
+    nullable: boolean;
+}
+
+export default function Table({ data, rowLeader }: { data: TableData, rowLeader?: (record: any[]) => JSX.Element }) {
     return (
         <table>
             <thead>
                 <tr>
+                    {typeof rowLeader === "function" && <th></th>}
                     <For each={data.columns ?? []}>{(col) =>
                         <th>{col.name}</th>
                     }</For>
