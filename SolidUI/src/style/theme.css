@@ -1,17 +1,14 @@
 ﻿.site-nav {
-    background: rgba(255, 255, 255, 1);
-    border-bottom: 1px solid var(--border-color);
-    padding-top: 1px;
-    padding-bottom: 1px;
     /* Get on top of Ace editor*/
     z-index: 5;
 }
 
-.site-nav form {}
+.site-nav>a,
+.site-nav>.dropdown>.dropdown-button {
+    padding: .5rem 1rem;
+}
 
 .site-nav form * {
-    border-top: none;
-    border-bottom: none;
 }
 
 .site-nav+main {

@@ -4,7 +4,7 @@ import { SessionStatus } from './api/GiantTeam.Authentication.Api';
 import { routes } from './routes';
 import { session } from './session';
 import { useTitle } from './title';
-import { Profile } from './utils/iconHelpers';
+import { HomeIcon, ProfileIcon, SearchIcon } from './utils/icons';
 
 const App: Component = () => {
   const Route = useRoutes(routes);
@@ -14,8 +14,16 @@ const App: Component = () => {
     <>
       <nav class="site-nav menu flex print:hidden" role="navigation">
         <A href="/">
-          Home
+          <HomeIcon />
+          <span class="sr-only">Home</span>
         </A>
+        <form action='/search' class='flex'>
+          <input name='q' class='rounded-l' placeholder='Search…'  />
+          <button type='submit' class='button rounded-0 rounded-r'>
+            <SearchIcon />
+            <span class="sr-only">Search</span>
+          </button>
+        </form>
 
         <Switch fallback={
           <>
@@ -26,7 +34,8 @@ const App: Component = () => {
           <Match when={session().status == SessionStatus.Authenticated}>
             <div class="dropdown dropdown-right ml-auto">
               <button class="dropdown-button" type="button" id="site-navbar-user-dropdown">
-                <Profile /> Profile
+                <ProfileIcon />
+                <span class="sr-only">Profile</span>
               </button>
               <div class="dropdown-content" aria-labelledby="site-navbar-user-dropdown">
                 <div class="menu card">

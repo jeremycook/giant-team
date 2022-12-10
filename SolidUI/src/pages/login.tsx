@@ -4,7 +4,7 @@ import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
 import { refreshSession, session } from '../session';
 import { titleSetter } from '../title';
 import { createId } from '../utils/htmlHelpers';
-import { InfoIcon, WarningIcon } from '../utils/iconHelpers';
+import { InfoIcon, WarningIcon } from '../utils/icons';
 
 export default function Login() {
   titleSetter("Login");
