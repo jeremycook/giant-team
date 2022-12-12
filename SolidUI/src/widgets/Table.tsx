@@ -18,13 +18,13 @@ export default function Table({ data, rowLeader }: { data: TableData, rowLeader?
             <thead>
                 <tr>
                     {typeof rowLeader === "function" && <th></th>}
-                    <For each={data.columns ?? []}>{(col) =>
+                    <For each={data.columns ?? []}>{col =>
                         <th>{col.name}</th>
                     }</For>
                 </tr>
             </thead>
             <tbody>
-                <For each={data.records ?? []}>{(record: any[]) =>
+                <For each={data.records ?? []}>{record =>
                     <tr>
                         {typeof rowLeader === "function" && <td>{rowLeader(record)}</td>}
                         <For each={data.columns ?? []}>{(_, rowNumber) =>
