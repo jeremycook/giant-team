@@ -1,7 +1,7 @@
-@import url("./style/normalize.css");
-@import url("./style/vars.css");
-@import url("./style/typo.css");
-/* @import url("./style/mods.css"); */
-@import url("./style/plugins.css");
-@import url("./style/overrides.css");
-@import url("./style/theme.css");
+@import url('./style/normalize.css');
+@import url('./style/vars.css');
+@import url('./style/typo.css');
+/* @import url('./style/mods.css'); */
+@import url('./style/plugins.css');
+@import url('./style/overrides.css');
+@import url('./style/theme.css');

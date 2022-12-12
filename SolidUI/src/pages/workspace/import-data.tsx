@@ -8,14 +8,14 @@ import { WarningIcon } from '../../utils/icons';
 
 export default function ImportDataPage() {
   authorize();
-  titleSetter("Import Data");
+  titleSetter('Import Data');
 
   const navigate = useNavigate();
   const params = useParams();
 
   const database = () => params.workspace;
   const [ok, okSetter] = createSignal(true);
-  const [message, messageSetter] = createSignal("");
+  const [message, messageSetter] = createSignal('');
 
   createEffect(() => titleSetter(`Import Data into ${database()}`));
 
@@ -37,63 +37,63 @@ export default function ImportDataPage() {
     messageSetter(output.message);
 
     if (output.ok && output.data) {
-      messageSetter("Data imported. Taking you to it…");
+      messageSetter('Data imported. Taking you to it…');
       navigate('./schema/' + output.data.schema + '/table/' + output.data.table);
     }
   };
 
   return (
-    <section class="card md:w-md md:mx-auto">
+    <section class='card md:w-md md:mx-auto'>
 
       <h1>{title}</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
-          <WarningIcon class="animate-bounce-in" />{' '}
+        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
+          <WarningIcon class='animate-bounce-in' />{' '}
           {message()}
         </p>
       </Show>
 
-      <form onSubmit={formSubmit} class="form-grid">
+      <form onSubmit={formSubmit} class='form-grid'>
 
-        <label for={createId("schema")}>
+        <label for={createId('schema')}>
           Schema
         </label>
         <input
-          id={createId("schema")}
-          name="schema"
+          id={createId('schema')}
+          name='schema'
           required
         />
 
-        <label for={createId("table")}>
+        <label for={createId('table')}>
           Table
         </label>
         <input
-          id={createId("table")}
-          name="table"
+          id={createId('table')}
+          name='table'
           required
         />
 
         <div />
         <label><input
-          name="createTableIfNotExists"
-          type="checkbox"
+          name='createTableIfNotExists'
+          type='checkbox'
         /> Create table if it doesn't exists</label>
 
-        <label for={createId("file")}>
+        <label for={createId('file')}>
           CSV File
         </label>
         <input
-          id={createId("file")}
-          name="file"
-          type="file"
+          id={createId('file')}
+          name='file'
+          type='file'
           required
-          accept=".csv, text/csv"
+          accept='.csv, text/csv'
         />
 
         <div />
         <div>
-          <button type="submit" class="button">
+          <button type='submit' class='button'>
             Import Data
           </button>
         </div>

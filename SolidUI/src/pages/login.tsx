@@ -7,13 +7,13 @@ import { createId } from '../utils/htmlHelpers';
 import { InfoIcon, WarningIcon } from '../utils/icons';
 
 export default function Login() {
-  titleSetter("Login");
+  titleSetter('Login');
 
   const location = useLocation();
   const navigate = useNavigate();
 
   const [ok, okSetter] = createSignal(true);
-  const [message, messageSetter] = createSignal("");
+  const [message, messageSetter] = createSignal('');
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -28,14 +28,14 @@ export default function Login() {
     okSetter(output.ok);
 
     if (output.ok) {
-      messageSetter("Logging you in…");
+      messageSetter('Logging you in…');
 
       // Refresh the session
       await refreshSession()
 
-      if (location.state && typeof (location.state as any).returnUrl === "string") {
+      if (location.state && typeof (location.state as any).returnUrl === 'string') {
         const returnUrl = (location.state as any).returnUrl as string;
-        if (returnUrl.startsWith('/') && !returnUrl.endsWith("/login")) {
+        if (returnUrl.startsWith('/') && !returnUrl.endsWith('/login')) {
           // Redirect to page that triggered login flow
           console.log(`Redirecting from ${window.location.href} to ${returnUrl}.`)
           navigate(returnUrl);
@@ -51,61 +51,61 @@ export default function Login() {
   };
 
   return (
-    <section class="card md:w-md md:mx-auto">
+    <section class='card md:w-md md:mx-auto'>
 
       <h1>Login</h1>
 
       <Show when={session().status === SessionStatus.Authenticated}>
-        <p class="text-info" role="alert">
-          <InfoIcon class="animate-bounce-in" />{' '}
-          FYI: You are currently logged in as <A href="/profile">{session().username}</A>,
+        <p class='text-info' role='alert'>
+          <InfoIcon class='animate-bounce-in' />{' '}
+          FYI: You are currently logged in as <A href='/profile'>{session().username}</A>,
           but you can login as someone else if you need to.
         </p>
       </Show>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
-          <WarningIcon class="animate-bounce-in" />{' '}
+        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
+          <WarningIcon class='animate-bounce-in' />{' '}
           {message()}
         </p>
       </Show>
 
-      <form onSubmit={formSubmit} class="form-grid">
+      <form onSubmit={formSubmit} class='form-grid'>
 
-        <label for={createId("username")}>
+        <label for={createId('username')}>
           Username
         </label>
         <input
-          id={createId("username")}
-          name="username"
+          id={createId('username')}
+          name='username'
           required
           autofocus
           autocomplete='username'
         />
 
-        <label for={createId("password")}>
+        <label for={createId('password')}>
           Password
         </label>
         <input
-          id={createId("password")}
-          name="password"
-          type="password"
+          id={createId('password')}
+          name='password'
+          type='password'
           required
           autocomplete='current-password'
         />
 
         <div />
         <label><input
-          name="remainLoggedIn"
-          type="checkbox"
+          name='remainLoggedIn'
+          type='checkbox'
         /> Keep me logged in</label>
 
         <div />
         <div>
-          <button type="submit" class="button">
+          <button type='submit' class='button'>
             Login
           </button>
-          <A href="/join" class="p-button">Join</A>
+          <A href='/join' class='p-button'>Join</A>
         </div>
 
       </form>

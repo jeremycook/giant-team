@@ -1,5 +1,5 @@
-import { useNavigate } from "@solidjs/router";
-import { authorize } from "../session";
+import { useNavigate } from '@solidjs/router';
+import { authorize } from '../session';
 
 export enum HttpStatusCode {
     ConnectionFailure = -1,
@@ -24,12 +24,12 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
 
         const body = input ? JSON.stringify(input) : null;
         const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: body
         });
 
-        const isJsonResponse = response.headers.get("Content-Type")?.startsWith("application/json") === true;
+        const isJsonResponse = response.headers.get('Content-Type')?.startsWith('application/json') === true;
 
         if (response.ok) {
             if (isJsonResponse) {
@@ -37,7 +37,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                 const result = {
                     ok: true,
                     status: response.status,
-                    message: data?.message ?? "",
+                    message: data?.message ?? '',
                     data: data,
                     errorData: null,
                 };
@@ -49,7 +49,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                 const result = {
                     ok: true,
                     status: response.status,
-                    message: message ?? "",
+                    message: message ?? '',
                     data: null,
                     errorData: null,
                 };
@@ -60,19 +60,19 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
         else {
             if (response.status === 401) {
                 await authorize();
-                throw "Unreachable reached!";
+                throw 'Unreachable reached!';
             }
             else if (response.status === 403) {
                 const navigate = useNavigate();
-                navigate("/access-denied", { state: { returnUrl: location.href } });
-                throw "Unreachable reached!";
+                navigate('/access-denied', { state: { returnUrl: location.href } });
+                throw 'Unreachable reached!';
             }
             else if (isJsonResponse) {
                 const data = await response.json();
                 const result = {
                     ok: false,
                     status: response.status,
-                    message: data?.message ?? "",
+                    message: data?.message ?? '',
                     data: null,
                     errorData: data,
                 };
@@ -84,7 +84,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                 const result = {
                     ok: false,
                     status: response.status,
-                    message: errorMessage ?? "",
+                    message: errorMessage ?? '',
                     data: null,
                     errorData: null,
                 };
@@ -99,7 +99,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
         return {
             ok: false,
             status: HttpStatusCode.ConnectionFailure,
-            message: "Unable to connect to server. Please check your Internet connection or try again later.",
+            message: 'Unable to connect to server. Please check your Internet connection or try again later.',
             data: null,
             errorData: err,
         }

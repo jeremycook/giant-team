@@ -17,14 +17,14 @@ export default function WorkspacePage() {
   createEffect(() => titleSetter(model()?.data?.workspaceName ?? 'Workspace'));
 
   return (
-    <section class="card">
+    <section class='card'>
 
       <h1>{title()}</h1>
 
       <Show when={model()}>
 
         <Show when={message}>
-          <p class={(ok() ? "text-ok" : "text-error")} role="alert">
+          <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
             {message}
           </p>
         </Show>
@@ -35,7 +35,7 @@ export default function WorkspacePage() {
           </p>
 
           <div>
-            <div class="menu">
+            <div class='menu'>
               <A href={'./import-data'}>Import Data</A>
               <A href={'./create-table'}>New Table</A>
               <A href={'./create-view'}>New View</A>

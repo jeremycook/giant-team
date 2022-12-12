@@ -39,7 +39,7 @@
 
 /* Border */
 
-[class|="border"] {
+[class|='border'] {
     border-color: #ccc;
 }
 
@@ -135,7 +135,7 @@
 
 /* Grid */
 
-[class|="grid"] {
+[class|='grid'] {
     display: grid;
     grid-auto-rows: auto;
     grid-gap: 1rem;

@@ -5,22 +5,22 @@ import { createId } from '../utils/htmlHelpers';
 import { createUrl } from '../utils/urlHelpers';
 
 export default function Register() {
-  titleSetter("Join");
+  titleSetter('Join');
 
   // Input
-  const [name, nameSetter] = createSignal("");
-  const [email, emailSetter] = createSignal("");
-  const [username, usernameSetter] = createSignal("");
-  const [password, passwordSetter] = createSignal("");
-  const [passwordConfirmation, passwordConfirmationSetter] = createSignal("");
+  const [name, nameSetter] = createSignal('');
+  const [email, emailSetter] = createSignal('');
+  const [username, usernameSetter] = createSignal('');
+  const [password, passwordSetter] = createSignal('');
+  const [passwordConfirmation, passwordConfirmationSetter] = createSignal('');
 
   // Output
   const [ok, okSetter] = createSignal(true);
-  const [message, messageSetter] = createSignal("");
+  const [message, messageSetter] = createSignal('');
 
   createEffect(() => {
     if (!username() && name())
-      usernameSetter(name().toLowerCase().replace(/[^a-z0-9]+/, "-"))
+      usernameSetter(name().toLowerCase().replace(/[^a-z0-9]+/, '-'))
   });
 
   const formSubmit = async (e: SubmitEvent) => {
@@ -29,7 +29,7 @@ export default function Register() {
     // Client-side validation
     if (password() !== passwordConfirmation()) {
       okSetter(false);
-      messageSetter("The password and password confirmation fields must match.");
+      messageSetter('The password and password confirmation fields must match.');
       return;
     }
 
@@ -43,21 +43,21 @@ export default function Register() {
     okSetter(output.ok);
 
     if (output.ok) {
-      messageSetter("Success! Redirecting to the login page…");
+      messageSetter('Success! Redirecting to the login page…');
       // TODO: Redirect to page that triggered login flow
-      location.replace(createUrl("/login", { username: username() }));
+      location.replace(createUrl('/login', { username: username() }));
     } else {
       messageSetter(output.message);
     }
   };
 
   return (
-    <section class="card md:w-md md:mx-auto">
+    <section class='card md:w-md md:mx-auto'>
 
       <h1>Register</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
+        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
           {message()}
         </p>
       </Show>
@@ -65,11 +65,11 @@ export default function Register() {
       <form onSubmit={formSubmit}>
 
         <div>
-          <label for={createId("name")}>
+          <label for={createId('name')}>
             Name
           </label>
           <input
-            id={createId("name")}
+            id={createId('name')}
             value={name()}
             onChange={e => nameSetter(e.currentTarget.value)}
             required
@@ -78,24 +78,24 @@ export default function Register() {
         </div>
 
         <div>
-          <label for={createId("email")}>
+          <label for={createId('email')}>
             Email
           </label>
           <input
-            id={createId("email")}
+            id={createId('email')}
             value={email()}
             onChange={e => emailSetter(e.currentTarget.value)}
             required
-            type="email"
+            type='email'
           />
         </div>
 
         <div>
-          <label for={createId("username")}>
+          <label for={createId('username')}>
             Username
           </label>
           <input
-            id={createId("username")}
+            id={createId('username')}
             value={username()}
             onChange={e => usernameSetter(e.currentTarget.value)}
             required
@@ -104,34 +104,34 @@ export default function Register() {
         </div>
 
         <div>
-          <label for={createId("password")}>
+          <label for={createId('password')}>
             Password
           </label>
           <input
-            id={createId("password")}
+            id={createId('password')}
             value={password()}
             onChange={e => passwordSetter(e.currentTarget.value)}
             required
-            type="password"
+            type='password'
             autocomplete='new-password'
           />
         </div>
 
         <div>
-          <label for={createId("passwordConfirmation")}>
+          <label for={createId('passwordConfirmation')}>
             Password Confirmation
           </label>
           <input
-            id={createId("passwordConfirmation")}
+            id={createId('passwordConfirmation')}
             value={passwordConfirmation()}
             onChange={e => passwordConfirmationSetter(e.currentTarget.value)}
             required
-            type="password"
+            type='password'
             autocomplete='new-password'
           />
         </div>
 
-        <button type="submit">
+        <button type='submit'>
           Register
         </button>
 

@@ -44,8 +44,8 @@ button {
     opacity: .8;
 }
 
-a[aria-disabled="true"],
-button[aria-disabled="true"] {
+a[aria-disabled='true'],
+button[aria-disabled='true'] {
     color: var(--blue-800);
     opacity: .8;
 }

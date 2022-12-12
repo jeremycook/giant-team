@@ -2,7 +2,7 @@
 
 /* Badge */
 
-[class|="badge"] {
+[class|='badge'] {
     background-color: var(--gray);
     color: white;
     border-radius: 1em;

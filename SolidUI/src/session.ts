@@ -1,6 +1,6 @@
-import { useLocation, useNavigate } from "@solidjs/router";
-import { createSignal } from "solid-js";
-import { postLogout, postSession, SessionOutput, SessionStatus } from "./api/GiantTeam.Authentication.Api";
+import { useLocation, useNavigate } from '@solidjs/router';
+import { createSignal } from 'solid-js';
+import { postLogout, postSession, SessionOutput, SessionStatus } from './api/GiantTeam.Authentication.Api';
 
 export interface Session extends SessionOutput {
     status: SessionStatus | -1;
@@ -22,7 +22,7 @@ export const refreshSession = async () => {
 
     if (response.data) {
         sessionSetter(response.data);
-        console.debug("Refreshed session", response.data);
+        console.debug('Refreshed session', response.data);
     }
 }
 
@@ -40,7 +40,7 @@ export const authorize = async () => {
         const url = location.pathname + location.search + location.hash;
         
         console.log(`Redirecting from ${url} to /login.`)
-        navigate("/login", { replace: false, state: { returnUrl: url } });
+        navigate('/login', { replace: false, state: { returnUrl: url } });
     }
 }
 

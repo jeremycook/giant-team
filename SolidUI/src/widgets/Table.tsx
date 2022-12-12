@@ -1,5 +1,5 @@
-import { For } from "solid-js";
-import { JSX } from "solid-js/web/types/jsx";
+import { For } from 'solid-js';
+import { JSX } from 'solid-js/web/types/jsx';
 
 export interface TableData {
     columns: TableColumn[];
@@ -17,7 +17,7 @@ export default function Table({ data, rowLeader }: { data: TableData, rowLeader?
         <table>
             <thead>
                 <tr>
-                    {typeof rowLeader === "function" && <th></th>}
+                    {typeof rowLeader === 'function' && <th></th>}
                     <For each={data.columns ?? []}>{col =>
                         <th>{col.name}</th>
                     }</For>
@@ -26,7 +26,7 @@ export default function Table({ data, rowLeader }: { data: TableData, rowLeader?
             <tbody>
                 <For each={data.records ?? []}>{record =>
                     <tr>
-                        {typeof rowLeader === "function" && <td>{rowLeader(record)}</td>}
+                        {typeof rowLeader === 'function' && <td>{rowLeader(record)}</td>}
                         <For each={data.columns ?? []}>{(_, rowNumber) =>
                             <td>{record[rowNumber()]}</td>
                         }</For>

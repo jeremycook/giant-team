@@ -1,7 +1,7 @@
-import { createResource } from "solid-js";
-import { FetchWorkspaceOutput } from "../../api/GiantTeam";
-import { postFetchWorkspace } from "../../api/GiantTeam.Data.Api";
-import { DataResponse } from "../../utils/httpHelpers";
+import { createResource } from 'solid-js';
+import { FetchWorkspaceOutput } from '../../api/GiantTeam';
+import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api';
+import { DataResponse } from '../../utils/httpHelpers';
 
 export interface WorkspacePageModel extends DataResponse<FetchWorkspaceOutput> { }
 

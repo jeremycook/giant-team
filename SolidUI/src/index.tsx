@@ -7,7 +7,7 @@ import 'uno.css';
 import './style/typo.css';
 import './style/plugins.css';
 import './style/theme.css';
-// import "./index.css";
+// import './index.css';
 import App from './App';
 
 render(

@@ -6,10 +6,10 @@ import { titleSetter } from '../../title';
 
 export default function CreateWorkspacePage() {
   authorize()
-  titleSetter("Create a Workspace");
+  titleSetter('Create a Workspace');
 
   const [ok, okSetter] = createSignal(true);
-  const [message, messageSetter] = createSignal("");
+  const [message, messageSetter] = createSignal('');
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function CreateWorkspacePage() {
     okSetter(output.ok);
 
     if (output.ok) {
-      messageSetter("Workspace created! Taking you to it now…");
+      messageSetter('Workspace created! Taking you to it now…');
       location.assign('/workspace/' + output.data!.workspaceName);
     }
     else {
@@ -32,35 +32,35 @@ export default function CreateWorkspacePage() {
   };
 
   return (
-    <section class="card md:w-md md:mx-auto">
+    <section class='card md:w-md md:mx-auto'>
 
       <h1>Create a Workspace</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
+        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
           {message()}
         </p>
       </Show>
 
-      <form onSubmit={formSubmit} class="form-grid">
+      <form onSubmit={formSubmit} class='form-grid'>
 
-        <label for={createId("workspaceName")}>
+        <label for={createId('workspaceName')}>
           Workspace Name
         </label>
         <input
-          id={createId("workspaceName")}
-          name="workspaceName"
+          id={createId('workspaceName')}
+          name='workspaceName'
           required
           autofocus
-          autocomplete="no"
+          autocomplete='no'
         />
 
-        <label for={createId("workspaceOwner")}>
+        <label for={createId('workspaceOwner')}>
           Workspace Owner
         </label>
         <select
-          id={createId("workspaceOwner")}
-          name="workspaceOwner"
+          id={createId('workspaceOwner')}
+          name='workspaceOwner'
           required
         >
           <option>Choose…</option>
@@ -72,7 +72,7 @@ export default function CreateWorkspacePage() {
 
         <div />
         <div>
-          <button type="submit" class="button">
+          <button type='submit' class='button'>
             Create Workspace
           </button>
         </div>

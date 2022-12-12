@@ -1,4 +1,4 @@
-import { Icon } from "@iconify-icon/solid";
+import { Icon } from '@iconify-icon/solid';
 import chevronDown from '@iconify-icons/ion/chevron-down';
 import home from '@iconify-icons/ion/home';
 import informationCircle from '@iconify-icons/ion/information-circle';

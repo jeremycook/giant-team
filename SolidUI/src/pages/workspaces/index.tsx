@@ -8,10 +8,10 @@ import Table from '../../widgets/Table';
 
 export default function WorkspacePage() {
   authorize();
-  titleSetter("Workspaces");
+  titleSetter('Workspaces');
 
   const [ok, okSetter] = createSignal(true);
-  const [message, messageSetter] = createSignal("");
+  const [message, messageSetter] = createSignal('');
   const [data, dataSetter] = createSignal<FetchRecordsOutput | null>();
 
   const fetchWorkspaces = async () => {
@@ -33,12 +33,12 @@ export default function WorkspacePage() {
   fetchWorkspaces();
 
   return (
-    <section class="card md:w-md md:mx-auto">
+    <section class='card md:w-md md:mx-auto'>
 
       <h1>{title()}</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
+        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
           {message()}
         </p>
       </Show>

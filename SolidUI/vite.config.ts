@@ -13,12 +13,12 @@ export default defineConfig({
     https: true,
     // port: 5173,
     proxy: {
-      "/api": {
-        target: "http://localhost:5077",
+      '/api': {
+        target: 'http://localhost:5077',
         xfwd: true
       },
-      "/swagger": {
-        target: "http://localhost:5077",
+      '/swagger': {
+        target: 'http://localhost:5077',
         xfwd: true
       },
     }
@@ -29,6 +29,6 @@ export default defineConfig({
   },
   esbuild: {
     // TODO: Drop console and debugger code when building: https://esbuild.github.io/api/#drop
-    // drop: ["console", "debugger"],
+    // drop: ['console', 'debugger'],
   },
 });
