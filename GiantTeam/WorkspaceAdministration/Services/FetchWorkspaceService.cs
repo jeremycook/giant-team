@@ -1,8 +1,9 @@
 ﻿using Dapper;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.DatabaseModeling;
 using GiantTeam.Postgres;
-using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace GiantTeam.WorkspaceAdministration.Services
 {
@@ -11,19 +12,6 @@ namespace GiantTeam.WorkspaceAdministration.Services
         private readonly ValidationService validationService;
         private readonly UserConnectionService connectionService;
 
-        public class FetchWorkspaceInput
-        {
-            [Required]
-            [PgLaxIdentifier]
-            [StringLength(50, MinimumLength = 3)]
-            public string? WorkspaceName { get; set; }
-        }
-
-        public class FetchWorkspaceOutput
-        {
-            public string WorkspaceName { get; set; } = null!;
-            public string WorkspaceOwner { get; set; } = null!;
-        }
 
         public FetchWorkspaceService(
             ValidationService validationService,
@@ -37,24 +25,62 @@ namespace GiantTeam.WorkspaceAdministration.Services
         {
             validationService.Validate(input);
 
-            using var connection = await connectionService.OpenInfoConnectionAsync();
+            FetchWorkspaceOutput output;
+            using (var connection = await connectionService.OpenInfoConnectionAsync())
+            {
 
-            var output = await connection.QuerySingleOrDefaultAsync<FetchWorkspaceOutput>($"""
+                output = await connection.QuerySingleOrDefaultAsync<FetchWorkspaceOutput>($"""
 SELECT
     datname {PgQuote.Identifier(nameof(FetchWorkspaceOutput.WorkspaceName))},
     r.rolname {PgQuote.Identifier(nameof(FetchWorkspaceOutput.WorkspaceOwner))}
 FROM pg_database d
 JOIN pg_roles r ON r.oid = d.datdba
-WHERE datname = @datname
+WHERE datname = @datname;
 """,
-new
-{
-    datname = input.WorkspaceName,
-});
+    new
+    {
+        datname = input.WorkspaceName,
+    });
+            }
 
             if (output is null)
             {
                 throw new DetailedValidationException($"Workspace not found.");
+            }
+
+            using (var connection = await connectionService.OpenConnectionAsync(input.WorkspaceName!))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = $"""
+WITH tables AS (
+    SELECT
+        t.tablename "Name",
+        t.tableowner "Owner",
+        t.schemaname schema_name
+    FROM pg_catalog.pg_tables t
+    ORDER BY t.tablename
+),
+schemas AS (
+    SELECT
+        s.schema_name "Name",
+        s.schema_owner "Owner",
+        json_agg(t.*) "Tables"
+    FROM information_schema.schemata s
+    LEFT JOIN tables t ON t.schema_name::name = s.schema_name::name
+    WHERE s.schema_name::name <> ALL (ARRAY['information_schema'::name, 'pg_catalog'::name])
+    GROUP BY s.schema_name, s.schema_owner
+    ORDER BY s.schema_name, s.schema_owner
+)
+SELECT to_jsonb(schemas.*)
+FROM schemas;
+""";
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var jsonDoc = reader.GetFieldValue<JsonDocument>(0);
+                    var schema = jsonDoc.Deserialize<FetchWorkspaceSchema>();
+                    output.Schemas.Add(schema);
+                }
             }
 
             return output;

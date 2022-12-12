@@ -12,16 +12,17 @@ namespace GiantTeam.Tools
     {
         static readonly string[] include = new[]
         {
-            "*Input",
-            "*Output",
-            "*Status",
+            "GiantTeam.*.Controllers.*",
+            "GiantTeam.*.Services.*",
             "GiantTeam.RecordsManagement.Data.*",
-        }.Select(o => Regex.Escape(o).Replace("\\*", ".+")).ToArray();
+        }.Select(o => "^" + Regex.Escape(o).Replace("\\*", ".+") + "$").ToArray();
 
         static readonly string[] exclude = new[]
         {
+            "*Controller",
+            "*Service",
             "*DbContext",
-        }.Select(o => Regex.Escape(o).Replace("\\*", ".+")).ToArray();
+        }.Select(o => "^" + Regex.Escape(o).Replace("\\*", ".+") + "$").ToArray();
 
         static readonly Dictionary<Type, string> types = new()
         {
@@ -214,7 +215,7 @@ namespace GiantTeam.Tools
                             $" as DataResponse<{(returnTypeName != string.Empty ? returnTypeName : "null")}>";
 
                         sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}) =>\n");
-                        sb.Append($"    await postJson({string.Join(", ", parameters.Select(p => p.Name).Prepend($"\"{path}\""))}){returnTypeSignature};");
+                        sb.Append($"    await postJson({string.Join(", ", parameters.Select(p => p.Name).Prepend($"'{path}'"))}){returnTypeSignature};");
                         sb.Append($"\n\n");
                     }
                 }

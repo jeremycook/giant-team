@@ -1,7 +1,8 @@
 import { A, useRouteData } from '@solidjs/router';
-import { createEffect, Resource, Show } from 'solid-js';
+import { createEffect, For, Resource, Show } from 'solid-js';
 import { authorize } from '../../session';
 import { title, titleSetter } from '../../title';
+import { InfoIcon } from '../../utils/icons';
 import { WorkspacePageModel } from './workspace.data';
 
 export default function WorkspacePage() {
@@ -31,7 +32,7 @@ export default function WorkspacePage() {
 
         <Show when={ok() && data()}>
           <p>
-            Owner: {data()?.workspaceOwner}
+            Owner: {data()!.workspaceOwner}
           </p>
 
           <div>
@@ -39,6 +40,17 @@ export default function WorkspacePage() {
               <A href={'./import-data'}>Import Data</A>
               <A href={'./create-table'}>New Table</A>
               <A href={'./create-view'}>New View</A>
+            </div>
+
+            <div class='menu'>
+              <For each={data()!.schemas}>{(schema =>
+                <>
+                  <strong>{schema.name} <InfoIcon title={'Owned by ' + schema.owner} /></strong>
+                  <For each={schema.tables}>{(table =>
+                    <A href={`./schemas/${schema.name}/tables/${table.name}`}>{table.name}</A>
+                  )}</For>
+                </>
+              )}</For>
             </div>
           </div>
 

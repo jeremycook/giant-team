@@ -37,6 +37,15 @@ export interface JoinOutput {
     userId: string;
 }
 
+export interface SessionUser {
+    userId: string;
+    sub: string;
+    username: string;
+    dbRole: string;
+    dbLogin: string;
+    dbPassword: string;
+}
+
 export interface VerifyPasswordInput {
     username: string;
     password: string;
@@ -94,6 +103,18 @@ export interface FetchWorkspaceInput {
 export interface FetchWorkspaceOutput {
     workspaceName: string;
     workspaceOwner: string;
+    schemas: FetchWorkspaceSchema[];
+}
+
+export interface FetchWorkspaceSchema {
+    name: string;
+    owner: string;
+    tables: FetchWorkspaceTable[];
+}
+
+export interface FetchWorkspaceTable {
+    name: string;
+    owner: string;
 }
 
 export interface FetchRecordsInput {
