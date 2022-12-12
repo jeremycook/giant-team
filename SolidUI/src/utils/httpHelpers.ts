@@ -34,23 +34,27 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
         if (response.ok) {
             if (isJsonResponse) {
                 const data = await response.json();
-                return {
+                const result = {
                     ok: true,
                     status: response.status,
                     message: data?.message ?? "",
                     data: data,
                     errorData: null,
-                }
+                };
+                console.debug(result);
+                return result;
             }
             else {
                 const message = await response.text();
-                return {
+                const result = {
                     ok: true,
                     status: response.status,
                     message: message ?? "",
                     data: null,
                     errorData: null,
-                }
+                };
+                console.debug(result);
+                return result;
             }
         }
         else {
@@ -65,23 +69,27 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
             }
             else if (isJsonResponse) {
                 const data = await response.json();
-                return {
+                const result = {
                     ok: false,
                     status: response.status,
                     message: data?.message ?? "",
                     data: null,
                     errorData: data,
-                }
+                };
+                console.debug(result);
+                return result;
             }
             else {
                 const errorMessage = await response.text();
-                return {
+                const result = {
                     ok: false,
                     status: response.status,
                     message: errorMessage ?? "",
                     data: null,
                     errorData: null,
-                }
+                };
+                console.debug(result);
+                return result;
             }
         }
     }
