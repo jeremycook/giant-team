@@ -15,7 +15,7 @@ export default function Login() {
       <h1>Access Denied</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-green" : "text-red")}>
+        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
           {message()}
         </p>
       </Show>

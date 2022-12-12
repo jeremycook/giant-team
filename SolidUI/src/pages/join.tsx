@@ -57,7 +57,7 @@ export default function Register() {
       <h1>Register</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-green" : "text-red")}>
+        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
           {message()}
         </p>
       </Show>
