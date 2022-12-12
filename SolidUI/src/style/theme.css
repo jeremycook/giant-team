@@ -3,12 +3,10 @@
     z-index: 5;
 }
 
-.site-nav>a,
-.site-nav>.dropdown>.dropdown-button {
+.site-nav>.site-nav-group>a,
+.site-nav>.site-nav-group>.dropdown>.dropdown-button {
+    display: block;
     padding: .5rem 1rem;
-}
-
-.site-nav form * {
 }
 
 .site-nav+main {

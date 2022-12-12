@@ -1,15 +1,14 @@
 import { A } from '@solidjs/router';
 import { createSignal, Show } from 'solid-js';
-import { FetchRecordsOutput } from '../api/GiantTeam';
-import { postFetchRecords } from '../api/GiantTeam.Data.Api';
-import { authorize } from '../session';
-import { titleSetter } from '../title';
-import { createUrl } from '../utils/urlHelpers';
-import Table from '../widgets/Table';
+import { FetchRecordsOutput } from '../../api/GiantTeam';
+import { postFetchRecords } from '../../api/GiantTeam.Data.Api';
+import { authorize } from '../../session';
+import { title, titleSetter } from '../../title';
+import Table from '../../widgets/Table';
 
 export default function WorkspacePage() {
   authorize();
-  titleSetter("Your Workspaces");
+  titleSetter("Workspaces");
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
@@ -36,16 +35,16 @@ export default function WorkspacePage() {
   return (
     <section class="card md:w-md">
 
-      <h1>Your Workspaces</h1>
+      <h1>{title()}</h1>
 
       <Show when={message()}>
-        <p class={(ok() ? "text-green" : "text-red")}>
+        <p class={(ok() ? "text-ok" : "text-error")} role="alert">
           {message()}
         </p>
       </Show>
 
       <Show when={ok() && data()?.records}>
-        <Table data={data()!} rowLeader={record => <A href={createUrl("/workspace", { workspace_name: record[0] })}>View</A>} />
+        <Table data={data()!} rowLeader={record => <A href={'/workspace/' + record[0] }>View</A>} />
       </Show>
 
     </section>

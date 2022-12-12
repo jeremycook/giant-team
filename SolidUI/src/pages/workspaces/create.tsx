@@ -1,13 +1,12 @@
 import { createSignal, Show } from 'solid-js';
-import { createId } from '../utils/htmlHelpers';
-import { createUrl } from '../utils/urlHelpers';
-import { postCreateWorkspace } from '../api/GiantTeam.Data.Api';
-import { authorize } from '../session';
-import { titleSetter } from '../title';
+import { createId } from '../../utils/htmlHelpers';
+import { postCreateWorkspace } from '../../api/GiantTeam.Data.Api';
+import { authorize, session } from '../../session';
+import { titleSetter } from '../../title';
 
-export default function CreateWorkspace() {
-  titleSetter("Create a Workspace");
+export default function CreateWorkspacePage() {
   authorize()
+  titleSetter("Create a Workspace");
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal("");
@@ -25,7 +24,7 @@ export default function CreateWorkspace() {
 
     if (output.ok) {
       messageSetter("Workspace created! Taking you to it now…");
-      location.assign(createUrl("/workspace", { workspace_name: output.data!.workspaceName }));
+      location.assign('/workspace/' + output.data!.workspaceName);
     }
     else {
       messageSetter(output.message);
@@ -53,16 +52,23 @@ export default function CreateWorkspace() {
           name="workspaceName"
           required
           autofocus
+          autocomplete="no"
         />
 
         <label for={createId("workspaceOwner")}>
           Workspace Owner
         </label>
-        <input
+        <select
           id={createId("workspaceOwner")}
           name="workspaceOwner"
           required
-        />
+        >
+          <option>Choose…</option>
+          <option
+            value={session().username}
+            selected={true}
+          >{session().username}</option>
+        </select>
 
         <div />
         <div>

@@ -2,30 +2,27 @@ import { lazy } from 'solid-js';
 import type { RouteDefinition } from '@solidjs/router';
 
 import Home from './pages/home';
-// import AboutData from './pages/about.data';
+import WorkspaceData from './pages/workspace/workspace.data';
 
 export const routes: RouteDefinition[] = [
   {
     path: '/',
     component: Home,
   },
-  // {
-  //   path: '/about',
-  //   component: lazy(() => import('./pages/about')),
-  //   data: AboutData,
-  // },
 
-  {
-    path: '/create-workspace',
-    component: lazy(() => import('./pages/create-workspace'))
-  },
-  {
-    path: '/workspace',
-    component: lazy(() => import('./pages/workspace'))
-  },
   {
     path: '/workspaces',
     component: lazy(() => import('./pages/workspaces'))
+  },
+  {
+    path: '/workspaces/create',
+    component: lazy(() => import('./pages/workspaces/create'))
+  },
+
+  {
+    path: '/workspace/:id',
+    component: lazy(() => import('./pages/workspace/workspace')),
+    data: WorkspaceData,
   },
 
   {
