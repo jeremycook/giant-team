@@ -2,7 +2,7 @@ import { lazy } from 'solid-js';
 import type { RouteDefinition } from '@solidjs/router';
 
 import Home from './pages/home';
-import WorkspaceData from './pages/workspace/workspace.data';
+import WorkspacePageData from './pages/workspace/workspace.data';
 
 export const routes: RouteDefinition[] = [
   {
@@ -22,7 +22,7 @@ export const routes: RouteDefinition[] = [
   {
     path: '/workspace/:id',
     component: lazy(() => import('./pages/workspace/workspace')),
-    data: WorkspaceData,
+    data: WorkspacePageData,
   },
 
   {
