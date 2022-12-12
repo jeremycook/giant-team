@@ -52,7 +52,7 @@ export default function Register() {
   };
 
   return (
-    <section class="card md:w-md">
+    <section class="card md:w-md md:mx-auto">
 
       <h1>Register</h1>
 
@@ -99,6 +99,7 @@ export default function Register() {
             value={username()}
             onChange={e => usernameSetter(e.currentTarget.value)}
             required
+            autocomplete='username'
           />
         </div>
 
@@ -112,6 +113,7 @@ export default function Register() {
             onChange={e => passwordSetter(e.currentTarget.value)}
             required
             type="password"
+            autocomplete='new-password'
           />
         </div>
 
@@ -125,6 +127,7 @@ export default function Register() {
             onChange={e => passwordConfirmationSetter(e.currentTarget.value)}
             required
             type="password"
+            autocomplete='new-password'
           />
         </div>
 

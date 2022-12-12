@@ -10,7 +10,7 @@ export default function Login() {
   disconnectSession();
 
   return (
-    <section class="card md:w-md">
+    <section class="card md:w-md md:mx-auto">
 
       <h1>Logout</h1>
 

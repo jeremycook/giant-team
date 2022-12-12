@@ -33,7 +33,7 @@ export default function WorkspacePage() {
   fetchWorkspaces();
 
   return (
-    <section class="card md:w-md">
+    <section class="card md:w-md md:mx-auto">
 
       <h1>{title()}</h1>
 

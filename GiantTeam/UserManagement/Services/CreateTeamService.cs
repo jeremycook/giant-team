@@ -53,6 +53,7 @@ namespace GiantTeam.UserManagement.Services
             }
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
+                logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new DetailedValidationException($"The \"{input.TeamName}\" team was not created: {ex.MessageText.TrimEnd('.')}. {ex.Detail}");
             }
         }

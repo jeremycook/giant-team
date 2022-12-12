@@ -34,11 +34,7 @@ public class SessionController : ControllerBase
     public SessionOutput Post(
         [FromServices] SessionService sessionService)
     {
-        if (User.Identity is null || !User.Identity.IsAuthenticated)
-        {
-            return new(SessionStatus.Anonymous);
-        }
-        else
+        if (User.Identity?.IsAuthenticated == true)
         {
             var user = sessionService.User;
             return new(SessionStatus.Authenticated)
@@ -46,6 +42,10 @@ public class SessionController : ControllerBase
                 UserId = user.UserId,
                 Username = user.Username,
             };
+        }
+        else
+        {
+            return new(SessionStatus.Anonymous);
         }
     }
 }

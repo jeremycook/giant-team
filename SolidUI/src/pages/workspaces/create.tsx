@@ -32,7 +32,7 @@ export default function CreateWorkspacePage() {
   };
 
   return (
-    <section class="card md:w-md">
+    <section class="card md:w-md md:mx-auto">
 
       <h1>Create a Workspace</h1>
 

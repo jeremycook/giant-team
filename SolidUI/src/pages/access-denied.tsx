@@ -10,7 +10,7 @@ export default function Login() {
   // TODO: Customize the error message with username and the URL or more info about the resource they were trying to access.
 
   return (
-    <section class="card md:w-md">
+    <section class="card md:w-md md:mx-auto">
 
       <h1>Access Denied</h1>
 

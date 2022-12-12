@@ -4,7 +4,7 @@ import { SessionStatus } from './api/GiantTeam.Authentication.Api';
 import { routes } from './routes';
 import { session } from './session';
 import { useTitle } from './title';
-import { HomeIcon, ProfileIcon, SearchIcon } from './utils/icons';
+import { HomeIcon, PersonOutlineIcon, ProfileIcon, SearchIcon } from './utils/icons';
 
 const App: Component = () => {
   const Route = useRoutes(routes);
@@ -32,8 +32,7 @@ const App: Component = () => {
         <div class="site-nav-group md:mr-auto">
           <Switch fallback={
             <>
-              <A href="/login">Login</A>
-              <A href="/join">Join</A>
+              <A href="/login"><PersonOutlineIcon /> <span class="md:sr-only">Login</span></A>
             </>
           }>
             <Match when={session().status == SessionStatus.Authenticated}>

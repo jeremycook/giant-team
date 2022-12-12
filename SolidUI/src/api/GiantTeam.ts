@@ -141,3 +141,16 @@ export interface FetchRecordsOutputColumn {
     dataType: string;
     nullable: boolean;
 }
+
+export interface ImportDataInput {
+    database: string;
+    schema?: string;
+    table?: string;
+    createTableIfNotExists?: boolean;
+    data?: string;
+}
+
+export interface ImportDataOutput {
+    schema: string;
+    table: string;
+}

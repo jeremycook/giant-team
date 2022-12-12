@@ -38,6 +38,11 @@ namespace GiantTeam.Tools
             { typeof(string), "string" },
         };
 
+        static readonly Dictionary<Type, string> arrayTypes = new()
+        {
+            { typeof(byte[]), "string" },
+        };
+
         public static void TypeScript(bool preview)
         {
             // Search up the path for the solution directory
@@ -287,6 +292,11 @@ namespace GiantTeam.Tools
 
         static string TypeScriptTypeName(Type type)
         {
+            if (arrayTypes.TryGetValue(type, out var arrayTypeName))
+            {
+                return arrayTypeName;
+            }
+
             var suffix = string.Empty;
             while (type.GetEnumerableItemType() is Type enumerableItemType)
             {

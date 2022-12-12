@@ -56,7 +56,7 @@ CREATE ROLE {PgQuote.Identifier(userName)}
         }
 
         /// <summary>
-        /// Create a new database login for <paramref name="user"/> that can login, does not inherit,
+        /// Create a new database login for <paramref name="user"/> that can login, inherits,
         /// and is valid until <paramref name="validUntil"/>.
         /// </summary>
         /// <param name="user"></param>
@@ -71,7 +71,7 @@ CREATE ROLE {PgQuote.Identifier(userName)}
             await connection.ExecuteAsync($"""
 -- Create a login for a user
 CREATE ROLE {PgQuote.Identifier(loginRole)}
-    WITH LOGIN NOINHERIT
+    WITH LOGIN INHERIT
     IN ROLE {PgQuote.Identifier(userRole)}
     ENCRYPTED PASSWORD {PgQuote.Literal(encryptedPassword)}
     VALID UNTIL {PgQuote.Literal(validUntil)};

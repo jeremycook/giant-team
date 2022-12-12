@@ -5,7 +5,7 @@
 
 .site-nav>.site-nav-group>a,
 .site-nav>.site-nav-group>.dropdown>.dropdown-button {
-    display: block;
+    display: inline-block;
     padding: .5rem 1rem;
 }
 

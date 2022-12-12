@@ -20,9 +20,13 @@ export const routes: RouteDefinition[] = [
   },
 
   {
-    path: '/workspace/:id',
+    path: '/workspace/:workspace',
     component: lazy(() => import('./pages/workspace/workspace')),
     data: WorkspacePageData,
+  },
+  {
+    path: '/workspace/:workspace/import-data',
+    component: lazy(() => import('./pages/workspace/import-data')),
   },
 
   {

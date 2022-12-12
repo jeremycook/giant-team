@@ -26,7 +26,6 @@ export default function Login() {
     });
 
     okSetter(output.ok);
-    console.log(output);
 
     if (output.ok) {
       messageSetter("Logging you in…");
@@ -52,7 +51,7 @@ export default function Login() {
   };
 
   return (
-    <section class="card md:w-md">
+    <section class="card md:w-md md:mx-auto">
 
       <h1>Login</h1>
 
@@ -81,6 +80,7 @@ export default function Login() {
           name="username"
           required
           autofocus
+          autocomplete='username'
         />
 
         <label for={createId("password")}>
@@ -91,6 +91,7 @@ export default function Login() {
           name="password"
           type="password"
           required
+          autocomplete='current-password'
         />
 
         <div />

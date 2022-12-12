@@ -13,7 +13,7 @@ export const fetchWorkspace = async (workspaceName: string) => {
 };
 
 export const WorkspacePageData = ({ params }: { params: any }) => {
-    const [workspace] = createResource(() => params.id, fetchWorkspace);
+    const [workspace] = createResource(() => params.workspace, fetchWorkspace);
     return workspace;
 };
 

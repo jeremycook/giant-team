@@ -58,6 +58,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
             }
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
+                logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"The \"{input.WorkspaceName}\" workspace was not created: {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
             }
         }

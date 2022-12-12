@@ -41,7 +41,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                     data: data,
                     errorData: null,
                 };
-                console.debug(result);
+                console.debug(url, result);
                 return result;
             }
             else {
@@ -53,7 +53,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                     data: null,
                     errorData: null,
                 };
-                console.debug(result);
+                console.debug(url, result);
                 return result;
             }
         }
@@ -76,7 +76,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                     data: null,
                     errorData: data,
                 };
-                console.debug(result);
+                console.debug(url, result);
                 return result;
             }
             else {
@@ -88,14 +88,14 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                     data: null,
                     errorData: null,
                 };
-                console.debug(result);
+                console.debug(url, result);
                 return result;
             }
         }
     }
     catch (err) {
         // TODO: Upload errors
-        console.error(err);
+        console.error(url, err);
         return {
             ok: false,
             status: HttpStatusCode.ConnectionFailure,
