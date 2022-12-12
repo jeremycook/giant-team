@@ -16,7 +16,7 @@ export const fetchWorkspace = async (workspaceName: string) => {
     return output;
 };
 
-export default function ({ params }: { params: { id: string } }) {
+export default function ({ params }: { params: any }) {
     const [workspace] = createResource(() => params.id, fetchWorkspace);
     return workspace;
 };
