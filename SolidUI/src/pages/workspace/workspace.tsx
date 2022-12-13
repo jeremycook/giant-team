@@ -1,4 +1,4 @@
-import { A, useRouteData } from '@solidjs/router';
+import { A, Outlet, useRouteData } from '@solidjs/router';
 import { createEffect, For, Resource, Show } from 'solid-js';
 import { authorize } from '../../session';
 import { title, titleSetter } from '../../title';
@@ -20,9 +20,11 @@ export default function WorkspacePage() {
   return (
     <section class='card'>
 
-      <h1>{title()}</h1>
-
       <Show when={model()}>
+
+        <header class='flex'>
+          <h1 class='mb-0'>{title()}</h1>
+        </header>
 
         <Show when={message}>
           <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
@@ -31,27 +33,38 @@ export default function WorkspacePage() {
         </Show>
 
         <Show when={ok() && data()}>
-          <p>
-            Owner: {data()!.workspaceOwner}
-          </p>
 
-          <div>
-            <div class='menu'>
-              <A href={'./import-data'}>Import Data</A>
-              <A href={'./create-table'}>New Table</A>
-              <A href={'./create-view'}>New View</A>
+          <div class='flex gap-sm'>
+            <div>
+
+              <p>
+                Owner: {data()!.workspaceOwner}
+              </p>
+
+              <div class='menu'>
+                <A href={'./import-data'}>Import Data</A>
+                <A href={'./create-schema'}>New Schema</A>
+                <A href={'./create-table'}>New Table</A>
+                <A href={'./create-view'}>New View</A>
+              </div>
+
+              <div class='menu'>
+                <For each={data()!.schemas}>{(schema =>
+                  <>
+                    <strong>{schema.name} <InfoIcon title={'Owned by ' + schema.owner} /></strong>
+                    <For each={schema.tables}>{(table =>
+                      <A href={`/workspace/${data()!.workspaceName}/schemas/${schema.name}/tables/${table.name}`}>{table.name}</A>
+                    )}</For>
+                  </>
+                )}</For>
+              </div>
+
             </div>
 
-            <div class='menu'>
-              <For each={data()!.schemas}>{(schema =>
-                <>
-                  <strong>{schema.name} <InfoIcon title={'Owned by ' + schema.owner} /></strong>
-                  <For each={schema.tables}>{(table =>
-                    <A href={`./schemas/${schema.name}/tables/${table.name}`}>{table.name}</A>
-                  )}</For>
-                </>
-              )}</For>
+            <div class='flex-grow overflow-auto max-h-lg mr--4 mb--4 border-l border-gray-200'>
+              <Outlet />
             </div>
+
           </div>
 
         </Show>

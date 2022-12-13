@@ -2,7 +2,7 @@ import { useNavigate, useParams } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postImportData } from '../../api/GiantTeam.Data.Api';
 import { authorize } from '../../session';
-import { title, titleSetter } from '../../title';
+import { titleSetter } from '../../title';
 import { createId, stringifyBlob } from '../../utils/htmlHelpers';
 import { WarningIcon } from '../../utils/icons';
 
@@ -38,14 +38,12 @@ export default function ImportDataPage() {
 
     if (output.ok && output.data) {
       messageSetter('Data imported. Taking you to it…');
-      navigate('./schema/' + output.data.schema + '/table/' + output.data.table);
+      navigate('../schemas/' + output.data.schema + '/tables/' + output.data.table);
     }
   };
 
   return (
-    <section class='card md:w-md md:mx-auto'>
-
-      <h1>{title}</h1>
+    <section class='pxy'>
 
       <Show when={message()}>
         <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>

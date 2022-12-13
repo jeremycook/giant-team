@@ -3,6 +3,7 @@ using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseModeling;
 using GiantTeam.Postgres;
+using System.Data;
 using System.Text.Json;
 
 namespace GiantTeam.WorkspaceAdministration.Services
@@ -64,7 +65,7 @@ schemas AS (
     SELECT
         s.schema_name "Name",
         s.schema_owner "Owner",
-        json_agg(t.*) "Tables"
+        json_agg(t.* ORDER BY t."Name") "Tables"
     FROM information_schema.schemata s
     LEFT JOIN tables t ON t.schema_name::name = s.schema_name::name
     WHERE s.schema_name::name <> ALL (ARRAY['information_schema'::name, 'pg_catalog'::name])
@@ -77,8 +78,7 @@ FROM schemas;
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    var jsonDoc = reader.GetFieldValue<JsonDocument>(0);
-                    var schema = jsonDoc.Deserialize<FetchWorkspaceSchema>();
+                    var schema = reader.GetFieldValue<FetchWorkspaceSchema>(0);
                     output.Schemas.Add(schema);
                 }
             }

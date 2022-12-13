@@ -24,8 +24,10 @@
     /* Widths */
     --w-xs: 320px;
     --w-sm: 640px;
-    --w-md: 960px;
-    --w-lg: 1280px;
+    --w-md: 768px;
+    --w-lg: 1024px;
+    --w-xl: 1280px;
+    --w-2xl: 1536px;
     /* Inputs */
     --input-border: 1px solid var(--border-color);
 }

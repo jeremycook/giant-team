@@ -1,16 +1,11 @@
 ﻿.site-nav {
     /* Get on top of Ace editor*/
-    z-index: 5;
+    /* z-index: 5; */
 }
 
-.site-nav>.site-nav-group>a,
-.site-nav>.site-nav-group>.dropdown>.dropdown-button {
-    display: inline-block;
+.site-nav-group>a,
+.site-nav-group>.dropdown>.dropdown-button {
     padding: .5rem 1rem;
-}
-
-.site-nav+main {
-    padding: 1rem;
 }
 
 /* .iframe-panel */
