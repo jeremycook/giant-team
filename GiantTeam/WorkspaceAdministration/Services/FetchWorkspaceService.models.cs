@@ -1,6 +1,5 @@
 ﻿using GiantTeam.Postgres;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace GiantTeam.WorkspaceAdministration.Services
 {
@@ -21,14 +20,14 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
     public class FetchWorkspaceSchema
     {
-        public string Name { get; set; }
-        public string Owner { get; set; }
+        public string Name { get; set; } = null!;
+        public string Owner { get; set; } = null!;
         public List<FetchWorkspaceTable> Tables { get; set; } = new();
     }
 
     public class FetchWorkspaceTable
     {
-        public string Name { get; set; }
-        public string Owner { get; set; }
+        public string Name { get; set; } = null!;
+        public string Owner { get; set; } = null!;
     }
 }
