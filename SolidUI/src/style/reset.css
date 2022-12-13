@@ -11,12 +11,6 @@ code {
     font-family: var(--font-family-mono);
 }
 
-@media only screen {
-    body {
-        background: #f6f6f6;
-    }
-}
-
 h1,
 h2,
 h3,

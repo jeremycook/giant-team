@@ -58,7 +58,7 @@ label {
     cursor: pointer;
 }
 
-input,
+input:is(:not([type]), [type=date], [type=datetime-local], [type=email], [type=file], [type=month], [type=number], [type=password], [type=search], [type=tel], [type=text], [type=time], [type=url], [type=week]),
 textarea,
 .input {
     border: var(--input-border);
@@ -66,30 +66,25 @@ textarea,
     line-height: initial;
     padding: .25rem;
     text-align: inherit;
+    width: 100%;
 }
 
 input+input {
     border-left: none;
 }
 
-input:required,
+input:is(:not([type]), [type=date], [type=datetime-local], [type=email], [type=file], [type=month], [type=number], [type=password], [type=search], [type=tel], [type=text], [type=time], [type=url], [type=week]):required,
 select:required,
 textarea:required,
-input[data-val-required],
-select[data-val-required],
-textarea[data-val-required],
 .required {
     background-image: url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNSIgd2lkdGg9IjUiPjxwb2x5Z29uIHBvaW50cz0iMCwwIDAsNSA1LDAiIHN0eWxlPSJmaWxsOnJlZCIgLz48L3N2Zz4=');
     background-repeat: no-repeat;
     background-position: 1px 1px;
 }
 
-input:required:hover,
+input:is(:not([type]), [type=date], [type=datetime-local], [type=email], [type=file], [type=month], [type=number], [type=password], [type=search], [type=tel], [type=text], [type=time], [type=url], [type=week]):required:hover,
 select:required:hover,
 textarea:required:hover,
-input[data-val-required]:hover,
-select[data-val-required]:hover,
-textarea[data-val-required]:hover,
 .required:hover {
     box-shadow: 0 0 2px rgba(255, 0, 0, 0.5);
 }

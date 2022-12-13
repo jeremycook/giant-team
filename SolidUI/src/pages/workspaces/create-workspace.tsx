@@ -1,11 +1,10 @@
 import { createSignal, Show } from 'solid-js';
 import { createId } from '../../utils/htmlHelpers';
 import { postCreateWorkspace } from '../../api/GiantTeam.Data.Api';
-import { authorize, session } from '../../session';
+import { session } from '../../session';
 import { titleSetter } from '../../title';
 
 export default function CreateWorkspacePage() {
-  authorize()
   titleSetter('Create a Workspace');
 
   const [ok, okSetter] = createSignal(true);

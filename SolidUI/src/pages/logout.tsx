@@ -1,13 +1,12 @@
 import { Show } from 'solid-js';
-import { SessionStatus } from '../api/GiantTeam.Authentication.Api';
-import { disconnectSession, session } from '../session';
-import { Link } from '@solidjs/router';
+import { logout, isAuthenticated } from '../session';
+import { A } from '@solidjs/router';
 import { titleSetter } from '../title';
 
-export default function Login() {
+export default function LogoutPage() {
   titleSetter('Logout');
 
-  disconnectSession();
+  logout();
 
   return (
     <section class='card md:w-md md:mx-auto'>
@@ -15,13 +14,13 @@ export default function Login() {
       <h1>Logout</h1>
 
       <p>
-        <Show when={session().status === SessionStatus.Anonymous} fallback={
+        <Show when={!isAuthenticated()} fallback={
           <>One moment please, logging out…</>
         }>
           You have been logged out.
           <ul>
-            <li><Link href='/'>Go home</Link></li>
-            <li><Link href='/login'>Log back in</Link></li>
+            <li><A href='/'>Go home</A></li>
+            <li><A href='/login'>Log back in</A></li>
           </ul>
         </Show>
       </p>

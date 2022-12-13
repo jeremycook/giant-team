@@ -1,19 +1,16 @@
 import { A } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
-import { SessionStatus } from './api/GiantTeam.Authentication.Api';
 import AppRoutes from './routes';
-import { session } from './session';
+import { session, isAuthenticated } from './session';
 import { useTitle } from './title';
 import { HomeIcon, NotificationOutline, PersonOutlineIcon, PersonIcon, SearchIcon, SparklesIcon, SparklesOutlineIcon, HomeOutlineIcon, MenuOutline, MenuIcon } from './utils/icons';
 
 const App: Component = () => {
   useTitle();
 
-  const isAuthenticated = () => session().status == SessionStatus.Authenticated;
-
   return (
     <>
-      <nav class='site-nav py md:grid md:grid-cols-[1fr_2fr_1fr] print:hidden' role='navigation'>
+      <nav class='site-nav py md:grid md:grid-cols-[1fr_2fr_1fr] print:hidden bg-gray-100 b-b' role='navigation'>
 
         <Show when={isAuthenticated()} fallback={(
           <>

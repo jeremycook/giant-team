@@ -46,7 +46,7 @@ export function createConfig(): VitePluginConfig {
       // 'border-main': 'border-gray-400',
       // 'bg-main': 'bg-gray-405',
       'button': 'p-button bg-sky border border-sky-600 color-white shadow rounded-1',
-      'card': 'pxy bg-white border rounded shadow',
+      'card': 'pxy bg-white border rounded-b shadow mt--1',
       'form-grid': 'grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-2',
       'stack': 'flex flex-col bg-white border shadow rounded-1',
       'stack-item': 'px-2 py-1 max-w-sm overflow-x-hidden overflow-ellipsis whitespace-nowrap block',

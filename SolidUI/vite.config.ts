@@ -15,7 +15,8 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:5077',
-        xfwd: true
+        xfwd: true,
+        configure: (proxy) => proxy.on('error', (err, req, res) => console.error(err)),
       },
       '/swagger': {
         target: 'http://localhost:5077',

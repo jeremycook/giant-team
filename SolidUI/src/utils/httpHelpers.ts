@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router';
-import { authorize } from '../session';
+import { authorize, refreshSession } from '../session';
 
 export enum HttpStatusCode {
     ConnectionFailure = -1,
@@ -59,13 +59,33 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
         }
         else {
             if (response.status === 401) {
-                await authorize();
-                throw 'Unreachable reached!';
+                // Sync with the server and re-authorize
+                await refreshSession();
+                authorize();
+
+                const result = {
+                    ok: false,
+                    status: response.status,
+                    message: 'Login required',
+                    data: null,
+                    errorData: null,
+                };
+                console.debug(url, result);
+                return result;
             }
             else if (response.status === 403) {
                 const navigate = useNavigate();
                 navigate('/access-denied', { state: { returnUrl: location.href } });
-                throw 'Unreachable reached!';
+
+                const result = {
+                    ok: false,
+                    status: response.status,
+                    message: 'Access denied',
+                    data: null,
+                    errorData: null,
+                };
+                console.debug(url, result);
+                return result;
             }
             else if (isJsonResponse) {
                 const data = await response.json();

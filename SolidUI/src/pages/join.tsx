@@ -1,6 +1,6 @@
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postRegister } from '../api/GiantTeam.Authentication.Api';
-import { titleSetter } from '../title';
+import { title, titleSetter } from '../title';
 import { createId } from '../utils/htmlHelpers';
 import { createUrl } from '../utils/urlHelpers';
 
@@ -54,7 +54,11 @@ export default function Register() {
   return (
     <section class='card md:w-md md:mx-auto'>
 
-      <h1>Register</h1>
+      <h1>{title()}</h1>
+
+      <p>
+        Register a new user account.
+      </p>
 
       <Show when={message()}>
         <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
@@ -62,12 +66,12 @@ export default function Register() {
         </p>
       </Show>
 
-      <form onSubmit={formSubmit}>
+      <form onSubmit={formSubmit} class='form-grid'>
 
+        <label for={createId('name')}>
+          Name
+        </label>
         <div>
-          <label for={createId('name')}>
-            Name
-          </label>
           <input
             id={createId('name')}
             value={name()}
@@ -77,10 +81,10 @@ export default function Register() {
           />
         </div>
 
+        <label for={createId('email')}>
+          Email
+        </label>
         <div>
-          <label for={createId('email')}>
-            Email
-          </label>
           <input
             id={createId('email')}
             value={email()}
@@ -90,10 +94,10 @@ export default function Register() {
           />
         </div>
 
+        <label for={createId('username')}>
+          Username
+        </label>
         <div>
-          <label for={createId('username')}>
-            Username
-          </label>
           <input
             id={createId('username')}
             value={username()}
@@ -103,10 +107,10 @@ export default function Register() {
           />
         </div>
 
+        <label for={createId('password')}>
+          Password
+        </label>
         <div>
-          <label for={createId('password')}>
-            Password
-          </label>
           <input
             id={createId('password')}
             value={password()}
@@ -117,10 +121,10 @@ export default function Register() {
           />
         </div>
 
+        <label for={createId('passwordConfirmation')}>
+          Password Confirmation
+        </label>
         <div>
-          <label for={createId('passwordConfirmation')}>
-            Password Confirmation
-          </label>
           <input
             id={createId('passwordConfirmation')}
             value={passwordConfirmation()}
@@ -131,9 +135,12 @@ export default function Register() {
           />
         </div>
 
-        <button type='submit'>
-          Register
-        </button>
+        <div />
+        <div>
+          <button class='button'>
+            Register
+          </button>
+        </div>
 
       </form>
 

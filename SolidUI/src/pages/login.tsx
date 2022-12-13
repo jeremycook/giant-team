@@ -9,11 +9,16 @@ import { InfoIcon, WarningIcon } from '../utils/icons';
 export default function Login() {
   titleSetter('Login');
 
-  const location = useLocation();
+  const location = useLocation<{ returnUrl: string | undefined }>();
   const navigate = useNavigate();
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal('');
+
+  const returnUrl = () =>
+    location.state?.returnUrl?.startsWith('/') && !location.state?.returnUrl?.endsWith('/login') ?
+      location.state?.returnUrl :
+      null;
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -33,18 +38,17 @@ export default function Login() {
       // Refresh the session
       await refreshSession()
 
-      if (location.state && typeof (location.state as any).returnUrl === 'string') {
-        const returnUrl = (location.state as any).returnUrl as string;
-        if (returnUrl.startsWith('/') && !returnUrl.endsWith('/login')) {
-          // Redirect to page that triggered login flow
-          console.log(`Redirecting from ${window.location.href} to ${returnUrl}.`)
-          navigate(returnUrl);
-        }
+      if (typeof returnUrl() === 'string') {
+        // Redirect to page that triggered login flow
+        console.debug(`Redirecting from ${window.location.href} to ${returnUrl}.`)
+        navigate(returnUrl()!, { replace: true });
       }
-
-      // Fallback to home page
-      console.log(`Redirecting from ${window.location.href} to /.`)
-      navigate('/');
+      else {
+        // Fallback to home page
+        console.debug(`Redirecting from ${window.location.href} to /.`)
+        navigate('/');
+      }
+      return;
     } else {
       messageSetter(output.message);
     }
@@ -58,8 +62,10 @@ export default function Login() {
       <Show when={session().status === SessionStatus.Authenticated}>
         <p class='text-info' role='alert'>
           <InfoIcon class='animate-bounce-in' />{' '}
-          FYI: You are currently logged in as <A href='/profile'>{session().username}</A>,
-          but you can login as someone else if you need to.
+          FYI: You are currently logged in as <A href='/profile'>{session().username}</A>.
+          <Show when={returnUrl()}>
+            {' '}<A href={returnUrl()!} class='underline'>Click here to go back</A>.
+          </Show>
         </p>
       </Show>
 

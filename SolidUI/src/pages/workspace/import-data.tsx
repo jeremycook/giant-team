@@ -42,8 +42,21 @@ export default function ImportDataPage() {
     }
   };
 
+  const onChangeFile = (e: any) => {
+    const form = e.target.form! as HTMLFormElement;
+
+    if (!form.table.value) {
+
+      const file = form.file?.files?.[0] as File;
+      if (file) {
+        form.table.value = file.name;
+      }
+
+    }
+  }
+
   return (
-    <section class='pxy'>
+    <section class='px pb max-w-md'>
 
       <Show when={message()}>
         <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
@@ -53,6 +66,18 @@ export default function ImportDataPage() {
       </Show>
 
       <form onSubmit={formSubmit} class='form-grid'>
+
+        <label for={createId('file')}>
+          CSV File
+        </label>
+        <input
+          id={createId('file')}
+          name='file'
+          type='file'
+          required
+          accept='.csv, text/csv'
+          onchange={onChangeFile}
+        />
 
         <label for={createId('schema')}>
           Schema
@@ -73,21 +98,14 @@ export default function ImportDataPage() {
         />
 
         <div />
-        <label><input
-          name='createTableIfNotExists'
-          type='checkbox'
-        /> Create table if it doesn't exists</label>
-
-        <label for={createId('file')}>
-          CSV File
-        </label>
-        <input
-          id={createId('file')}
-          name='file'
-          type='file'
-          required
-          accept='.csv, text/csv'
-        />
+        <div>
+          <label>
+            <input
+              name='createTableIfNotExists'
+              type='checkbox'
+            /> Create table if it doesn't exists
+          </label>
+        </div>
 
         <div />
         <div>

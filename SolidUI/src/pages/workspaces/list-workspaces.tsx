@@ -1,0 +1,47 @@
+import { A, useRouteData } from '@solidjs/router';
+import { createResource, Show } from 'solid-js';
+import { postFetchRecords } from '../../api/GiantTeam.Data.Api';
+import { title, titleSetter } from '../../title';
+import Table from '../../widgets/Table';
+
+export function WorkspacesPageData() {
+
+  const [resource] = createResource(() => postFetchRecords({
+    database: 'info',
+    schema: 'public',
+    table: 'gt_database',
+    orderBy: [
+      { column: 'name' }
+    ]
+  }));
+
+  return resource;
+}
+
+export default function WorkspacePage() {
+  titleSetter('Workspaces');
+
+  const model = useRouteData<typeof WorkspacesPageData>();
+
+  const ok = () => model()?.ok == true;
+  const message = () => model()?.message ?? '';
+  const data = () => model()?.data;
+
+  return (
+    <section class='card md:w-md md:mx-auto'>
+
+      <h1>{title()}</h1>
+
+      <Show when={message()}>
+        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
+          {message()}
+        </p>
+      </Show>
+
+      <Show when={ok()}>
+        <Table data={data()!} rowLeader={record => <A href={'/workspace/' + record[0]}>View</A>} />
+      </Show>
+
+    </section>
+  );
+}
