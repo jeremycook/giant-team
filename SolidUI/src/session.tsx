@@ -2,6 +2,9 @@ import { useLocation, useNavigate } from '@solidjs/router';
 import { createSignal } from 'solid-js';
 import { postLogout, postSession, SessionOutput, SessionStatus } from './api/GiantTeam.Authentication.Api';
 
+/** Keep the session alive */
+setInterval(() => isAuthenticated() && refreshSession(), 30 * 60 * 1000);
+
 export interface Session extends SessionOutput {
   status: SessionStatus | -1;
 }
@@ -45,6 +48,3 @@ export const authorize = () => {
     navigate('/login', { replace: false, state: { returnUrl: url } });
   }
 }
-
-/** Refresh session every 15 minutes */
-setInterval(() => isAuthenticated() && refreshSession(), 15 * 60 * 1000);
