@@ -1,4 +1,4 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.RecordsManagement.Data
@@ -6,7 +6,7 @@ namespace GiantTeam.RecordsManagement.Data
     public class DbRole
     {
         [Key]
-        [PgLaxIdentifier]
+        [Identifier]
         [StringLength(50, MinimumLength = 3)]
         public string RoleId { get; set; } = null!;
 

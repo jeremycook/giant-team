@@ -1,6 +1,6 @@
-﻿using GiantTeam.ComponentModel.Services;
+﻿using GiantTeam.ComponentModel;
+using GiantTeam.ComponentModel.Services;
 using GiantTeam.Crypto;
-using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -22,7 +22,7 @@ namespace GiantTeam.UserManagement.Services
             public string Email { get; set; } = default!;
 
             [Required]
-            [PgLaxIdentifier]
+            [Identifier]
             [StringLength(50, MinimumLength = 3)]
             public string Username { get; set; } = default!;
 

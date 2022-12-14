@@ -1,4 +1,5 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.ComponentModel;
+using GiantTeam.Postgres;
 using Npgsql;
 using Npgsql.Schema;
 using System.ComponentModel.DataAnnotations;
@@ -14,17 +15,17 @@ namespace GiantTeam.WorkspaceInteraction.Services
         public bool? Verbose { get; set; } = false;
 
         [Required]
-        [PgLaxIdentifier]
+        [Identifier]
         [StringLength(50, MinimumLength = 3)]
         public string Database { get; set; } = null!;
 
         [Required]
-        [PgLaxIdentifier]
+        [Identifier]
         [StringLength(100)]
         public string Schema { get; set; } = null!;
 
         [Required]
-        [PgLaxIdentifier]
+        [Identifier]
         [StringLength(100)]
         public string Table { get; set; } = null!;
 
@@ -36,7 +37,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
 
         public int? Skip { get; set; } = 0;
 
-        public int? Take { get; set; } = 100;
+        public int? Take { get; set; } = 1000;
 
         public async Task<IDictionary<string, NpgsqlDbColumn>> GetColumnSchemaAsync(NpgsqlConnection openConnection)
         {
@@ -100,7 +101,9 @@ namespace GiantTeam.WorkspaceInteraction.Services
 
     public class FetchRecordsInputColumn
     {
+        [StringLength(100)]
         public string Column { get; set; } = null!;
+        [StringLength(100)]
         public string? Alias { get; set; }
 
         public string? ToSql()
@@ -121,8 +124,8 @@ namespace GiantTeam.WorkspaceInteraction.Services
         public string Discriminator { get; set; }
 
         [Required]
-        [PgLaxIdentifier]
-        [StringLength(100, MinimumLength = 3)]
+        [Identifier]
+        [StringLength(100)]
         public string Column { get; set; } = null!;
 
         public abstract string ToSql(IDictionary<string, NpgsqlDbColumn> columnSchema, NpgsqlParameterCollection parameters);
@@ -154,15 +157,15 @@ namespace GiantTeam.WorkspaceInteraction.Services
     public class FetchRecordsInputOrder
     {
         [Required]
-        [PgLaxIdentifier]
-        [StringLength(100, MinimumLength = 3)]
+        [Identifier]
+        [StringLength(100)]
         public string Column { get; set; } = null!;
 
-        public bool? Asc { get; set; } = true;
+        public bool? Desc { get; set; } = false;
 
         public string ToSql()
         {
-            return $"{PgQuote.Identifier(Column)}{(Asc == true ? string.Empty : " DESC")}";
+            return $"{PgQuote.Identifier(Column)}{(Desc == true ? " DESC" : string.Empty)}";
         }
     }
 

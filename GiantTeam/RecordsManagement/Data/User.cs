@@ -1,4 +1,4 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.ComponentModel;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,7 +13,7 @@ namespace GiantTeam.RecordsManagement.Data
         [StringLength(100)]
         public string Name { get; set; } = null!;
 
-        [PgLaxIdentifier]
+        [Identifier]
         [StringLength(50, MinimumLength = 3)]
         public string Username { get; set; } = null!;
         public string InvariantUsername { get => Username?.ToLowerInvariant()!; private set { } }

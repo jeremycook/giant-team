@@ -1,4 +1,4 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.WorkspaceAdministration.Services
@@ -6,7 +6,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
     public class FetchWorkspaceInput
     {
         [Required]
-        [PgLaxIdentifier]
+        [Identifier]
         [StringLength(50, MinimumLength = 3)]
         public string? WorkspaceName { get; set; }
     }

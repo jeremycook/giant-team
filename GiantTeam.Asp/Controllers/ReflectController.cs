@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GiantTeam.Authentication.Api.Controllers;
+namespace GiantTeam.Asp.Controllers;
 
 [AllowAnonymous]
 public class ReflectController : ControllerBase

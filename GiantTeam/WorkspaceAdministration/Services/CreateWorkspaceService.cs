@@ -2,7 +2,6 @@
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
-using GiantTeam.RecordsManagement.Data;
 using GiantTeam.UserManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -15,12 +14,12 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public class CreateWorkspaceInput
         {
             [Required]
-            [PgLaxIdentifier]
+            [Identifier]
             [StringLength(50, MinimumLength = 3)]
             public string? WorkspaceName { get; set; }
 
             [Required]
-            [PgLaxIdentifier]
+            [Identifier]
             [StringLength(50, MinimumLength = 3)]
             public string? WorkspaceOwner { get; set; }
         }

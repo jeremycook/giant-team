@@ -19,7 +19,7 @@ namespace GiantTeam.UserManagement.Services
         public class CreateTeamInput
         {
             [Required]
-            [PgLaxIdentifier]
+            [Identifier]
             [StringLength(50, MinimumLength = 3)]
             public string? TeamName { get; set; }
         }
