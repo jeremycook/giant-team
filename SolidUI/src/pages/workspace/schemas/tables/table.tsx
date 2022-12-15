@@ -1,11 +1,13 @@
-import { createStore } from 'solid-js/store';
-import { useParams, useSearchParams } from '@solidjs/router';
+import { createStore, unwrap } from 'solid-js/store';
 import { batch, createEffect, createResource, createSignal, Show } from 'solid-js';
 import { FetchRecordsInput, Sort } from '../../../../api/GiantTeam';
 import { postFetchRecords } from '../../../../api/GiantTeam.Data.Api';
 import { titleSetter } from '../../../../title';
 import { Data, Meta, MetaColumn } from '../../../../widgets/SmartTable';
 import SmartTable from '../../../../widgets/SmartTable';
+import { Portal } from 'solid-js/web';
+import { routeValues } from '../../../../utils/routing';
+import { debug } from '../../../../utils/logging';
 
 export default function WorkspacePage() {
     titleSetter('Table');
@@ -19,28 +21,43 @@ export default function WorkspacePage() {
         columns: {},
     });
 
-    const params = useParams();
-    const [search] = useSearchParams();
+    createEffect(() => {
+        // Dependencies
+        routeValues.params.workspace, routeValues.params.schema, routeValues.params.table;
 
-    const [resource] = createResource(() => {
-        return {
-            database: params.workspace,
-            schema: search.schema,
-            table: search.table,
+        setMeta({
+            columns: {},
+        });
+
+        setData({
+            columns: [],
+            records: [],
+        });
+    })
+
+    const [resource] = createResource((): FetchRecordsInput => {
+
+        return debug({
+            database: routeValues.params.workspace,
+            schema: routeValues.params.schema,
+            table: routeValues.params.table,
             columns: Object.values(meta.columns)
-                // TODO: .filter(c => c.visible)
                 .map(c => ({
                     name: c.name,
-                    sort: c.sort ?? Sort.Unsorted,
-                    position: c.position,
+                    sort: c.sort,
+                    position: unwrap(c).position,
+                    visible: unwrap(c).visible,
                 })),
             // filters: params.filters,
             // skip: params.skip,
             // take: params.take
-        };
-    }, async (input: FetchRecordsInput) => {
+        }, 'postFetchRecords input');
+
+    }, async (input) => {
+
         const output = await postFetchRecords(input)
         return output;
+
     });
 
     const ok = () => resource()?.ok == true;
@@ -56,16 +73,30 @@ export default function WorkspacePage() {
             if (columns) {
                 setData('columns', columns.map(c => c.name));
 
-                columns.forEach((column, i) =>
-                    setMeta('columns', column.name, (state?: MetaColumn) => ({
-                        name: column.name,
-                        dataType: column.dataType,
-                        nullable: column.nullable,
-                        sort: state?.sort ?? Sort.Unsorted,
-                        visible: state?.visible ?? true, // default to visible
-                        position: state?.position ?? i, // default to initial position
-                    }))
-                );
+                const returnedColumns: Record<string, MetaColumn> = {};
+                columns.forEach((c, i) => {
+                    // Keep the reference if it exists
+                    let metaColumn = meta.columns[c.name];
+
+                    if (metaColumn) {
+                        metaColumn.dataType = c.dataType;
+                        metaColumn.nullable = c.nullable;
+                    }
+                    else {
+                        metaColumn = {
+                            name: c.name,
+                            dataType: c.dataType,
+                            nullable: c.nullable,
+                            sort: Sort.Unsorted,
+                            visible: true, // default to visible
+                            position: i, // default to initial position
+                        };
+                    }
+
+                    returnedColumns[c.name] = metaColumn;
+                });
+                // Set so that missing columns are removed
+                setMeta('columns', returnedColumns)
             }
 
             const records = resource()?.data?.records;
@@ -74,17 +105,19 @@ export default function WorkspacePage() {
                 setData('records', []);
                 setData('records', records);
             }
-
         });
     });
 
-    createEffect(() => titleSetter(params.table ?? 'Table'));
+    createEffect(() => titleSetter(routeValues.params.table ?? 'Table'));
 
     return (
         <section class='pr-1'>
 
-            <Show when={resource.loading}>Loading…</Show>
-
+            <Show when={resource.loading}>
+                <Portal>
+                    Loading…
+                </Portal>
+            </Show>
             <Show when={message()}>
                 <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
                     {message()}

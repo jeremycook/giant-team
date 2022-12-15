@@ -142,8 +142,9 @@ export interface FetchRecordsInput {
 
 export interface FetchRecordsInputColumn {
     name: string;
-    sort: Sort;
     position?: number;
+    sort: Sort;
+    visible?: boolean;
 }
 
 export interface FetchRecordsInputFilter {

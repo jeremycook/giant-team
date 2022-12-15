@@ -1,7 +1,7 @@
 import { A, useLocation, useNavigate } from '@solidjs/router';
 import { createSignal, Show } from 'solid-js';
 import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
-import { refreshSession, session } from '../session';
+import { isAuthenticated, refreshSession, session } from '../session';
 import { titleSetter } from '../title';
 import { createId } from '../utils/htmlHelpers';
 import { InfoIcon, WarningIcon } from '../utils/icons';
@@ -53,6 +53,10 @@ export default function Login() {
       messageSetter(output.message);
     }
   };
+
+  if (!isAuthenticated()) {
+    const refresher = setInterval(() => isAuthenticated() ? clearInterval(refresher) : refreshSession(), 15 * 1000)
+  }
 
   return (
     <section class='card md:w-md md:mx-auto'>

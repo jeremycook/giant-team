@@ -114,6 +114,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
             if (columns?.Any() == true)
             {
                 return $"SELECT {columns
+                    .Where(c => c.Visible != false)
                     .OrderBy(c => c.Position)
                     .ThenBy(c => c.Name)
                     .Select(c => PgQuote.Identifier(c.Name))

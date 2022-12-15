@@ -42,8 +42,9 @@ namespace GiantTeam.WorkspaceInteraction.Services
         [Identifier]
         [StringLength(100)]
         public string Name { get; set; } = null!;
-        public Sort Sort { get; set; }
         public int? Position { get; set; }
+        public Sort Sort { get; set; }
+        public bool? Visible { get; set; }
     }
 
     public abstract class FetchRecordsInputFilter
