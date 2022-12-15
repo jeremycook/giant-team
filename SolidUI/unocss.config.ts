@@ -43,6 +43,9 @@ export function createConfig(): VitePluginConfig {
     rules: [
       ['overflow-x-hidden', { 'overflow-x': 'hidden' }],
       ['position-right', { 'right': '0' }],
+      ['position-left', { 'left': '0' }],
+      ['position-top', { 'top': '0' }],
+      ['position-bottom', { 'bottom': '0' }],
 
       // https://windicss.org/utilities/general/typography.html#text-overflow
       ['overflow-ellipsis', { 'text-overflow': 'ellipsis' }],

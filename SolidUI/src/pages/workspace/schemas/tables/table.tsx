@@ -45,7 +45,7 @@ export default function WorkspacePage() {
                 .map(c => ({
                     name: c.name,
                     sort: c.sort,
-                    position: unwrap(c).position,
+                    position: c.position,
                     visible: unwrap(c).visible,
                 })),
             // filters: params.filters,
@@ -89,7 +89,7 @@ export default function WorkspacePage() {
                             nullable: c.nullable,
                             sort: Sort.Unsorted,
                             visible: true, // default to visible
-                            position: i, // default to initial position
+                            position: i + 1, // default to initial position
                         };
                     }
 
@@ -143,30 +143,6 @@ export default function WorkspacePage() {
                         </div>
                     </td>}
                 ></SmartTable>
-
-                {/* <table>
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <For each={data()?.columns}>{column =>
-                                    <th
-                                        onClick={() => setOrder([{ column: column.name, desc: order().findIndex(val => val.column === column.name && val.desc !== true) > -1 }])}
-                                        class='cursor-pointer'
-                                    >{column.name}</th>
-                                }</For>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <For each={data()?.records}>{(record, row) =>
-                                <tr>
-                                    <td class='bg-sky-1'>{row() + 1}</td>
-                                    <For each={data()?.columns}>{(col, i) =>
-                                        <td classList={{ 'text-left': col.dataType === 'text' }}>{record[i()]}</td>}
-                                    </For>
-                                </tr>
-                            }</For>
-                        </tbody>
-                    </table> */}
 
             </Show>
 

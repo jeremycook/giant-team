@@ -6,6 +6,7 @@ import arrowUpCircleOutline from '@iconify-icons/ion/arrow-up-circle-outline';
 import beakerFilled from '@iconify-icons/fluent/beaker-16-filled';
 import beakerOutline from '@iconify-icons/fluent/beaker-16-regular';
 import chevronDown from '@iconify-icons/ion/chevron-down';
+import dismissFilled from '@iconify-icons/fluent/dismiss-12-filled';
 import eye from '@iconify-icons/fluent/eye-12-filled';
 import eyeOff from '@iconify-icons/fluent/eye-off-16-filled';
 import filter from '@iconify-icons/fluent/filter-20-filled';
@@ -35,6 +36,7 @@ export const ArrowUpCircleOutlineIcon = (props: any) => <Icon icon={arrowUpCircl
 export const BeakerFilledIcon = (props: any) => <Icon icon={beakerFilled} aria-hidden {...props} />;
 export const BeakerOutlineIcon = (props: any) => <Icon icon={beakerOutline} aria-hidden {...props} />;
 export const ChevronDownIcon = (props: any) => <Icon icon={chevronDown} aria-hidden {...props} />;
+export const DismissIcon = (props: any) => <Icon icon={dismissFilled} aria-hidden {...props} />;
 export const EyeIcon = (props: any) => <Icon icon={eye} aria-hidden {...props} />;
 export const EyeOffIcon = (props: any) => <Icon icon={eyeOff} aria-hidden {...props} />;
 export const FilterAddIcon = (props: any) => <Icon icon={filterAdd} aria-hidden {...props} />;

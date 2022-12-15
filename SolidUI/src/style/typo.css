@@ -57,12 +57,24 @@ label {
     cursor: pointer;
 }
 
-input:is(:not([type]), [type=date], [type=datetime-local], [type=email], [type=file], [type=month], [type=number], [type=password], [type=search], [type=tel], [type=text], [type=time], [type=url], [type=week]),
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+input,
 textarea,
 .input {
-    border: var(--input-border);
-    box-sizing: border-box;
-    line-height: initial;
+    border-style: solid;
+    border-width: 1px;
+    line-height: 1em;
     padding: .25rem;
     text-align: inherit;
     width: 100%;
@@ -72,16 +84,19 @@ input+input {
     border-left: none;
 }
 
-input:is(:not([type]), [type=date], [type=datetime-local], [type=email], [type=file], [type=month], [type=number], [type=password], [type=search], [type=tel], [type=text], [type=time], [type=url], [type=week]):required,
+input:required,
+input:invalid,
 select:required,
+select:invalid,
 textarea:required,
+textarea:invalid,
 .required {
     background-image: url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNSIgd2lkdGg9IjUiPjxwb2x5Z29uIHBvaW50cz0iMCwwIDAsNSA1LDAiIHN0eWxlPSJmaWxsOnJlZCIgLz48L3N2Zz4=');
     background-repeat: no-repeat;
     background-position: 1px 1px;
 }
 
-input:is(:not([type]), [type=date], [type=datetime-local], [type=email], [type=file], [type=month], [type=number], [type=password], [type=search], [type=tel], [type=text], [type=time], [type=url], [type=week]):required:hover,
+input:required:hover,
 select:required:hover,
 textarea:required:hover,
 .required:hover {
@@ -95,18 +110,8 @@ input[readonly] {
 }
 
 :required:focus,
-[data-val-required]:focus {
+.required:focus {
     background-image: none;
-}
-
-select {
-    border: var(--input-border);
-    box-sizing: border-box;
-    padding: .2rem .25rem .15rem;
-}
-
-select>option {
-    padding: .25rem;
 }
 
 input[type=checkbox],
@@ -114,11 +119,26 @@ input[type=radio] {
     box-shadow: none;
     cursor: pointer;
     min-width: unset;
+    width: unset;
 }
 
 input[type=date] {
     padding-top: 0;
     padding: .25rem .25rem .15rem;
+}
+
+input[type=file] {
+    cursor: pointer;
+}
+
+select {
+    border-style: solid;
+    border-width: 1px;
+    padding: .2rem .25rem .15rem;
+}
+
+select>option {
+    padding: .25rem;
 }
 
 fieldset {

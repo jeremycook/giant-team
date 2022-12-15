@@ -163,6 +163,8 @@ namespace GiantTeam.WorkspaceInteraction.Services
             {
                 return $"ORDER BY {columns
                     .Where(c => c.Sort != Sort.Unsorted)
+                    .OrderBy(c => c.Position)
+                    .ThenBy(c => c.Name)
                     .Select(c => PgQuote.Identifier(c.Name) + (c.Sort == Sort.Desc ? " DESC" : ""))
                     .Join(", ")}";
             }
