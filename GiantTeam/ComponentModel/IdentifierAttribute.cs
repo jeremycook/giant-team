@@ -10,7 +10,7 @@ namespace GiantTeam.ComponentModel
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
     public class IdentifierAttribute : ValidationAttribute
     {
-        private const string asciiSymbols = " !$%'()+,-.@[]_{}~^`&";
+        private const string asciiSymbols = " !$%'()+,-.@[]_{}~^`&/";
 
         static readonly SortedSet<Rune> allowedAsciiRunes = new((
             asciiSymbols +
