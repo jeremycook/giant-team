@@ -1,7 +1,7 @@
 import { A, Outlet, useRouteData } from '@solidjs/router';
 import { createEffect, For, Resource, Show } from 'solid-js';
 import { title, titleSetter } from '../../title';
-import { InfoIcon } from '../../utils/icons';
+import { createUrl } from '../../utils/urlHelpers';
 import { WorkspacePageModel } from './workspace.data';
 
 export default function WorkspacePage() {
@@ -28,23 +28,26 @@ export default function WorkspacePage() {
 
       <Show when={ok()}>
 
-        <div class='flex mb'>
-          <A class='button rounded-0' href={'./import-data'}>Import Data</A>
-          <A class='button rounded-0' href={'./create-schema'}>New Schema</A>
-          <A class='button rounded-0' href={'./create-table'}>New Table</A>
-          <A class='button rounded-0' href={'./create-view'}>New View</A>
-        </div>
-
         <div class='md:flex'>
 
-          <div class='md:w-200px'>
+          <div class='md:min-w-200px md:p1'>
+
+            <div class='flex flex-col mb'>
+              <A class='button p-1 rounded-0' href={'./import-data'}>Import Data</A>
+              <A class='button p-1 rounded-0' href={'./create-schema'}>Add Schema</A>
+              <A class='button p-1 rounded-0' href={'./create-table'}>Add Table</A>
+              <A class='button p-1 rounded-0' href={'./create-view'}>Add View</A>
+            </div>
+
             <For each={data()!.schemas}>{(schema =>
               <>
-                {console.debug(schema.tables)}
                 <div class='md:flex flex-col mb'>
-                  <strong>{schema.name} <InfoIcon title={'Owned by ' + schema.owner} /></strong>
+                  <div>
+                    <strong>{schema.name}</strong>
+                    <A href={`schemas/${schema.name}/edit`}>Edit</A>
+                  </div>
                   <For each={schema.tables}>{(table =>
-                    <A href={`/workspace/${data()!.workspaceName}/schemas/${schema.name}/tables/${table.name}`}>{table.name}</A>
+                    <A href={createUrl('table', { schema: schema.name, table: table.name })} class='is-active:font-bold'>{table.name}</A>
                   )}</For>
                 </div>
               </>

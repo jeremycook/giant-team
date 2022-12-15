@@ -6,6 +6,7 @@ import './style/vars.css';
 import 'uno.css';
 import './style/typo.css';
 import './style/plugins.css';
+import './style/overrides.css';
 import './style/theme.css';
 // import './index.css';
 import App from './App';

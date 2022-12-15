@@ -2,7 +2,7 @@ import { A, useRouteData } from '@solidjs/router';
 import { createResource, Show } from 'solid-js';
 import { postFetchRecords } from '../../api/GiantTeam.Data.Api';
 import { title, titleSetter } from '../../title';
-import Table from '../../widgets/Table';
+import Table, { TableData } from '../../widgets/Table';
 
 export function WorkspacesPageData() {
 
@@ -10,9 +10,6 @@ export function WorkspacesPageData() {
     database: 'info',
     schema: 'public',
     table: 'gt_database',
-    orderBy: [
-      { column: 'name' }
-    ]
   }));
 
   return resource;
@@ -25,7 +22,10 @@ export default function WorkspacePage() {
 
   const ok = () => model()?.ok == true;
   const message = () => model()?.message ?? '';
-  const data = () => model()?.data;
+  const data = (): TableData => ({
+    columns: model()?.data?.columns.map(c => c.name) ?? [],
+    records: model()?.data?.records ?? []
+  });
 
   return (
     <section class='card md:w-md md:mx-auto'>
@@ -39,7 +39,7 @@ export default function WorkspacePage() {
       </Show>
 
       <Show when={ok()}>
-        <Table data={data()!} rowLeader={record => <A href={'/workspace/' + record[0]}>View</A>} />
+        <Table data={data()} rowLeader={record => <A href={'/workspace/' + record[0]}>View</A>} />
       </Show>
 
     </section>

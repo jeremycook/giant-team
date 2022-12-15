@@ -56,7 +56,7 @@ export default function ImportDataPage() {
   }
 
   return (
-    <section class='px pb max-w-md'>
+    <section class='pxy max-w-md'>
 
       <Show when={message()}>
         <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>

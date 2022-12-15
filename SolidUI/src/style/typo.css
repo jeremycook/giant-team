@@ -45,7 +45,6 @@ details :last-child {
 hr {
     border: none;
     border-bottom: 1px solid #ccc;
-    margin: 0 0 1rem;
 }
 
 p {
@@ -191,8 +190,6 @@ thead th {
     vertical-align: bottom;
 }
 
-tbody {}
-
 tbody>tr:first-of-type td {
     border-top-color: var(--border-color);
 }
@@ -200,8 +197,6 @@ tbody>tr:first-of-type td {
 tbody>tr:last-of-type td {
     border-bottom-color: var(--border-color);
 }
-
-tfoot {}
 
 tfoot th {
     text-align: right;

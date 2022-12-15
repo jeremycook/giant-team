@@ -10,6 +10,8 @@
   "license": "MIT",
   "devDependencies": {
     "@iconify-icon/solid": "^1.0.2",
+    "@iconify-icons/akar-icons": "^1.2.11",
+    "@iconify-icons/fluent": "^1.2.18",
     "@iconify-icons/ion": "^1.2.4",
     "@solidjs/router": "^0.5.1",
     "@unocss/preset-mini": "^0.47.5",

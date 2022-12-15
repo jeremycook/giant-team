@@ -2,3 +2,8 @@
     border: 1px solid var(--border-color);
     min-height: 70vh;
 }
+
+iconify-icon {
+    margin-bottom: -.1em;
+    padding: 0 .25em;
+}

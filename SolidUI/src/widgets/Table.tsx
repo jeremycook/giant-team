@@ -2,14 +2,8 @@ import { For } from 'solid-js';
 import { JSX } from 'solid-js/web/types/jsx';
 
 export interface TableData {
-    columns: TableColumn[];
+    columns: string[];
     records: any[][];
-}
-
-export interface TableColumn {
-    name: string;
-    dataType: string;
-    nullable: boolean;
 }
 
 export default function Table({ data, rowLeader }: { data: TableData, rowLeader?: (record: any[]) => JSX.Element }) {
@@ -18,8 +12,8 @@ export default function Table({ data, rowLeader }: { data: TableData, rowLeader?
             <thead>
                 <tr>
                     {typeof rowLeader === 'function' && <th></th>}
-                    <For each={data.columns ?? []}>{col =>
-                        <th>{col.name}</th>
+                    <For each={data.columns}>{col =>
+                        <th>{col}</th>
                     }</For>
                 </tr>
             </thead>
@@ -27,8 +21,8 @@ export default function Table({ data, rowLeader }: { data: TableData, rowLeader?
                 <For each={data.records ?? []}>{record =>
                     <tr>
                         {typeof rowLeader === 'function' && <td>{rowLeader(record)}</td>}
-                        <For each={data.columns ?? []}>{(_, rowNumber) =>
-                            <td>{record[rowNumber()]}</td>
+                        <For each={data.columns}>{(_, columnIndex) =>
+                            <td>{record[columnIndex()]}</td>
                         }</For>
                     </tr>
                 }</For>

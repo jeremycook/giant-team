@@ -104,6 +104,8 @@ const App: Component = () => {
       <main>
         <AppRoutes />
       </main>
+
+      <div id='main-portal' class='absolute top-0 left-0 right-0 h-0 flex justify-center'></div>
     </>
   );
 };

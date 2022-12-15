@@ -6,7 +6,7 @@ namespace GiantTeam.Data.Api.Controllers;
 public class FetchRecordsController : ControllerBase
 {
     [HttpPost("/api/[Controller]")]
-    public async Task<FetchRecordsOutput> Post(
+    public async Task<FetchRecords> Post(
         [FromServices] FetchRecordsService fetchRecordsService,
         FetchRecordsInput input)
     {

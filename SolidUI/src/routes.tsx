@@ -3,7 +3,6 @@ import { Route, Routes } from '@solidjs/router';
 
 import Home from './pages/home';
 import WorkspacePageData from './pages/workspace/workspace.data';
-import TablePageData from './pages/workspace/schemas/tables/table.data';
 import Protected from './widgets/Protected';
 import { WorkspacesPageData } from './pages/workspaces/list-workspaces';
 
@@ -27,7 +26,7 @@ export default function AppRoutes() {
         <Route path="/workspace/:workspace" component={lazy(() => import('./pages/workspace/workspace'))} data={WorkspacePageData}>
           <Route path='/' element={<strong>It worked!</strong>} />
           <Route path='/import-data' component={lazy(() => import('./pages/workspace/import-data'))} />
-          <Route path='/schemas/:schema/tables/:table' component={lazy(() => import('./pages/workspace/schemas/tables/table'))} data={TablePageData} />
+          <Route path='/table' component={lazy(() => import('./pages/workspace/schemas/tables/table'))} />
         </Route>
       </Route>
     </Routes>

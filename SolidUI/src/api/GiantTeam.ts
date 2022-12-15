@@ -117,21 +117,33 @@ export interface FetchWorkspaceTable {
     owner: string;
 }
 
+export interface FetchRecords {
+    sql?: string;
+    columns: FetchRecordsColumn[];
+    records: any[][];
+}
+
+export interface FetchRecordsColumn {
+    name: string;
+    dataType: string;
+    nullable: boolean;
+}
+
 export interface FetchRecordsInput {
     verbose?: boolean;
     database: string;
     schema: string;
     table: string;
-    columns?: string[];
+    columns?: FetchRecordsInputColumn[];
     filters?: FetchRecordsInputRangeFilter[];
-    orderBy?: FetchRecordsInputOrder[];
     skip?: number;
     take?: number;
 }
 
 export interface FetchRecordsInputColumn {
-    column: string;
-    alias?: string;
+    name: string;
+    sort: Sort;
+    position?: number;
 }
 
 export interface FetchRecordsInputFilter {
@@ -141,7 +153,7 @@ export interface FetchRecordsInputFilter {
 
 export interface FetchRecordsInputOrder {
     column: string;
-    asc?: boolean;
+    desc?: boolean;
 }
 
 export interface FetchRecordsInputRangeFilter {
@@ -149,18 +161,6 @@ export interface FetchRecordsInputRangeFilter {
     upperValue: string;
     discriminator: string;
     column: string;
-}
-
-export interface FetchRecordsOutput {
-    sql?: string;
-    columns: FetchRecordsOutputColumn[];
-    records: any[][];
-}
-
-export interface FetchRecordsOutputColumn {
-    name: string;
-    dataType: string;
-    nullable: boolean;
 }
 
 export interface ImportDataInput {
@@ -174,4 +174,10 @@ export interface ImportDataInput {
 export interface ImportDataOutput {
     schema: string;
     table: string;
+}
+
+export enum Sort {
+    Unsorted = 0,
+    Asc = 1,
+    Desc = 2,
 }

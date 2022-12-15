@@ -4,8 +4,8 @@ import {
     CreateTeamOutput,
     CreateWorkspaceInput,
     CreateWorkspaceOutput,
+    FetchRecords,
     FetchRecordsInput,
-    FetchRecordsOutput,
     FetchWorkspaceInput,
     FetchWorkspaceOutput,
     ImportDataInput,
@@ -22,7 +22,7 @@ export const postCreateWorkspace = async (input: CreateWorkspaceInput) =>
     await postJson('/api/create-workspace', input) as DataResponse<CreateWorkspaceOutput>;
 
 export const postFetchRecords = async (input: FetchRecordsInput) =>
-    await postJson('/api/fetch-records', input) as DataResponse<FetchRecordsOutput>;
+    await postJson('/api/fetch-records', input) as DataResponse<FetchRecords>;
 
 export const postFetchWorkspace = async (input: FetchWorkspaceInput) =>
     await postJson('/api/fetch-workspace', input) as DataResponse<FetchWorkspaceOutput>;
