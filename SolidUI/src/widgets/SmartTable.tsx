@@ -1,9 +1,8 @@
 import { Accessor, createSignal, For, Show } from 'solid-js';
-import { produce, SetStoreFunction, Store } from 'solid-js/store';
-import { Portal } from 'solid-js/web';
+import { createMutable, produce, SetStoreFunction, Store } from 'solid-js/store';
 import { JSX } from 'solid-js/web/types/jsx';
 import { FetchRecordsInputRangeFilter, Sort } from '../api/GiantTeam';
-import { DismissIcon, EyeIcon, EyeOffIcon, FilterAddIcon, FilterIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
+import { EyeIcon, EyeOffIcon, FilterAddIcon, FilterIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
 import Dialog from './Dialog';
 
 export interface Data {
@@ -28,13 +27,13 @@ export interface MetaColumn {
 export interface MetaFilter extends FetchRecordsInputRangeFilter {
 }
 
-interface ColumnPopupProps {
+interface ColumnDialogProps {
     meta: Store<Meta>;
     setMeta: SetStoreFunction<Meta>;
     column: MetaColumn;
 }
 
-function ColumnPopup(props: ColumnPopupProps) {
+function ColumnDialog(props: ColumnDialogProps) {
     const { meta, setMeta } = props;
 
     const column = () => props.column;
@@ -151,7 +150,6 @@ export default function Table({
 
     const hiddenColumns = () => columns().filter(c => !c.visible);
 
-    const [columnPopupRef, setColumnPopupRef] = createSignal<HTMLElement>();
     const { activeColumn, toggleActiveColumn } = (() => {
         const [activeColumnName, set] = createSignal<string>();
         const toggleActiveColumnName = (columnName?: string) => {
@@ -165,22 +163,8 @@ export default function Table({
         const activeColumn = () => activeColumnName() ? meta.columns[activeColumnName()!] : null;
         return { activeColumn, toggleActiveColumn: toggleActiveColumnName };
     })();
-    const { lastClick, setLastClick } = (() => {
-        const [get, set] = createSignal({ x: 0, y: 0 });
-        const lastClick = {
-            x: () => get().x,
-            y: () => get().y,
-            left: (el?: HTMLElement) => Math.min(document.body.clientWidth - (el?.clientWidth ?? 0), Math.max(0, get().x - ((el?.clientWidth ?? 0) / 2))) + 'px',
-            top: (el?: HTMLElement) => Math.min(document.body.clientHeight - (el?.clientHeight ?? 0), Math.max(0, get().y + 20)) + 'px',
-        };
-        const setLastClick = (e: MouseEvent) => {
-            set({
-                x: e.pageX,
-                y: e.pageY,
-            })
-        };
-        return { lastClick, setLastClick };
-    })();
+
+    const columnDialogPosition = createMutable({ left: 0, top: 0 });
 
     return (
         <div>
@@ -194,7 +178,7 @@ export default function Table({
                         <For each={columns()}>{(column) =>
                             <Show when={!column.visible}>
                                 <button type='button' class='border'
-                                    onclick={(e) => { setLastClick(e); toggleActiveColumn(column.name); }}>
+                                    onclick={(e) => { columnDialogPosition.left = e.pageX; columnDialogPosition.top = e.pageY; toggleActiveColumn(column.name); }}>
                                     {column.name}
                                     {column.sort === Sort.Asc ? <SortAscIcon /> : null}
                                     {column.sort === Sort.Desc ? <SortDescIcon /> : null}
@@ -214,7 +198,7 @@ export default function Table({
                             <Show when={column.visible}>
                                 <th class='p-0'>
                                     <button type='button' class='block w-100% p-1 border paint-primary'
-                                        onclick={(e) => { setLastClick(e); toggleActiveColumn(column.name); }}>
+                                        onclick={(e) => { columnDialogPosition.left = e.pageX; columnDialogPosition.top = e.pageY; toggleActiveColumn(column.name); }}>
                                         <div>
                                             {column.sort === Sort.Asc ? <SortAscIcon /> : null}
                                             {column.sort === Sort.Desc ? <SortDescIcon /> : null}
@@ -246,30 +230,13 @@ export default function Table({
                 <Dialog
                     title={activeColumn()!.name}
                     onDismiss={() => toggleActiveColumn(undefined)}
-                    initialPosition={() => ({ left: lastClick.x(), top: lastClick.y() + 20 })}>
-                    <ColumnPopup
+                    initialPosition={() => ({ left: columnDialogPosition.left, top: columnDialogPosition.top + 20 })}>
+                    <ColumnDialog
                         meta={meta}
                         setMeta={setMeta}
                         column={activeColumn()!}
                     />
                 </Dialog>
-
-                {/* <Portal mount={document.getElementById('main-portal')!}>
-                    <div ref={setColumnPopupRef} class='card p-2 absolute max-w-100%' style={{ top: lastClick.top(columnPopupRef()!), left: lastClick.left(columnPopupRef()!) }} role='dialog'>
-                        <div class='flex mb'>
-                            <strong class='text-xl grow'>{activeColumn()!.name}</strong>
-                            <button type='button' onclick={() => toggleActiveColumn(undefined)}>
-                                <DismissIcon />
-                                <span class='sr-only'>Close Dialog</span>
-                            </button>
-                        </div>
-                        <ColumnPopup
-                            meta={meta}
-                            setMeta={setMeta}
-                            column={activeColumn()!}
-                        />
-                    </div>
-                </Portal> */}
 
             </Show>
 
