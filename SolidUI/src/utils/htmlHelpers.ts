@@ -1,5 +1,27 @@
 import { createUniqueId } from 'solid-js';
 
+export const constrainToViewport = ({ left, top, width, height }: { left: number; top: number; width: number; height: number; }) => {
+
+    const minLeft = visualViewport?.pageLeft ?? window.scrollX;
+    const viewportRight = minLeft + (visualViewport?.width ?? window.innerWidth);
+    const maxLeft = Math.max(minLeft, viewportRight - width);
+
+    const constrainedLeft = Math.max(minLeft, Math.min(left, maxLeft));
+
+    const minTop = visualViewport?.pageTop ?? window.scrollY;
+    const viewportBottom = minTop + (visualViewport?.height ?? window.innerHeight);
+    const maxTop = Math.max(minTop, viewportBottom - height);
+
+    const constrainedTop = Math.max(minTop, Math.min(top, maxTop));
+
+    const constrainedPosition = {
+        left: constrainedLeft,
+        top: constrainedTop,
+    };
+
+    return constrainedPosition
+}
+
 /** Return a string with a random but fixed prefix followed by the provided suffix. */
 export const createId = ((prefix) => (suffix: string) => prefix ? prefix + '_' + suffix : suffix)(createUniqueId());
 

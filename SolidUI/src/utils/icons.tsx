@@ -17,6 +17,7 @@ import informationCircle from '@iconify-icons/ion/information-circle';
 import left from '@iconify-icons/fluent/arrow-left-12-filled';
 import menu from '@iconify-icons/ion/menu';
 import menuOutline from '@iconify-icons/ion/menu-outline';
+import move from '@iconify-icons/fluent/arrow-move-20-regular';
 import notificationsOutline from '@iconify-icons/ion/notifications-outline';
 import person from '@iconify-icons/ion/person';
 import personOutline from '@iconify-icons/ion/person-outline';
@@ -47,6 +48,7 @@ export const InfoIcon = (props: any) => <Icon icon={informationCircle} aria-hidd
 export const LeftIcon = (props: any) => <Icon icon={left} aria-hidden {...props} />;
 export const MenuIcon = (props: any) => <Icon icon={menu} aria-hidden {...props} />;
 export const MenuOutline = (props: any) => <Icon icon={menuOutline} aria-hidden {...props} />;
+export const MoveIcon = (props: any) => <Icon icon={move} aria-hidden {...props} />;
 export const NotificationOutline = (props: any) => <Icon icon={notificationsOutline} aria-hidden {...props} />;
 export const OffIcon = (props: any) => <Icon icon={presenceOffline10Regular} aria-hidden {...props} />;
 export const PersonIcon = (props: any) => <Icon icon={person} aria-hidden {...props} />;

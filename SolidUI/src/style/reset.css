@@ -1,13 +1,19 @@
 @import url(./vars.css);
-@import url(./normalize.css);
+
+html {
+    -webkit-text-size-adjust: 100%;
+    line-height: 1;
+    font-size: 12pt;
+}
 
 * {
     box-sizing: border-box;
+    font-size: 1em;
 }
 
 body {
     font-family: var(--font-family);
-    position: relative;
+    margin: 0;
 }
 
 pre,
@@ -31,22 +37,20 @@ button {
     border: none;
     cursor: pointer;
     display: inline-block;
-    line-height: 1;
+    margin: 0;
     padding: 0;
-    text-decoration: none;
 }
 
 a,
 button {
-    text-decoration: none;
     color: var(--blue);
     opacity: .8;
+    text-decoration: none;
 }
 
 a[aria-disabled='true'],
 button[aria-disabled='true'] {
-    color: var(--blue-800);
-    opacity: .8;
+    opacity: .6;
 }
 
 a:hover,

@@ -4,6 +4,7 @@ import { Portal } from 'solid-js/web';
 import { JSX } from 'solid-js/web/types/jsx';
 import { FetchRecordsInputRangeFilter, Sort } from '../api/GiantTeam';
 import { DismissIcon, EyeIcon, EyeOffIcon, FilterAddIcon, FilterIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
+import Dialog from './Dialog';
 
 export interface Data {
     columns: string[];
@@ -174,8 +175,8 @@ export default function Table({
         };
         const setLastClick = (e: MouseEvent) => {
             set({
-                x: e.clientX,
-                y: e.clientY,
+                x: e.pageX,
+                y: e.pageY,
             })
         };
         return { lastClick, setLastClick };
@@ -242,7 +243,18 @@ export default function Table({
 
             <Show when={activeColumn()}>
 
-                <Portal mount={document.getElementById('main-portal')!}>
+                <Dialog
+                    title={activeColumn()!.name}
+                    onDismiss={() => toggleActiveColumn(undefined)}
+                    initialPosition={() => ({ left: lastClick.x(), top: lastClick.y() + 20 })}>
+                    <ColumnPopup
+                        meta={meta}
+                        setMeta={setMeta}
+                        column={activeColumn()!}
+                    />
+                </Dialog>
+
+                {/* <Portal mount={document.getElementById('main-portal')!}>
                     <div ref={setColumnPopupRef} class='card p-2 absolute max-w-100%' style={{ top: lastClick.top(columnPopupRef()!), left: lastClick.left(columnPopupRef()!) }} role='dialog'>
                         <div class='flex mb'>
                             <strong class='text-xl grow'>{activeColumn()!.name}</strong>
@@ -257,7 +269,7 @@ export default function Table({
                             column={activeColumn()!}
                         />
                     </div>
-                </Portal>
+                </Portal> */}
 
             </Show>
 
