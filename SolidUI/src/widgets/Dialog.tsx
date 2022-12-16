@@ -20,7 +20,7 @@ export default function Dialog(props: DialogProps & ParentProps) {
 
     let mouseDown = false;
     let offsetLeft = 0, offsetTop = 0;
-    const onmousedown = function (this: HTMLButtonElement, mouse: MouseEvent): void {
+    const onStartMove = function (this: HTMLButtonElement, mouse: MouseEvent): void {
         offsetLeft = ref.offsetLeft - mouse.clientX;
         offsetTop = ref.offsetTop - mouse.clientY;
         mouseDown = true;
@@ -47,7 +47,7 @@ export default function Dialog(props: DialogProps & ParentProps) {
         }
     };
     onMount(() => {
-        moveRef.addEventListener('mousedown', onmousedown, true);
+        moveRef.addEventListener('mousedown', onStartMove, true);
         document.addEventListener('mouseup', onmouseup, true);
         document.addEventListener('mousemove', onmousemove, true);
 
