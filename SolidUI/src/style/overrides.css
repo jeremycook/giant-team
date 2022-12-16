@@ -4,6 +4,9 @@
 }
 
 iconify-icon {
-    margin-bottom: -.1em;
-    padding: 0 .25em;
+    position: relative;
+    top: 2px;
+    
+    /* font-size: .8em; */
+    margin-bottom: 0px;
 }

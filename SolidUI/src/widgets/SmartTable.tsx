@@ -1,9 +1,9 @@
 import { Accessor, createSignal, For, Show } from 'solid-js';
-import { SetStoreFunction, Store, unwrap } from 'solid-js/store';
+import { produce, SetStoreFunction, Store } from 'solid-js/store';
 import { Portal } from 'solid-js/web';
 import { JSX } from 'solid-js/web/types/jsx';
-import { Sort } from '../api/GiantTeam';
-import { DismissIcon, EyeIcon, EyeOffIcon, FilterAddIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
+import { FetchRecordsInputRangeFilter, Sort } from '../api/GiantTeam';
+import { DismissIcon, EyeIcon, EyeOffIcon, FilterAddIcon, FilterIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
 
 export interface Data {
     columns: string[];
@@ -21,6 +21,10 @@ export interface MetaColumn {
     position: number;
     sort: Sort;
     visible: boolean;
+    filters: MetaFilter[];
+}
+
+export interface MetaFilter extends FetchRecordsInputRangeFilter {
 }
 
 interface ColumnPopupProps {
@@ -62,11 +66,11 @@ function ColumnPopup(props: ColumnPopupProps) {
                 <div class='text-center'>Position</div>
                 <div>
                     <div class='flex-inline items-center border p-1px children:p-1'>
-                        <button onclick={() => moveTo(column().position - 1)} class='border'>
+                        <button type='button' onclick={() => moveTo(column().position - 1)} class='border'>
                             <LeftIcon /> <span class='sr-only'>Move Left</span>
                         </button>
                         <input value={column().position} onchange={e => moveTo(parseInt((e.target as HTMLInputElement).value))} type='number' min='1' max={Object.keys(meta.columns).length} class='w-3em text-center border-0' />
-                        <button onclick={() => moveTo(column().position + 1)} class='border'>
+                        <button type='button' onclick={() => moveTo(column().position + 1)} class='border'>
                             <RightIcon /> <span class='sr-only'>Move Right</span>
                         </button>
                     </div>
@@ -74,10 +78,10 @@ function ColumnPopup(props: ColumnPopupProps) {
                 <div class='text-center'>Visibility</div>
                 <div>
                     <div class='flex-inline items-center border children:p-1'>
-                        <button onclick={() => setMeta('columns', column().name, 'visible', true)} class={(column().visible ? 'paint-primary border shadow shadow-inset' : '')}>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'visible', true)} class={(column().visible ? 'paint-primary border shadow shadow-inset' : '')}>
                             <EyeIcon /> <span class='sr-only'>Visible Column</span>
                         </button>
-                        <button onclick={() => setMeta('columns', column().name, 'visible', false)} class={(!column().visible ? 'paint-primary border shadow shadow-inset' : '')}>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'visible', false)} class={(!column().visible ? 'paint-primary border shadow shadow-inset' : '')}>
                             <EyeOffIcon /> <span class='sr-only'>Hidden Column</span>
                         </button>
                     </div>
@@ -85,23 +89,40 @@ function ColumnPopup(props: ColumnPopupProps) {
                 <div class='text-center'>Sorting</div>
                 <div>
                     <div class='flex-inline items-center border children:p-1 children:not-first:ml-1'>
-                        <button onclick={() => setMeta('columns', column().name, 'sort', Sort.Asc)} class={(column().sort === Sort.Asc ? 'paint-primary border shadow shadow-inset' : '')}>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Asc)} class={(column().sort === Sort.Asc ? 'paint-primary border shadow shadow-inset' : '')}>
                             <SortAscIcon /> <span class='sr-only'>Sort Ascending</span>
                         </button>
-                        <button onclick={() => setMeta('columns', column().name, 'sort', Sort.Desc)} class={(column().sort === Sort.Desc ? 'paint-primary border shadow shadow-inset' : '')}>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Desc)} class={(column().sort === Sort.Desc ? 'paint-primary border shadow shadow-inset' : '')}>
                             <SortDescIcon /> <span class='sr-only'>Sort Descending</span>
                         </button>
-                        <button onclick={() => setMeta('columns', column().name, 'sort', Sort.Unsorted)} class={(column().sort === Sort.Unsorted ? 'paint-disabled border shadow shadow-inset' : '')}>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Unsorted)} class={(column().sort === Sort.Unsorted ? 'paint-disabled border shadow shadow-inset' : '')}>
                             <OffIcon /> <span class='sr-only'>Disable Sorting</span>
                         </button>
                     </div>
                 </div>
+                <div class='text-center'>Filters</div>
+                <div>
+                    <button type='button' class='button p-1'
+                        onclick={() => setMeta('columns', column().name, 'filters',
+                            f => [...f, {
+                                column: column().name,
+                                discriminator: 'FetchRecordsInputRangeFilter',
+                                lowerValue: '',
+                                upperValue: '',
+                            }])}>
+                        <FilterAddIcon /> Add a Filter
+                    </button>
+                </div>
             </div>
-            <div>
-                <button>
-                    <FilterAddIcon /> Add a Filter
-                </button>
-            </div>
+            <For each={column().filters}>{(filter, i) => (
+                <div class='flex p-1 border children:p-1'>
+                    <input class='w-10rem'
+                        value={filter.lowerValue} onchange={(e: any) => setMeta('columns', produce(pair => pair[column().name].filters[i()].lowerValue = e.target.value ?? ''))} />
+                    <input class='w-10rem'
+                        value={filter.upperValue} onchange={(e: any) => setMeta('columns', produce(pair => pair[column().name].filters[i()].upperValue = e.target.value ?? ''))} />
+                    <button type='button' onclick={() => setMeta('columns', column().name, 'filters', [])}>Remove</button>
+                </div>
+            )}</For>
         </div>
     );
 }
@@ -165,14 +186,18 @@ export default function Table({
             <div class='min-h-3rem'>
                 <Show when={hiddenColumns().length > 0}>
 
-                    <div class='flex-inline items-center border p-1px children:p-1 children:border'>
-                        Hidden Columns:&nbsp;
+                    <div class='flex-inline gap-1px border p-1px children:p-1'>
+                        <div>
+                            Hidden Columns
+                        </div>
                         <For each={columns()}>{(column) =>
                             <Show when={!column.visible}>
-                                <button onclick={(e) => { setLastClick(e); toggleActiveColumn(column.name); }} class='flex gap-1'>
+                                <button type='button' class='border'
+                                    onclick={(e) => { setLastClick(e); toggleActiveColumn(column.name); }}>
                                     {column.name}
-                                    {column.sort === Sort.Asc ? <><SortAscIcon /> <strong class='text-xs'>{column.position}</strong></> : null}
+                                    {column.sort === Sort.Asc ? <SortAscIcon /> : null}
                                     {column.sort === Sort.Desc ? <SortDescIcon /> : null}
+                                    {column.filters.length ? <FilterIcon /> : null}
                                 </button>
                             </Show>
                         }</For>
@@ -187,14 +212,13 @@ export default function Table({
                         <For each={columns()}>{(column) =>
                             <Show when={column.visible}>
                                 <th class='p-0'>
-                                    <div class='relative'>
-                                        <div class='absolute position-right'>
+                                    <button type='button' class='block w-100% p-1 border paint-primary'
+                                        onclick={(e) => { setLastClick(e); toggleActiveColumn(column.name); }}>
+                                        <div>
                                             {column.sort === Sort.Asc ? <SortAscIcon /> : null}
                                             {column.sort === Sort.Desc ? <SortDescIcon /> : null}
+                                            {column.filters.length ? <FilterIcon /> : null}
                                         </div>
-                                    </div>
-                                    <button onclick={(e) => { setLastClick(e); toggleActiveColumn(column.name); }}
-                                        class='block w-100% py-1'>
                                         {column.name}
                                     </button>
                                 </th>
@@ -222,7 +246,7 @@ export default function Table({
                     <div ref={setColumnPopupRef} class='card p-2 absolute max-w-100%' style={{ top: lastClick.top(columnPopupRef()!), left: lastClick.left(columnPopupRef()!) }} role='dialog'>
                         <div class='flex mb'>
                             <strong class='text-xl grow'>{activeColumn()!.name}</strong>
-                            <button onclick={() => toggleActiveColumn(undefined)}>
+                            <button type='button' onclick={() => toggleActiveColumn(undefined)}>
                                 <DismissIcon />
                                 <span class='sr-only'>Close Dialog</span>
                             </button>

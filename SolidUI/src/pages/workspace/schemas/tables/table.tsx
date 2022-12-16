@@ -37,18 +37,32 @@ export default function WorkspacePage() {
 
     const [resource] = createResource((): FetchRecordsInput => {
 
+        const columns = Object.values(meta.columns)
+            .map(c => ({
+                name: c.name,
+                sort: c.sort,
+                position: c.position,
+                visible: unwrap(c).visible,
+            }));
+
+        const filters = Object.values(meta.columns)
+            .map(c => c.filters
+                .filter(f => f.upperValue)
+                .map(f => ({
+                    column: c.name,
+                    discriminator: f.discriminator,
+                    lowerValue: f.lowerValue,
+                    upperValue: f.upperValue,
+                }))
+            )
+            .reduce((agg, arr) => [...agg, ...arr], []);
+
         return debug({
             database: routeValues.params.workspace,
             schema: routeValues.params.schema,
             table: routeValues.params.table,
-            columns: Object.values(meta.columns)
-                .map(c => ({
-                    name: c.name,
-                    sort: c.sort,
-                    position: c.position,
-                    visible: unwrap(c).visible,
-                })),
-            // filters: params.filters,
+            columns: columns,
+            filters: filters,
             // skip: params.skip,
             // take: params.take
         }, 'postFetchRecords input');
@@ -90,6 +104,7 @@ export default function WorkspacePage() {
                             sort: Sort.Unsorted,
                             visible: true, // default to visible
                             position: i + 1, // default to initial position
+                            filters: [],
                         };
                     }
 
@@ -128,7 +143,7 @@ export default function WorkspacePage() {
                 {JSON.stringify(activeRecord())}
             </Show>
 
-            <Show when={data.records.length > 0}>
+            <Show when={data.columns.length > 0}>
 
                 <SmartTable
                     data={data}

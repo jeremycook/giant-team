@@ -45,6 +45,8 @@ namespace GiantTeam.WorkspaceInteraction.Services
         public int? Position { get; set; }
         public Sort Sort { get; set; }
         public bool? Visible { get; set; }
+
+        public bool IsVisible() => Visible != false;
     }
 
     public abstract class FetchRecordsInputFilter
@@ -68,7 +70,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
         {
         }
 
-        [Required]
+        [Required(AllowEmptyStrings = true)]
         public string LowerValue { get; set; } = null!;
 
         [Required]

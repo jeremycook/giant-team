@@ -4,6 +4,7 @@ using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;
 using Npgsql;
 using Npgsql.Schema;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace GiantTeam.WorkspaceInteraction.Services
@@ -30,7 +31,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
 
             using var connection = await connectionService.OpenConnectionAsync(input.Database);
 
-            var columnSchema = await GetColumnSchemaAsync(input, connection);
+            var (columnSchema, selectedColumns) = await GetColumnSchemaAsync(input, connection);
 
             using NpgsqlCommand command = connection.CreateCommand();
             command.CommandText = BuildSql(input, columnSchema, command.Parameters);
@@ -49,18 +50,19 @@ namespace GiantTeam.WorkspaceInteraction.Services
                 output.Sql = command.CommandText;
             }
 
-            output.Columns.AddRange(columnSchema.Values.Select(o => new FetchRecordsColumn()
-            {
-                Name = o.ColumnName,
-                DataType = o.DataTypeName,
-                Nullable = o.AllowDBNull == true,
-            }));
+            output.Columns.AddRange(selectedColumns
+                .Select(o => new FetchRecordsColumn()
+                {
+                    Name = o.ColumnName,
+                    DataType = o.DataTypeName,
+                    Nullable = o.AllowDBNull == true,
+                }));
 
             using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                object?[] record = new object?[columnSchema.Count];
-                for (int i = 0; i < columnSchema.Count; i++)
+                object?[] record = new object?[selectedColumns.Count];
+                for (int i = 0; i < selectedColumns.Count; i++)
                 {
                     object? value = reader[i];
                     record[i] = value;
@@ -71,29 +73,49 @@ namespace GiantTeam.WorkspaceInteraction.Services
             return output;
         }
 
-        private static async Task<IDictionary<string, NpgsqlDbColumn>> GetColumnSchemaAsync(FetchRecordsInput input, NpgsqlConnection openConnection)
+        private static async Task<(IReadOnlyDictionary<string, NpgsqlDbColumn> columnSchema, IReadOnlyCollection<NpgsqlDbColumn> selectedColumns)> GetColumnSchemaAsync(FetchRecordsInput input, NpgsqlConnection openConnection)
         {
             var sb = new StringBuilder();
 
             using var cmd = new NpgsqlCommand();
             NpgsqlParameterCollection parameters = cmd.Parameters;
 
-            sb.Append(BuildSelect(input.Columns) + "\n");
-            sb.Append($"FROM {PgQuote.Identifier(input.Schema, input.Table)}" + "\n");
-            sb.Append($"LIMIT @Take OFFSET @Skip;");
+            var filteredColumns = input.Filters?.Select(f => f.Column).ToImmutableSortedSet() ?? ImmutableSortedSet.Create<string>();
+            string select = "SELECT " + (input.Columns?.Any() == true ?
+                input.Columns
+                   .Where(c => c.IsVisible() || filteredColumns.Contains(c.Name))
+                   .Select(c => PgQuote.Identifier(c.Name))
+                   .Join(", ") :
+                "*");
 
-            parameters.AddWithValue("Take", input.Take ?? 100);
-            parameters.AddWithValue("Skip", input.Skip ?? 0);
+            sb.Append($"""
+{select}
+FROM {PgQuote.Identifier(input.Schema, input.Table)}
+LIMIT @Take OFFSET @Skip;
+""");
+
+            parameters.AddWithValue("Skip", 0);
+            parameters.AddWithValue("Take", 1);
 
             cmd.CommandText = sb.ToString();
             cmd.Connection = openConnection;
             using NpgsqlDataReader rdr = await cmd.ExecuteReaderAsync();
             var columnSchema = await rdr.GetColumnSchemaAsync();
 
-            return columnSchema.ToDictionary(o => o.ColumnName);
+            var dictionary = columnSchema.ToImmutableDictionary(o => o.ColumnName);
+            var selectedColumns = input.Columns?.Any() == true ?
+                input.Columns
+                    .Where(o => o.IsVisible())
+                    .OrderBy(o => o.Position)
+                    .ThenBy(o => o.Name)
+                    .Select(o => dictionary[o.Name]) :
+                dictionary.Values
+                    .OrderBy(o => o.ColumnOrdinal)
+                    .ThenBy(o => o.ColumnName);
+            return (dictionary, selectedColumns.ToImmutableArray());
         }
 
-        private static string BuildSql(FetchRecordsInput input, IDictionary<string, NpgsqlDbColumn> columnSchema, NpgsqlParameterCollection parameters)
+        private static string BuildSql(FetchRecordsInput input, IReadOnlyDictionary<string, NpgsqlDbColumn> columnSchema, NpgsqlParameterCollection parameters)
         {
             var sb = new StringBuilder();
 
@@ -103,8 +125,8 @@ namespace GiantTeam.WorkspaceInteraction.Services
             sb.Append(BuildOrderBy(input.Columns) is string orderBy ? orderBy + "\n" : string.Empty);
             sb.Append($"LIMIT @Take OFFSET @Skip;");
 
-            parameters.AddWithValue("Take", input.Take ?? 100);
             parameters.AddWithValue("Skip", input.Skip ?? 0);
+            parameters.AddWithValue("Take", input.Take ?? 100);
 
             return sb.ToString();
         }
@@ -114,7 +136,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
             if (columns?.Any() == true)
             {
                 return $"SELECT {columns
-                    .Where(c => c.Visible != false)
+                    .Where(c => c.IsVisible())
                     .OrderBy(c => c.Position)
                     .ThenBy(c => c.Name)
                     .Select(c => PgQuote.Identifier(c.Name))
@@ -126,7 +148,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
             }
         }
 
-        private static string? BuildWhere(List<FetchRecordsInputRangeFilter>? filters, IDictionary<string, NpgsqlDbColumn> columnSchema, NpgsqlParameterCollection parameters)
+        private static string? BuildWhere(List<FetchRecordsInputRangeFilter>? filters, IReadOnlyDictionary<string, NpgsqlDbColumn> columnSchema, NpgsqlParameterCollection parameters)
         {
             if (filters?.Any() == true)
             {
@@ -140,7 +162,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
             }
         }
 
-        private static string BuildWhereFilter(FetchRecordsInputFilter filter, IDictionary<string, NpgsqlDbColumn> columnSchema, NpgsqlParameterCollection parameters)
+        private static string BuildWhereFilter(FetchRecordsInputFilter filter, IReadOnlyDictionary<string, NpgsqlDbColumn> columnSchema, NpgsqlParameterCollection parameters)
         {
             var dataTypeName = columnSchema[filter.Column].DataTypeName;
 
