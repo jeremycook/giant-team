@@ -77,16 +77,14 @@ export function createConfig(): VitePluginConfig {
       ['overflow-ellipsis', { 'text-overflow': 'ellipsis' }],
     ],
     shortcuts: [
-      [/^paint-(.*)$/, ([, c]) => `bg-${c} color-white border-${c}-600`],
+      [/^paint-([a-z]*)$/, ([, c, n]) => `bg-${c} color-white border-${c}-600`],
+      [/^paint-([a-z]+)-([0-9]{3})$/, ([, c, n]) => `bg-${c + (n ? ('-' + n) : '')} color-white border-${c}-${n ? (parseInt(n) + 100) : '600'}`],
       {
         'p-button': 'px py-2',
 
-        // 'bg-disabled': 'bg-gray',
-        // 'paint-disabled': 'bg-gray-600 color-white border-gray-700',
+        'button': 'p-button border paint-primary rounded-1 shadow active:shadow-inset active:bg-primary-400',
 
-        'button': 'p-button border paint-primary rounded-1 shadow',
-
-        'card': 'pxy bg-white border rounded-b shadow mt--1',
+        'card': 'pxy bg-white border rounded-b shadow',
 
         'form-grid': 'grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-2',
 

@@ -1,9 +1,9 @@
 import { createStore, unwrap } from 'solid-js/store';
-import { batch, createEffect, createResource, createSignal, Show } from 'solid-js';
+import { batch, createEffect, createResource, Show } from 'solid-js';
 import { FetchRecordsInput, Sort } from '../../../../api/GiantTeam';
 import { postFetchRecords } from '../../../../api/GiantTeam.Data.Api';
 import { titleSetter } from '../../../../title';
-import { Data, Meta, MetaColumn } from '../../../../widgets/SmartTable';
+import { Data, DataRecord, Meta, MetaColumn } from '../../../../widgets/SmartTable';
 import SmartTable from '../../../../widgets/SmartTable';
 import { Portal } from 'solid-js/web';
 import { routeValues } from '../../../../utils/routing';
@@ -57,7 +57,7 @@ export default function WorkspacePage() {
             )
             .reduce((agg, arr) => [...agg, ...arr], []);
 
-        return debug({
+        return {
             database: routeValues.params.workspace,
             schema: routeValues.params.schema,
             table: routeValues.params.table,
@@ -65,7 +65,7 @@ export default function WorkspacePage() {
             filters: filters,
             // skip: params.skip,
             // take: params.take
-        }, 'postFetchRecords input');
+        };
 
     }, async (input) => {
 
@@ -76,9 +76,31 @@ export default function WorkspacePage() {
 
     const ok = () => resource()?.ok == true;
     const message = () => resource()?.message || null;
-    const [activeRecord, activeRecordSetter] = createSignal<any[] | null>(null);
+    // const [selectedRecordIndex, setSelectedRecordIndex] = createSignal<number>();
+    // const activeColumnRecord = () => typeof selectedRecordIndex() === 'number' ?
+    //     [...data.columns.map((name, i) => ({
+    //         column: meta.columns[name],
+    //         value: data.records[selectedRecordIndex()!][i],
+    //     }))]
+    //         .filter(c => c.column.visible)
+    //         .sort((a, b) => a.column.position - b.column.position || a.column.name.localeCompare(b.column.name)) :
+    //     undefined;
+    // const recordDialogInfo = createMutable({ x: 0, y: 0, indexes: [] as number[] });
 
-    const toggleActiveRecord = (record: any[]) => record === activeRecord() ? activeRecordSetter(null) : activeRecordSetter(record);
+    // const toggleActiveRecord = (recordIndex?: number, e?: MouseEvent) => {
+    //     if (typeof recordIndex === 'number' && recordIndex !== selectedRecordIndex()) {
+    //         if (e) {
+    //             const target = e.currentTarget as HTMLButtonElement;
+    //             const position = getElementPosition(target);
+    //             recordDialogInfo.x = position.x + target.clientWidth;
+    //             recordDialogInfo.y = position.y + target.clientHeight;
+    //         }
+    //         setSelectedRecordIndex(recordIndex);
+    //     }
+    //     else {
+    //         setSelectedRecordIndex(undefined);
+    //     }
+    // };
 
     createEffect(() => {
         batch(() => {
@@ -89,8 +111,7 @@ export default function WorkspacePage() {
 
                 const returnedColumns: Record<string, MetaColumn> = {};
                 columns.forEach((c, i) => {
-                    // Keep the reference if it exists
-                    let metaColumn = meta.columns[c.name];
+                    let metaColumn = unwrap(meta.columns[c.name]);
 
                     if (metaColumn) {
                         metaColumn.dataType = c.dataType;
@@ -118,12 +139,20 @@ export default function WorkspacePage() {
             if (records) {
                 // TODO: Diff based on primary key or unique columns if known?
                 setData('records', []);
-                setData('records', records);
+                const dataRecords = records
+                    .map(r => ({
+                        selected: false,
+                        record: r!,
+                    }) as DataRecord);
+                setData('records', dataRecords);
             }
         });
     });
 
     createEffect(() => titleSetter(routeValues.params.table ?? 'Table'));
+
+    // REMOVE
+    // setTimeout(() => data.records.length > 0 ? toggleActiveRecord(1) : null, 500);
 
     return (
         <section class='pr-1'>
@@ -133,14 +162,11 @@ export default function WorkspacePage() {
                     Loading…
                 </Portal>
             </Show>
+
             <Show when={message()}>
                 <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
                     {message()}
                 </p>
-            </Show>
-
-            <Show when={activeRecord()}>
-                {JSON.stringify(activeRecord())}
             </Show>
 
             <Show when={data.columns.length > 0}>
@@ -149,18 +175,42 @@ export default function WorkspacePage() {
                     data={data}
                     meta={meta}
                     setMeta={setMeta}
-                    headLeader={() => <th></th>}
-                    rowLeader={(record, row) => <td class='p-0'>
-                        <div class='w-100% h-100%'>
-                            <button class='block w-100% h-100%' onclick={() => toggleActiveRecord(record!)}>
-                                {row() + 1}
-                            </button>
-                        </div>
-                    </td>}
+                    onClickRecordSelector={(e, i) => setData('records', i, 'selected', s => !s)}
+                // headLeader={() => <th></th>}
+                // rowLeader={(_, recordIndex) => <td class='h-1px p-0 b-0'>
+                //     <button type='button' class='flex justify-end items-center w-100% h-100% p-1px border paint-primary ' onclick={e => {
+                //         recordDialogInfo.x = e.pageX + 20;
+                //         recordDialogInfo.y = e.pageY;
+                //         toggleActiveRecord(recordIndex(), e);
+                //     }}>
+                //         {recordIndex() + 1}
+                //     </button>
+                // </td>}
                 ></SmartTable>
 
             </Show>
 
-        </section>
+            {/* <Show when={typeof selectedRecordIndex() === 'number'}>
+
+                <Dialog
+                    title={'Active Record'}
+                    onDismiss={() => toggleActiveRecord()}
+                    initialPosition={recordDialogInfo}>
+                    <form class='form-grid' onSubmit={e => e.preventDefault()}>
+                        <ColumnRecordFields fields={activeColumnRecord()!} />
+
+                        <div />
+                        <div>
+                            <button class='button'>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </Dialog>
+
+            </Show> */}
+
+
+        </section >
     );
 }

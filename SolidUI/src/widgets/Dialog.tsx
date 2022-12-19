@@ -1,13 +1,19 @@
-import { Accessor, createEffect, createSignal, JSX, onCleanup, onMount, ParentProps } from "solid-js";
+import { createEffect, createSignal, JSX, onCleanup, onMount, ParentProps } from "solid-js";
 import { Portal } from "solid-js/web";
 import { constrainToViewport } from "../utils/htmlHelpers";
 import { DismissIcon, MoveIcon } from "../utils/icons";
+
+export enum DialogAnchor {
+    topLeft,
+    topCenter,
+}
 
 export interface DialogProps {
     title: string,
     onDismiss: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>
     mount?: Node,
-    initialPosition?: Accessor<{ left: number, top: number }>
+    initialPosition?: { x: number, y: number },
+    anchor?: DialogAnchor,
 }
 
 export default function Dialog(props: DialogProps & ParentProps) {
@@ -20,7 +26,7 @@ export default function Dialog(props: DialogProps & ParentProps) {
 
     let mouseDown = false;
     let offsetLeft = 0, offsetTop = 0;
-    const onStartMove = function (this: HTMLButtonElement, mouse: MouseEvent): void {
+    const onmousedown = function (this: HTMLButtonElement, mouse: MouseEvent): void {
         offsetLeft = ref.offsetLeft - mouse.clientX;
         offsetTop = ref.offsetTop - mouse.clientY;
         mouseDown = true;
@@ -47,7 +53,7 @@ export default function Dialog(props: DialogProps & ParentProps) {
         }
     };
     onMount(() => {
-        moveRef.addEventListener('mousedown', onStartMove, true);
+        moveRef.addEventListener('mousedown', onmousedown, true);
         document.addEventListener('mouseup', onmouseup, true);
         document.addEventListener('mousemove', onmousemove, true);
 
@@ -56,13 +62,28 @@ export default function Dialog(props: DialogProps & ParentProps) {
 
     createEffect(() => {
         mounted();
-        const initialPosition = props.initialPosition?.();
+        const initialPosition = props.initialPosition;
 
         if (initialPosition) {
+            const offsetLeft =
+                props.anchor === DialogAnchor.topCenter ? -ref.clientWidth / 2 :
+                    props.anchor === DialogAnchor.topLeft ? 0 :
+                        0;
             const position = constrainToViewport({
-                // Center horizontally
-                left: initialPosition.left - (ref.clientWidth / 2),
-                top: initialPosition.top,
+                // Mind the anchor
+                left: initialPosition.x + offsetLeft,
+                top: initialPosition.y,
+                width: ref.clientWidth,
+                height: ref.clientHeight,
+            });
+
+            setLeft(position.left);
+            setTop(position.top);
+        }
+        else {
+            const position = constrainToViewport({
+                left: 0,
+                top: 0,
                 width: ref.clientWidth,
                 height: ref.clientHeight,
             });
@@ -79,8 +100,8 @@ export default function Dialog(props: DialogProps & ParentProps) {
 
     return (
         <Portal mount={props.mount ?? document.body}>
-            <div ref={ref} class='card p-2 absolute min-w-300px' style={{ left: left() + 'px', top: top() + 'px' }} role='dialog'>
-                <div class='flex gap-1 mb'>
+            <div ref={ref} class='card p-0 absolute min-w-300px max-w-100% max-h-100%' style={{ left: left() + 'px', top: top() + 'px' }} role='dialog'>
+                <div class='flex gap-1 mb px-2 py-1 paint-gray-100 color-gray-600'>
                     <button ref={moveRef} class='cursor-grab invisible md:visible' aria-hidden>
                         <MoveIcon />
                     </button>
@@ -89,7 +110,9 @@ export default function Dialog(props: DialogProps & ParentProps) {
                         <DismissIcon />
                     </button>
                 </div>
-                {props.children}
+                <div class='p-2'>
+                    {props.children}
+                </div>
             </div>
         </Portal>
     )

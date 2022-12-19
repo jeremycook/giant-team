@@ -40,15 +40,17 @@ export function ColumnDialog(props: ColumnDialogProps) {
     return (
         <div>
             <div class='grid grid-cols-2 gap-2 mb items-center'>
-                <div class='text-center'>Position</div>
+            <div class='text-center'>Sorting</div>
                 <div>
-                    <div class='flex-inline items-center border p-1px children:p-1'>
-                        <button type='button' onclick={() => moveTo(column().position - 1)} class='border'>
-                            <LeftIcon /> <span class='sr-only'>Move Left</span>
+                    <div class='flex-inline items-center border children:p-1 children:not-first:ml-1'>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Asc)} class={(column().sort === Sort.Asc ? 'paint-primary border shadow shadow-inset' : '')}>
+                            <SortAscIcon /> <span class='sr-only'>Sort Ascending</span>
                         </button>
-                        <input value={column().position} onchange={e => moveTo(parseInt((e.target as HTMLInputElement).value))} type='number' min='1' max={Object.keys(meta.columns).length} class='w-3em text-center border-0' />
-                        <button type='button' onclick={() => moveTo(column().position + 1)} class='border'>
-                            <RightIcon /> <span class='sr-only'>Move Right</span>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Desc)} class={(column().sort === Sort.Desc ? 'paint-primary border shadow shadow-inset' : '')}>
+                            <SortDescIcon /> <span class='sr-only'>Sort Descending</span>
+                        </button>
+                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Unsorted)} class={(column().sort === Sort.Unsorted ? 'paint-disabled border shadow shadow-inset' : '')}>
+                            <OffIcon /> <span class='sr-only'>Disable Sorting</span>
                         </button>
                     </div>
                 </div>
@@ -63,17 +65,15 @@ export function ColumnDialog(props: ColumnDialogProps) {
                         </button>
                     </div>
                 </div>
-                <div class='text-center'>Sorting</div>
+                <div class='text-center'>Position</div>
                 <div>
-                    <div class='flex-inline items-center border children:p-1 children:not-first:ml-1'>
-                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Asc)} class={(column().sort === Sort.Asc ? 'paint-primary border shadow shadow-inset' : '')}>
-                            <SortAscIcon /> <span class='sr-only'>Sort Ascending</span>
+                    <div class='flex-inline items-center border p-1px children:p-1'>
+                        <button type='button' onclick={() => moveTo(column().position - 1)} class='border'>
+                            <LeftIcon /> <span class='sr-only'>Move Left</span>
                         </button>
-                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Desc)} class={(column().sort === Sort.Desc ? 'paint-primary border shadow shadow-inset' : '')}>
-                            <SortDescIcon /> <span class='sr-only'>Sort Descending</span>
-                        </button>
-                        <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Unsorted)} class={(column().sort === Sort.Unsorted ? 'paint-disabled border shadow shadow-inset' : '')}>
-                            <OffIcon /> <span class='sr-only'>Disable Sorting</span>
+                        <input value={column().position} onchange={e => moveTo(parseInt((e.target as HTMLInputElement).value))} type='number' min='1' max={Object.keys(meta.columns).length} class='w-3em text-center border-0' />
+                        <button type='button' onclick={() => moveTo(column().position + 1)} class='border'>
+                            <RightIcon /> <span class='sr-only'>Move Right</span>
                         </button>
                     </div>
                 </div>

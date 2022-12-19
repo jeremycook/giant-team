@@ -2,13 +2,19 @@ import { Accessor, createSignal, For, Show } from 'solid-js';
 import { createMutable, SetStoreFunction, Store } from 'solid-js/store';
 import { JSX } from 'solid-js/web/types/jsx';
 import { FetchRecordsInputRangeFilter, Sort } from '../api/GiantTeam';
-import { FilterIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
+import { getElementPosition } from '../utils/htmlHelpers';
+import { EditOutlineIcon, FilterIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
 import { ColumnDialog } from './ColumnDialog';
-import Dialog from './Dialog';
+import Dialog, { DialogAnchor } from './Dialog';
 
 export interface Data {
     columns: string[];
-    records: any[][];
+    records: DataRecord[];
+}
+
+export interface DataRecord {
+    selected: boolean;
+    record: any[];
 }
 
 export interface Meta {
@@ -34,12 +40,14 @@ export default function Table({
     setMeta,
     headLeader,
     rowLeader,
+    onClickRecordSelector: onClickRow,
 }: {
     data: Store<Data> | Data,
     meta: Store<Meta> | Meta,
     setMeta: SetStoreFunction<Meta>,
     headLeader?: () => JSX.Element,
-    rowLeader?: (record: any[], rowIndex: Accessor<number>) => JSX.Element,
+    rowLeader?: (recordIndex: Accessor<number>) => JSX.Element,
+    onClickRecordSelector?: (event: Event, recordIndex: number) => void,
 }) {
 
     const columns = () => [
@@ -51,10 +59,19 @@ export default function Table({
 
     const hiddenColumns = () => columns().filter(c => !c.visible);
 
-    const { activeColumn, toggleActiveColumn } = (() => {
+    const columnDialogPosition = createMutable({ x: 0, y: 0 });
+
+    const { activeColumn, toggleActiveColumn: onClickColumn } = (() => {
         const [activeColumnName, set] = createSignal<string>();
-        const toggleActiveColumnName = (columnName?: string) => {
-            if (activeColumnName() !== columnName) {
+        const toggleActiveColumn = (columnName?: string, e?: MouseEvent) => {
+            if (columnName && activeColumnName() !== columnName) {
+
+                if (e) {
+                    columnDialogPosition.x = e.pageX;
+                    const target = e.currentTarget as HTMLElement;
+                    columnDialogPosition.y = getElementPosition(target).y + target.clientHeight;
+                }
+
                 set(columnName);
             }
             else {
@@ -62,10 +79,9 @@ export default function Table({
             }
         }
         const activeColumn = () => activeColumnName() ? meta.columns[activeColumnName()!] : null;
-        return { activeColumn, toggleActiveColumn: toggleActiveColumnName };
+        return { activeColumn, toggleActiveColumn };
     })();
 
-    const columnDialogPosition = createMutable({ left: 0, top: 0 });
 
     return (
         <div>
@@ -79,7 +95,7 @@ export default function Table({
                         <For each={columns()}>{(column) =>
                             <Show when={!column.visible}>
                                 <button type='button' class='border'
-                                    onclick={(e) => { columnDialogPosition.left = e.pageX; columnDialogPosition.top = e.pageY; toggleActiveColumn(column.name); }}>
+                                    onclick={e => onClickColumn(column.name, e)}>
                                     {column.name}
                                     {column.sort === Sort.Asc ? <SortAscIcon /> : null}
                                     {column.sort === Sort.Desc ? <SortDescIcon /> : null}
@@ -95,30 +111,35 @@ export default function Table({
                 <thead>
                     <tr>
                         {headLeader?.()}
+                        {typeof onClickRow === 'function' && <th></th>}
                         <For each={columns()}>{(column) =>
                             <Show when={column.visible}>
-                                <th class='p-0'>
-                                    <button type='button' class='block w-100% p-1 border paint-primary'
-                                        onclick={(e) => { columnDialogPosition.left = e.pageX; columnDialogPosition.top = e.pageY; toggleActiveColumn(column.name); }}>
-                                        <div>
-                                            {column.sort === Sort.Asc ? <SortAscIcon /> : null}
-                                            {column.sort === Sort.Desc ? <SortDescIcon /> : null}
-                                            {column.filters.length ? <FilterIcon /> : null}
-                                        </div>
-                                        {column.name}
-                                    </button>
+                                <th role='button' class='b'
+                                    onclick={(e) => onClickColumn(column.name, e)}>
+                                    <div>
+                                        {column.sort === Sort.Asc ? <SortAscIcon /> : null}
+                                        {column.sort === Sort.Desc ? <SortDescIcon /> : null}
+                                        {column.filters.length ? <FilterIcon /> : null}
+                                    </div>
+                                    <strong>{column.name}</strong>
                                 </th>
                             </Show>
                         }</For>
                     </tr>
                 </thead>
                 <tbody>
-                    <For each={data.records}>{(record, rowIndex) =>
+                    <For each={data.records}>{(record, recordIndex) =>
                         <tr>
-                            {rowLeader?.(record, rowIndex)}
+                            {rowLeader?.(recordIndex)}
+                            {typeof onClickRow === 'function' &&
+                                <td role='button' class={'b ' + (record.selected ? 'paint-primary' : '')}
+                                    onclick={e => onClickRow(e, recordIndex())}>
+                                    {recordIndex() + 1}
+                                </td>
+                            }
                             <For each={columns()}>{(column) =>
                                 <Show when={column.visible}>
-                                    <td class='p-0'><div class='p-1 overflow-hidden max-w-200px whitespace-nowrap overflow-ellipsis'>{record[column.columnIndex]}</div></td>
+                                    <td class='p-0'><div class='p-1 overflow-hidden max-w-200px whitespace-nowrap overflow-ellipsis'>{record.record[column.columnIndex]}</div></td>
                                 </Show>
                             }</For>
                         </tr>
@@ -130,8 +151,9 @@ export default function Table({
 
                 <Dialog
                     title={activeColumn()!.name}
-                    onDismiss={() => toggleActiveColumn(undefined)}
-                    initialPosition={() => ({ left: columnDialogPosition.left, top: columnDialogPosition.top + 20 })}>
+                    onDismiss={() => onClickColumn()}
+                    initialPosition={columnDialogPosition}
+                    anchor={DialogAnchor.topCenter}>
                     <ColumnDialog
                         meta={meta}
                         setMeta={setMeta}
