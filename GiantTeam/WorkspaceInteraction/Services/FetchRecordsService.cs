@@ -65,7 +65,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
                 for (int i = 0; i < selectedColumns.Count; i++)
                 {
                     object? value = reader[i];
-                    record[i] = value;
+                    record[i] = value == DBNull.Value ? null : value;
                 }
                 output.Records.Add(record);
             }
