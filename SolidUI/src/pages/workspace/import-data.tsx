@@ -1,13 +1,11 @@
 import { useNavigate, useParams } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postImportData } from '../../api/GiantTeam.Data.Api';
-import { authorize } from '../../utils/session';
 import { setTitle } from '../../utils/page';
 import { createId, stringifyBlob } from '../../helpers/htmlHelpers';
 import { WarningIcon } from '../../helpers/icons';
 
 export default function ImportDataPage() {
-  authorize();
   setTitle('Import Data');
 
   const navigate = useNavigate();
