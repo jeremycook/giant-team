@@ -1,16 +1,15 @@
 export const createUrl = (url: string, params?: Record<string, string>) => {
-    if (params) {
-        const search = new URLSearchParams(params);
-        return new URL(url + '?' + search, location.href).toString();
+    const isRelative = !/^([\sA-Z]*:|\s*\/\/)/i.test(url);
+    if (isRelative) {
+        const search = params ?  new URLSearchParams(params).toString() : '';
+        if (search.length > 0) {
+            return encodeURI(url) + '?' + search;
+        }
+        else {
+            return encodeURI(url);
+        }
     }
     else {
-        return new URL(url, location.href).toString();
+        throw `The url "${url}" must be relative.`;
     }
-}
-
-/** Returns the matching apram from location.search. */
-export const getParam = (name: string) => {
-    const params = new URLSearchParams(location.search);
-    const value = params.get(name);
-    return value;
 }

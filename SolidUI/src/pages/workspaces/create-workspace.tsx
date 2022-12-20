@@ -3,9 +3,12 @@ import { createId } from '../../utils/htmlHelpers';
 import { postCreateWorkspace } from '../../api/GiantTeam.Data.Api';
 import { session } from '../../session';
 import { titleSetter } from '../../title';
+import { useNavigate } from '@solidjs/router';
 
 export default function CreateWorkspacePage() {
   titleSetter('Create a Workspace');
+
+  const navigate = useNavigate();
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal('');
@@ -23,7 +26,7 @@ export default function CreateWorkspacePage() {
 
     if (output.ok) {
       messageSetter('Workspace created! Taking you to it now…');
-      location.assign('/workspace/' + output.data!.workspaceName);
+      navigate('/workspace/' + output.data!.workspaceName);
     }
     else {
       messageSetter(output.message);

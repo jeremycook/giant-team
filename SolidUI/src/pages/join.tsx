@@ -1,3 +1,4 @@
+import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postRegister } from '../api/GiantTeam.Authentication.Api';
 import { title, titleSetter } from '../title';
@@ -6,6 +7,8 @@ import { createUrl } from '../utils/urlHelpers';
 
 export default function Register() {
   titleSetter('Join');
+
+  const navigate = useNavigate();
 
   // Input
   const [name, nameSetter] = createSignal('');
@@ -45,7 +48,7 @@ export default function Register() {
     if (output.ok) {
       messageSetter('Success! Redirecting to the login page…');
       // TODO: Redirect to page that triggered login flow
-      location.replace(createUrl('/login', { username: username() }));
+      navigate(createUrl('/login', { username: username() }));
     } else {
       messageSetter(output.message);
     }
