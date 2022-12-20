@@ -13,7 +13,7 @@ export default function WorkspacePage() {
   const message = () => model()?.message || null;
   const data = () => model()?.data;
 
-  createEffect(() => titleSetter(model()?.data?.workspaceName ?? 'Workspace'));
+  createEffect(() => titleSetter(data()?.name ?? 'Workspace'));
 
   return (
     <section>
@@ -54,7 +54,7 @@ export default function WorkspacePage() {
             )}</For>
 
             <div>
-              <span>Owner: {data()!.workspaceOwner}</span>
+              <span>Owner: {data()!.owner}</span>
             </div>
           </div>
 

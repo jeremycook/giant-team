@@ -77,11 +77,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
             });
 
             // This will fail if the session user is not a member of the database owner role
-            using var workspaceConnection = await connectionService.OpenInfoConnectionAsync(workspaceInfo.WorkspaceOwner);
+            using var workspaceConnection = await connectionService.OpenInfoConnectionAsync(workspaceInfo.Owner);
 
             // Delete the database
             var droppedDatabases = await workspaceConnection.ExecuteAsync($"""
-DROP DATABASE IF EXISTS {PgQuote.Identifier(workspaceInfo.WorkspaceName)};
+DROP DATABASE IF EXISTS {PgQuote.Identifier(workspaceInfo.Name)};
 """);
 
             return new(DeleteWorkspaceStatus.Success);

@@ -13,16 +13,16 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
     public class FetchWorkspaceOutput
     {
-        public string WorkspaceName { get; set; } = null!;
-        public string WorkspaceOwner { get; set; } = null!;
-        public List<FetchWorkspaceSchema> Schemas { get; } = new();
+        public string Name { get; set; } = null!;
+        public string Owner { get; set; } = null!;
+        public FetchWorkspaceSchema[] Schemas { get; set; } = null!;
     }
 
     public class FetchWorkspaceSchema
     {
         public string Name { get; set; } = null!;
         public string Owner { get; set; } = null!;
-        public List<FetchWorkspaceTable> Tables { get; set; } = new();
+        public FetchWorkspaceTable[] Tables { get; set; } = null!;
     }
 
     public class FetchWorkspaceTable

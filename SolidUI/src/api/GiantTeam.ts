@@ -101,8 +101,8 @@ export interface FetchWorkspaceInput {
 }
 
 export interface FetchWorkspaceOutput {
-    workspaceName: string;
-    workspaceOwner: string;
+    name: string;
+    owner: string;
     schemas: FetchWorkspaceSchema[];
 }
 

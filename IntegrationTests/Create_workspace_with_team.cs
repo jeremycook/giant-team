@@ -89,8 +89,8 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
             var fetchWorkspaceOutput = await fetchWorkspaceResponse.Content.ReadFromJsonAsync<FetchWorkspaceOutput>();
 
             Assert.NotNull(fetchWorkspaceOutput);
-            Assert.Equal(workspaceName, fetchWorkspaceOutput.WorkspaceName);
-            Assert.Equal(workspaceOwner, fetchWorkspaceOutput.WorkspaceOwner);
+            Assert.Equal(workspaceName, fetchWorkspaceOutput.Name);
+            Assert.Equal(workspaceOwner, fetchWorkspaceOutput.Owner);
         }
     }
 }
