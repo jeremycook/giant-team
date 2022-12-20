@@ -1,5 +1,5 @@
 import { createSignal, Show } from 'solid-js';
-import { setTitle, title } from '../title';
+import { setTitle, title } from '../utils/title';
 
 export default function AccessDeniedPage() {
   setTitle('Access Denied');

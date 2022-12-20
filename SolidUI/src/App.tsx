@@ -1,7 +1,7 @@
 import { A } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
 import AppRoutes from './routes';
-import { session, isAuthenticated } from './session';
+import { session, isAuthenticated } from './utils/session';
 import { HomeIcon, AlertOutline, PersonOutlineIcon, PersonIcon, SearchIcon, SparklesIcon, SparklesOutlineIcon, HomeOutlineIcon, MenuOutline, MenuIcon } from './helpers/icons';
 
 const App: Component = () => {

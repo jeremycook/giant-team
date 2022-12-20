@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "@solidjs/router";
 import { Show } from "solid-js";
-import { isAuthenticated } from "../session";
+import { isAuthenticated } from "../utils/session";
 
 export const Protected = () => {
     const location = useLocation();

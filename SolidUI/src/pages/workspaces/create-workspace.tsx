@@ -1,8 +1,8 @@
 import { createSignal, Show } from 'solid-js';
 import { createId } from '../../helpers/htmlHelpers';
 import { postCreateWorkspace } from '../../api/GiantTeam.Data.Api';
-import { session } from '../../session';
-import { setTitle } from '../../title';
+import { session } from '../../utils/session';
+import { setTitle } from '../../utils/title';
 import { useNavigate } from '@solidjs/router';
 
 export default function CreateWorkspacePage() {

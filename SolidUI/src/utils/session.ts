@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from '@solidjs/router';
 import { createStore } from 'solid-js/store';
-import { postLogout, postSession, SessionOutput, SessionStatus } from './api/GiantTeam.Authentication.Api';
+import { postLogout, postSession, SessionOutput, SessionStatus } from '../api/GiantTeam.Authentication.Api';
 
 /** Keep the session alive */
 setInterval(() => isAuthenticated() && refreshSession(), 30 * 60 * 1000);

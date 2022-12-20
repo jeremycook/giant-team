@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postImportData } from '../../api/GiantTeam.Data.Api';
-import { authorize } from '../../session';
-import { setTitle } from '../../title';
+import { authorize } from '../../utils/session';
+import { setTitle } from '../../utils/title';
 import { createId, stringifyBlob } from '../../helpers/htmlHelpers';
 import { WarningIcon } from '../../helpers/icons';
 

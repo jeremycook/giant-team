@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router';
-import { authorize, refreshSession } from '../session';
+import { authorize, refreshSession } from '../utils/session';
 
 export enum HttpStatusCode {
     ConnectionFailure = -1,

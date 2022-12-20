@@ -10,7 +10,7 @@ import './style/overrides.css';
 import './style/theme.css';
 // import './index.css';
 import App from './App';
-import { refreshSession, session } from './session';
+import { refreshSession, session } from './utils/session';
 
 if (session.status === -1) {
   // Refresh the session before first render

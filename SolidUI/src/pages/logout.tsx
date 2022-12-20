@@ -1,7 +1,7 @@
 import { Show } from 'solid-js';
-import { logout, isAuthenticated } from '../session';
+import { logout, isAuthenticated } from '../utils/session';
 import { A } from '@solidjs/router';
-import { setTitle, title } from '../title';
+import { setTitle, title } from '../utils/title';
 
 export default function LogoutPage() {
   setTitle('Logout');

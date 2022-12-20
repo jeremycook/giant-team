@@ -1,4 +1,4 @@
-import { setTitle, title } from '../title';
+import { setTitle, title } from '../utils/title';
 
 export default function HomePage() {
   setTitle('Welcome!');

@@ -1,8 +1,8 @@
 import { A, useLocation, useNavigate } from '@solidjs/router';
 import { createSignal, Show } from 'solid-js';
 import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
-import { isAuthenticated, refreshSession, session } from '../session';
-import { setTitle, title } from '../title';
+import { isAuthenticated, refreshSession, session } from '../utils/session';
+import { setTitle, title } from '../utils/title';
 import { createId } from '../helpers/htmlHelpers';
 import { InfoIcon, WarningIcon } from '../helpers/icons';
 
