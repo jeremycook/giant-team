@@ -1,13 +1,25 @@
-import { A, Outlet, useRouteData } from '@solidjs/router';
-import { createEffect, For, Resource, Show } from 'solid-js';
+import { A, Outlet, RouteDataFuncArgs, useRouteData } from '@solidjs/router';
+import { createEffect, createResource, For, Show } from 'solid-js';
+import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api';
 import { title, setTitle } from '../../title';
 import { createUrl } from '../../utils/urlHelpers';
-import { WorkspacePageModel } from './workspace.data';
+
+const fetchWorkspace = async (workspaceName: string) => {
+  const output = await postFetchWorkspace({
+      workspaceName
+  });
+  return output;
+};
+
+export const WorkspacePageData = ({ params }: RouteDataFuncArgs) => {
+  const [workspace] = createResource(() => params.workspace, fetchWorkspace);
+  return workspace;
+};
 
 export default function WorkspacePage() {
   setTitle('Workspace');
 
-  const model = useRouteData<() => Resource<WorkspacePageModel>>();
+  const model = useRouteData<typeof WorkspacePageData>();
 
   const ok = () => model()?.ok == true;
   const message = () => model()?.message || null;
