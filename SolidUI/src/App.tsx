@@ -2,7 +2,7 @@ import { A } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
 import AppRoutes from './routes';
 import { session, isAuthenticated } from './session';
-import { HomeIcon, NotificationOutline, PersonOutlineIcon, PersonIcon, SearchIcon, SparklesIcon, SparklesOutlineIcon, HomeOutlineIcon, MenuOutline, MenuIcon } from './utils/icons';
+import { HomeIcon, AlertOutline, PersonOutlineIcon, PersonIcon, SearchIcon, SparklesIcon, SparklesOutlineIcon, HomeOutlineIcon, MenuOutline, MenuIcon } from './utils/icons';
 
 const App: Component = () => {
   return (
@@ -74,7 +74,7 @@ const App: Component = () => {
           <div class='site-nav-group flex md:mr-auto'>
 
             <A href='/notifications'>
-              <NotificationOutline />
+              <AlertOutline />
               <span class='md:sr-only'> Notifications</span>
             </A>
             <div class='dropdown'>

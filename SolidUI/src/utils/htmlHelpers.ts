@@ -1,5 +1,6 @@
 import { createUniqueId } from 'solid-js';
 
+/** Calculates a position that is within the viewport. */
 export const constrainToViewport = ({ left, top, width, height }: { left: number; top: number; width: number; height: number; }) => {
 
     const minLeft = visualViewport?.pageLeft ?? window.scrollX;
@@ -25,7 +26,7 @@ export const constrainToViewport = ({ left, top, width, height }: { left: number
 /** Return a string with a random but fixed prefix followed by the provided suffix. */
 export const createId = ((prefix) => (suffix: string) => prefix ? prefix + '_' + suffix : suffix)(createUniqueId());
 
-/** Convert a file to an base64 encoded string */
+/** Convert a file to a base64 encoded string */
 export const stringifyBlob = async (file: Blob): Promise<string> => {
     return await new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -39,26 +40,20 @@ export const stringifyBlob = async (file: Blob): Promise<string> => {
     });
 }
 
-// helper function to get an element's exact position
+/** Get and elements position, compensating for offset parents. */
 export function getElementPosition(element: HTMLElement) {
-    var xPosition = 0;
-    var yPosition = 0;
-
-    // console.log('start', element);
-    // while (element?.namespaceURI === 'http://www.w3.org/2000/svg') {
-    //     element = (element.parentNode || element.host as HTMLElement;
-    // }
-    // console.log('begin', element);
+    let left = 0;
+    let top = 0;
 
     while (typeof element?.offsetLeft === 'number') {
-
-        xPosition += (element.offsetLeft + element.clientLeft - element.scrollLeft);
-        yPosition += (element.offsetTop + element.clientTop - element.scrollTop);
+        left += (element.offsetLeft + element.clientLeft - element.scrollLeft);
+        top += (element.offsetTop + element.clientTop - element.scrollTop);
 
         element = element.offsetParent as HTMLElement;
     }
+
     return {
-        x: xPosition,
-        y: yPosition
+        left: left,
+        top: top
     };
 }

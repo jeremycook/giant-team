@@ -69,7 +69,7 @@ export default function Table({
                 if (e) {
                     columnDialogPosition.x = e.pageX;
                     const target = e.currentTarget as HTMLElement;
-                    columnDialogPosition.y = getElementPosition(target).y + target.clientHeight;
+                    columnDialogPosition.y = getElementPosition(target).top + target.clientHeight;
                 }
 
                 set(columnName);
