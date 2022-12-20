@@ -1,8 +1,8 @@
 import { createSignal, Show } from 'solid-js';
-import { titleSetter } from '../title';
+import { setTitle, title } from '../title';
 
-export default function Login() {
-  titleSetter('Access Denied');
+export default function AccessDeniedPage() {
+  setTitle('Access Denied');
 
   const [ok] = createSignal(false);
   const [message] = createSignal('Your user account does not have permission access the requested resource.');
@@ -12,7 +12,7 @@ export default function Login() {
   return (
     <section class='card md:w-md md:mx-auto'>
 
-      <h1>Access Denied</h1>
+      <h1>{title()}</h1>
 
       <Show when={message()}>
         <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>

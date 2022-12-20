@@ -2,12 +2,9 @@ import { A } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
 import AppRoutes from './routes';
 import { session, isAuthenticated } from './session';
-import { useTitle } from './title';
 import { HomeIcon, NotificationOutline, PersonOutlineIcon, PersonIcon, SearchIcon, SparklesIcon, SparklesOutlineIcon, HomeOutlineIcon, MenuOutline, MenuIcon } from './utils/icons';
 
 const App: Component = () => {
-  useTitle();
-
   return (
     <>
       <nav class='site-nav py md:grid md:grid-cols-[1fr_2fr_1fr] print:hidden bg-gray-100 b-b' role='navigation'>
@@ -88,7 +85,7 @@ const App: Component = () => {
               </button>
               <div class='dropdown-anchor' aria-labelledby='site-navbar-user-dropdown'>
                 <div class='dropdown-content stack md:position-right'>
-                  <strong class='stack-item'>Hi {session().username}!</strong>
+                  <strong class='stack-item'>Hi {session.username}!</strong>
                   <A href='/profile' class='stack-item'>My Profile</A>
                   <A href='/logout' class='stack-item'>Logout</A>
                 </div>

@@ -2,11 +2,11 @@ import { createSignal, Show } from 'solid-js';
 import { createId } from '../../utils/htmlHelpers';
 import { postCreateWorkspace } from '../../api/GiantTeam.Data.Api';
 import { session } from '../../session';
-import { titleSetter } from '../../title';
+import { setTitle } from '../../title';
 import { useNavigate } from '@solidjs/router';
 
 export default function CreateWorkspacePage() {
-  titleSetter('Create a Workspace');
+  setTitle('Create a Workspace');
 
   const navigate = useNavigate();
 
@@ -67,9 +67,9 @@ export default function CreateWorkspacePage() {
         >
           <option>Choose…</option>
           <option
-            value={session().username}
+            value={session.username}
             selected={true}
-          >{session().username}</option>
+          >{session.username}</option>
         </select>
 
         <div />

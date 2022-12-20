@@ -1,8 +1,7 @@
 import { createEffect, createSignal } from 'solid-js';
 
-export const [title, titleSetter] = createSignal('Welcome');
+export const [title, setTitle] = createSignal('Welcome');
 
-/** Define the root context for watching for document title changes. */
-export const useTitle = () => createEffect(() => {
+createEffect(() => {
     document.title = title();
 });

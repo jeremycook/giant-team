@@ -1,3 +1,4 @@
+import { RouteDataFuncArgs } from '@solidjs/router';
 import { createResource } from 'solid-js';
 import { FetchWorkspaceOutput } from '../../api/GiantTeam';
 import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api';
@@ -12,7 +13,7 @@ export const fetchWorkspace = async (workspaceName: string) => {
     return output;
 };
 
-export const WorkspacePageData = ({ params }: { params: any }) => {
+export const WorkspacePageData = ({ params }: RouteDataFuncArgs) => {
     const [workspace] = createResource(() => params.workspace, fetchWorkspace);
     return workspace;
 };

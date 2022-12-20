@@ -2,13 +2,13 @@ import { useNavigate, useParams } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postImportData } from '../../api/GiantTeam.Data.Api';
 import { authorize } from '../../session';
-import { titleSetter } from '../../title';
+import { setTitle } from '../../title';
 import { createId, stringifyBlob } from '../../utils/htmlHelpers';
 import { WarningIcon } from '../../utils/icons';
 
 export default function ImportDataPage() {
   authorize();
-  titleSetter('Import Data');
+  setTitle('Import Data');
 
   const navigate = useNavigate();
   const params = useParams();
@@ -17,7 +17,7 @@ export default function ImportDataPage() {
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal('');
 
-  createEffect(() => titleSetter(`Import Data into ${database()}`));
+  createEffect(() => setTitle(`Import Data into ${database()}`));
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();

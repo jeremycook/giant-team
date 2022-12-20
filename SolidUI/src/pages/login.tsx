@@ -2,12 +2,12 @@ import { A, useLocation, useNavigate } from '@solidjs/router';
 import { createSignal, Show } from 'solid-js';
 import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
 import { isAuthenticated, refreshSession, session } from '../session';
-import { titleSetter } from '../title';
+import { setTitle, title } from '../title';
 import { createId } from '../utils/htmlHelpers';
 import { InfoIcon, WarningIcon } from '../utils/icons';
 
-export default function Login() {
-  titleSetter('Login');
+export default function LoginPage() {
+  setTitle('Login');
 
   const location = useLocation<{ returnUrl: string | undefined }>();
   const navigate = useNavigate();
@@ -61,12 +61,12 @@ export default function Login() {
   return (
     <section class='card md:w-md md:mx-auto'>
 
-      <h1>Login</h1>
+      <h1>{title()}</h1>
 
-      <Show when={session().status === SessionStatus.Authenticated}>
+      <Show when={session.status === SessionStatus.Authenticated}>
         <p class='text-info' role='alert'>
           <InfoIcon class='animate-bounce-in' />{' '}
-          FYI: You are currently logged in as <A href='/profile'>{session().username}</A>.
+          FYI: You are currently logged in as <A href='/profile'>{session.username}</A>.
           <Show when={returnUrl()}>
             {' '}<A href={returnUrl()!} class='underline'>Click here to go back</A>.
           </Show>

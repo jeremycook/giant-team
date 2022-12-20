@@ -1,7 +1,7 @@
 import { A, useRouteData } from '@solidjs/router';
 import { createResource, Show } from 'solid-js';
 import { postFetchRecords } from '../../api/GiantTeam.Data.Api';
-import { title, titleSetter } from '../../title';
+import { title, setTitle } from '../../title';
 import Table, { TableData } from '../../widgets/Table';
 
 export function WorkspacesPageData() {
@@ -16,7 +16,7 @@ export function WorkspacesPageData() {
 }
 
 export default function WorkspacePage() {
-  titleSetter('Workspaces');
+  setTitle('Workspaces');
 
   const model = useRouteData<typeof WorkspacesPageData>();
 

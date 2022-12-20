@@ -2,14 +2,17 @@ import { createStore, unwrap } from 'solid-js/store';
 import { batch, createEffect, createResource, Show } from 'solid-js';
 import { FetchRecordsInput, Sort } from '../../../../api/GiantTeam';
 import { postFetchRecords } from '../../../../api/GiantTeam.Data.Api';
-import { titleSetter } from '../../../../title';
+import { setTitle } from '../../../../title';
 import { Data, DataRecord, Meta, MetaColumn } from '../../../../widgets/SmartTable';
 import SmartTable from '../../../../widgets/SmartTable';
 import { Portal } from 'solid-js/web';
-import { routeValues } from '../../../../utils/routing';
+import { useParams, useSearchParams } from '@solidjs/router';
 
 export default function WorkspacePage() {
-    titleSetter('Table');
+    setTitle('Table');
+
+    const params = useParams();
+    const [search] = useSearchParams();
 
     const [data, setData] = createStore<Data>({
         columns: [],
@@ -22,7 +25,7 @@ export default function WorkspacePage() {
 
     createEffect(() => {
         // Dependencies
-        routeValues.params.workspace, routeValues.params.schema, routeValues.params.table;
+        params.workspace, search.schema, search.table;
 
         setMeta({
             columns: {},
@@ -57,9 +60,9 @@ export default function WorkspacePage() {
             .reduce((agg, arr) => [...agg, ...arr], []);
 
         return {
-            database: routeValues.params.workspace,
-            schema: routeValues.params.schema,
-            table: routeValues.params.table,
+            database: params.workspace,
+            schema: search.schema,
+            table: search.table,
             columns: columns,
             filters: filters,
             // skip: params.skip,
@@ -148,7 +151,7 @@ export default function WorkspacePage() {
         });
     });
 
-    createEffect(() => titleSetter(routeValues.params.table ?? 'Table'));
+    createEffect(() => setTitle(search.table ?? 'Table'));
 
     // REMOVE
     // setTimeout(() => data.records.length > 0 ? toggleActiveRecord(1) : null, 500);

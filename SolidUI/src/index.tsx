@@ -11,11 +11,8 @@ import './style/theme.css';
 // import './index.css';
 import App from './App';
 import { refreshSession, session } from './session';
-import { refreshRouteValues } from './utils/routing';
 
-refreshRouteValues();
-
-if (session().status === -1) {
+if (session.status === -1) {
   // Refresh the session before first render
   await refreshSession();
 }

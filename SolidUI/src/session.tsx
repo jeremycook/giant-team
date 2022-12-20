@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from '@solidjs/router';
-import { createSignal } from 'solid-js';
+import { createStore } from 'solid-js/store';
 import { postLogout, postSession, SessionOutput, SessionStatus } from './api/GiantTeam.Authentication.Api';
 
 /** Keep the session alive */
@@ -9,11 +9,11 @@ export interface Session extends SessionOutput {
   status: SessionStatus | -1;
 }
 
-export const [session, setSession] = createSignal<Session>({
+export const [session, setSession] = createStore<Session>({
   status: -1
 });
 
-export const isAuthenticated = () => session().status === SessionStatus.Authenticated;
+export const isAuthenticated = () => session.status === SessionStatus.Authenticated;
 
 /** Logout from the server and refresh the session */
 export const logout = async () => {

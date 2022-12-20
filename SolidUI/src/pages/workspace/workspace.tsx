@@ -1,11 +1,11 @@
 import { A, Outlet, useRouteData } from '@solidjs/router';
 import { createEffect, For, Resource, Show } from 'solid-js';
-import { title, titleSetter } from '../../title';
+import { title, setTitle } from '../../title';
 import { createUrl } from '../../utils/urlHelpers';
 import { WorkspacePageModel } from './workspace.data';
 
 export default function WorkspacePage() {
-  titleSetter('Workspace');
+  setTitle('Workspace');
 
   const model = useRouteData<() => Resource<WorkspacePageModel>>();
 
@@ -13,7 +13,7 @@ export default function WorkspacePage() {
   const message = () => model()?.message || null;
   const data = () => model()?.data;
 
-  createEffect(() => titleSetter(data()?.name ?? 'Workspace'));
+  createEffect(() => setTitle(data()?.name ?? 'Workspace'));
 
   return (
     <section>
