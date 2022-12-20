@@ -1,5 +1,5 @@
 import { session } from "../utils/session";
-import { setTitle, title } from "../utils/title";
+import { setTitle, title } from "../utils/page";
 
 export default function ProfilePage() {
     setTitle('Welcome ' + session.username + '!');

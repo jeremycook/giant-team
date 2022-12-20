@@ -1,7 +1,7 @@
 import { A, useRouteData } from '@solidjs/router';
 import { createResource, Show } from 'solid-js';
 import { postFetchRecords } from '../../api/GiantTeam.Data.Api';
-import { title, setTitle } from '../../utils/title';
+import { title, setTitle } from '../../utils/page';
 import Table, { TableData } from '../../widgets/Table';
 
 export function WorkspacesPageData() {

@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postRegister } from '../api/GiantTeam.Authentication.Api';
-import { title, setTitle } from '../utils/title';
+import { title, setTitle } from '../utils/page';
 import { createId } from '../helpers/htmlHelpers';
 import { createUrl } from '../helpers/urlHelpers';
 
