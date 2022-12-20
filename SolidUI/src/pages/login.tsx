@@ -3,8 +3,8 @@ import { createSignal, Show } from 'solid-js';
 import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
 import { isAuthenticated, refreshSession, session } from '../session';
 import { setTitle, title } from '../title';
-import { createId } from '../utils/htmlHelpers';
-import { InfoIcon, WarningIcon } from '../utils/icons';
+import { createId } from '../helpers/htmlHelpers';
+import { InfoIcon, WarningIcon } from '../helpers/icons';
 
 export default function LoginPage() {
   setTitle('Login');

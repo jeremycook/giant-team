@@ -2,8 +2,8 @@ import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postRegister } from '../api/GiantTeam.Authentication.Api';
 import { title, setTitle } from '../title';
-import { createId } from '../utils/htmlHelpers';
-import { createUrl } from '../utils/urlHelpers';
+import { createId } from '../helpers/htmlHelpers';
+import { createUrl } from '../helpers/urlHelpers';
 
 export default function JoinPage() {
   setTitle('Join');

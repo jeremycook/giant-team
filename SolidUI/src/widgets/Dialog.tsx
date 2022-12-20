@@ -1,7 +1,7 @@
 import { createEffect, createSignal, JSX, onCleanup, onMount, ParentProps } from "solid-js";
 import { Portal } from "solid-js/web";
-import { constrainToViewport } from "../utils/htmlHelpers";
-import { DismissIcon, MoveIcon } from "../utils/icons";
+import { constrainToViewport } from "../helpers/htmlHelpers";
+import { DismissIcon, MoveIcon } from "../helpers/icons";
 
 export enum DialogAnchor {
     topLeft,

@@ -1,4 +1,4 @@
-import { DataResponse, postJson } from '../utils/httpHelpers';
+import { DataResponse, postJson } from '../helpers/httpHelpers';
 import { JoinInput, JoinOutput } from './GiantTeam';
 
 // DO NOT MODIFY BELOW THIS LINE

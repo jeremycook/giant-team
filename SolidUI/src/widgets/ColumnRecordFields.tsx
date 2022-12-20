@@ -1,5 +1,5 @@
 import { For, Match, Switch } from "solid-js";
-import { createId } from "../utils/htmlHelpers";
+import { createId } from "../helpers/htmlHelpers";
 import { MetaColumn } from "./SmartTable";
 
 export interface ColumnRecordFieldsProps {

@@ -3,8 +3,8 @@ import { createEffect, createSignal, Show } from 'solid-js';
 import { postImportData } from '../../api/GiantTeam.Data.Api';
 import { authorize } from '../../session';
 import { setTitle } from '../../title';
-import { createId, stringifyBlob } from '../../utils/htmlHelpers';
-import { WarningIcon } from '../../utils/icons';
+import { createId, stringifyBlob } from '../../helpers/htmlHelpers';
+import { WarningIcon } from '../../helpers/icons';
 
 export default function ImportDataPage() {
   authorize();

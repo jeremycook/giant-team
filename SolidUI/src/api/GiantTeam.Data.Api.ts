@@ -1,4 +1,4 @@
-import { DataResponse, postJson } from '../utils/httpHelpers';
+import { DataResponse, postJson } from '../helpers/httpHelpers';
 import {
     CreateTeamInput,
     CreateTeamOutput,

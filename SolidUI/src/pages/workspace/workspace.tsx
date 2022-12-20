@@ -2,7 +2,7 @@ import { A, Outlet, RouteDataFuncArgs, useRouteData } from '@solidjs/router';
 import { createEffect, createResource, For, Show } from 'solid-js';
 import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api';
 import { title, setTitle } from '../../title';
-import { createUrl } from '../../utils/urlHelpers';
+import { createUrl } from '../../helpers/urlHelpers';
 
 const fetchWorkspace = async (workspaceName: string) => {
   const output = await postFetchWorkspace({
