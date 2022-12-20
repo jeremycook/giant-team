@@ -3,7 +3,7 @@ import { createMutable, SetStoreFunction, Store } from 'solid-js/store';
 import { JSX } from 'solid-js/web/types/jsx';
 import { FetchRecordsInputRangeFilter, Sort } from '../api/GiantTeam';
 import { getElementPosition } from '../utils/htmlHelpers';
-import { EditOutlineIcon, FilterIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
+import { FilterIcon, SortAscIcon, SortDescIcon } from '../utils/icons';
 import { ColumnDialog } from './ColumnDialog';
 import Dialog, { DialogAnchor } from './Dialog';
 

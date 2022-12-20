@@ -7,7 +7,6 @@ import { Data, DataRecord, Meta, MetaColumn } from '../../../../widgets/SmartTab
 import SmartTable from '../../../../widgets/SmartTable';
 import { Portal } from 'solid-js/web';
 import { routeValues } from '../../../../utils/routing';
-import { debug } from '../../../../utils/logging';
 
 export default function WorkspacePage() {
     titleSetter('Table');
