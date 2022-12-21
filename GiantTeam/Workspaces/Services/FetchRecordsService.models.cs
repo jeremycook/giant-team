@@ -2,7 +2,7 @@
 using GiantTeam.Postgres;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.WorkspaceInteraction.Services
+namespace GiantTeam.Workspaces.Services
 {
     public class FetchRecordsInput
     {

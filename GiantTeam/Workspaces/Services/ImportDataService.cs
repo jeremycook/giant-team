@@ -8,7 +8,7 @@ using Npgsql;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace GiantTeam.WorkspaceInteraction.Services
+namespace GiantTeam.Workspaces.Services
 {
     public class ImportDataService
     {
@@ -86,31 +86,30 @@ namespace GiantTeam.WorkspaceInteraction.Services
                     {
                         if (records.Any() && Guid.TryParse(records[0].ElementAt(index) ?? string.Empty, out _))
                         {
-                            table.Columns.TryAdd(idColumnName, new(idColumnName, "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
+                            table.Columns.Add(new(idColumnName, "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
                         }
                         else if (records.Any() && int.TryParse(records[0].ElementAt(index) ?? string.Empty, out _))
                         {
                             // TODO: Support auto-incrementing integer identity column
-                            table.Columns.TryAdd(idColumnName, new(idColumnName, "int", isNullable: false, defaultValueSql: null, computedColumnSql: null));
+                            table.Columns.Add(new(idColumnName, "int", isNullable: false, defaultValueSql: null, computedColumnSql: null));
                         }
                         else
                         {
-                            table.Columns.TryAdd(idColumnName, new(idColumnName, "text", isNullable: false, defaultValueSql: null, computedColumnSql: null));
+                            table.Columns.Add(new(idColumnName, "text", isNullable: false, defaultValueSql: null, computedColumnSql: null));
                         }
                     }
                     else
                     {
                         idColumnName = "Id";
-                        table.Columns.TryAdd(idColumnName, new(idColumnName, "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
+                        table.Columns.Add(new(idColumnName, "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
                     }
-                    table.UniqueConstraints.TryAdd($"{tableName}_pkey", new($"{tableName}_pkey", isPrimaryKey: true)
+                    table.UniqueConstraints.GetOrAdd(new($"{tableName}_pkey", isPrimaryKey: true)
                     {
                         Columns = { idColumnName },
                     });
                     foreach (var fieldName in fieldNames)
                     {
-                        Column column = new(fieldName, "text", isNullable: true, defaultValueSql: null, computedColumnSql: null);
-                        table.Columns.TryAdd(column.Name, column);
+                        table.Columns.GetOrAdd(new(fieldName, "text", isNullable: true, defaultValueSql: null, computedColumnSql: null));
                     }
 
                     Schema schema = new(schemaName)
@@ -118,7 +117,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
                         //Owner = $"t:{WorkspaceId}:d",
                         Tables =
                         {
-                            [table.Name] = table
+                            table
                         },
                         //Privileges =
                         //{
@@ -144,7 +143,7 @@ namespace GiantTeam.WorkspaceInteraction.Services
                     {
                         Schemas =
                         {
-                            [schema.Name] = schema
+                            schema
                         },
                     };
 

@@ -7,7 +7,7 @@ using Npgsql.Schema;
 using System.Collections.Immutable;
 using System.Text;
 
-namespace GiantTeam.WorkspaceInteraction.Services
+namespace GiantTeam.Workspaces.Services
 {
     public class FetchRecordsService
     {

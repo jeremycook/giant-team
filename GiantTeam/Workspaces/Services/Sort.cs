@@ -1,4 +1,4 @@
-﻿namespace GiantTeam.WorkspaceInteraction.Services
+﻿namespace GiantTeam.Workspaces.Services
 {
     public enum Sort
     {
