@@ -1,7 +1,6 @@
 ﻿using GiantTeam.DatabaseModeling;
 using GiantTeam.Text;
 using System.Text;
-using System.Text.RegularExpressions;
 using static GiantTeam.Postgres.PgQuote;
 
 namespace GiantTeam.Postgres
@@ -16,7 +15,7 @@ namespace GiantTeam.Postgres
 
             // TODO: Sort object creation by dependency graph.
 
-            foreach (var schema in database.Schemas.Values)
+            foreach (var schema in database.Schemas)
             {
                 if (schema.Owner is not null)
                 {
@@ -42,7 +41,7 @@ namespace GiantTeam.Postgres
                 }
                 script.AppendLine();
 
-                foreach (var table in schema.Tables.Values)
+                foreach (var table in schema.Tables)
                 {
                     if (table.Owner is not null)
                     {
@@ -56,11 +55,11 @@ namespace GiantTeam.Postgres
                     // Create missing table
                     // https://www.postgresql.org/docs/current/sql-createtable.html
                     IEnumerable<string> tableParts;
-                    if (table.UniqueConstraints.Values.FirstOrDefault(uc => uc.IsPrimaryKey) is UniqueConstraint primaryKey)
+                    if (table.UniqueConstraints.FirstOrDefault(uc => uc.IsPrimaryKey) is UniqueConstraint primaryKey)
                     {
                         tableParts =
                             // Columns
-                            table.Columns.Values.Select(column =>
+                            table.Columns.Select(column =>
                                 ScriptColumn(column) +
                                 // Assume that integer primary keys are identity columns.
                                 // TODO: Drive this from the Database model.
@@ -79,7 +78,7 @@ namespace GiantTeam.Postgres
 
                     // Add missing columns
                     // https://www.postgresql.org/docs/current/sql-altertable.html
-                    foreach (var column in table.Columns.Values)
+                    foreach (var column in table.Columns)
                     {
                         script.AppendLine($@"ALTER TABLE {Identifier(schema.Name, table.Name)} ADD COLUMN IF NOT EXISTS {ScriptColumn(column)};");
                     }
@@ -87,7 +86,7 @@ namespace GiantTeam.Postgres
 
                     // Add missing unique constraints
                     // https://www.postgresql.org/docs/current/sql-altertable.html
-                    var uniqueConstraints = table.UniqueConstraints.Values.Where(uc => !uc.IsPrimaryKey);
+                    var uniqueConstraints = table.UniqueConstraints.Where(uc => !uc.IsPrimaryKey);
                     foreach (var constraint in uniqueConstraints)
                     {
                         script.AppendLine($@"ALTER TABLE {Identifier(schema.Name, table.Name)} ADD CONSTRAINT IF NOT EXISTS {Identifier(constraint.Name)} {(constraint.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE")} ({string.Join(", ", constraint.Columns.Select(Identifier))});");
@@ -96,7 +95,7 @@ namespace GiantTeam.Postgres
 
                     // Add missing indexes
                     // https://www.postgresql.org/docs/current/sql-createindex.html
-                    foreach (var index in table.Indexes.Values)
+                    foreach (var index in table.Indexes)
                     {
                         script.AppendLine($@"CREATE {(index.IsUnique ? "UNIQUE INDEX" : "INDEX")} IF NOT EXISTS {Identifier(index.Name)} ON {Identifier(schema.Name, table.Name)} ({string.Join(", ", index.Columns.Select(Identifier))});");
                     }
@@ -109,7 +108,7 @@ namespace GiantTeam.Postgres
             // Add scripts.
             foreach (var sql in database.Scripts)
             {
-                script.Append(sql.Value);
+                script.Append(sql);
                 script.AppendLine();
             }
 

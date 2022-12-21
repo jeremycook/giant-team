@@ -1,6 +1,7 @@
 ﻿using GiantTeam.DatabaseModeling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.EntityFramework;
 
@@ -10,6 +11,8 @@ public class EntityFrameworkDatabaseContributor
 
     public void Contribute(Database database, IModel model)
     {
+        // TODO: Last wins everywhere
+
         if (model.GetDefaultSchema() is string defaultSchema)
         {
             // Last wins
@@ -18,17 +21,24 @@ public class EntityFrameworkDatabaseContributor
 
         foreach (var entityType in model.GetEntityTypes())
         {
-            foreach (var schemaGroup in entityType.GetTableMappings().GroupBy(o => o.Table.Schema ?? database.DefaultSchema ?? string.Empty))
+            foreach (var schemaGroup in entityType.GetTableMappings()
+                .GroupBy(o =>
+                    o.Table.Schema ??
+                    database.DefaultSchema ??
+                    throw new InvalidOperationException("A schema was not provided.")
+                ))
             {
-                var schema = database.Schemas.GetOrAdd(schemaGroup.Key, key => new Schema(key));
+                var schema = new Schema(schemaGroup.Key);
+                database.Schemas.Add(schema);
+
                 foreach (var tableMapping in schemaGroup)
                 {
-                    var table = schema.Tables.GetOrAdd(tableMapping.Table.Name, tableName => new Table(tableName));
+                    var table = schema.Tables.GetOrAdd(new Table(tableMapping.Table.Name));
 
                     foreach (var columnMapping in tableMapping.ColumnMappings)
                     {
-                        var column = table.Columns.GetOrAdd(columnMapping.Column.Name, columnName => new Column(
-                            name: columnName,
+                        var column = table.Columns.GetOrAdd(new Column(
+                            name: columnMapping.Column.Name,
                             storeType: columnMapping.Column.StoreType,
                             isNullable: columnMapping.Column.IsNullable,
                             defaultValueSql: columnMapping.Column.DefaultValueSql,
@@ -37,14 +47,18 @@ public class EntityFrameworkDatabaseContributor
 
                     foreach (var tableIndex in tableMapping.Table.Indexes)
                     {
-                        var index = table.Indexes.GetOrAdd(tableIndex.Name, indexName => new TableIndex(indexName, tableIndex.IsUnique));
-                        index.Columns.AddRange(tableIndex.Columns.Select(c => c.Name));
+                        var index = table.Indexes.GetOrAdd(new TableIndex(tableIndex.Name, tableIndex.IsUnique)
+                        {
+                            Columns = tableIndex.Columns.Select(c => c.Name).ToList(),
+                        });
                     }
 
                     foreach (var uc in tableMapping.Table.UniqueConstraints)
                     {
-                        var uniqueConstraint = table.UniqueConstraints.GetOrAdd(uc.Name, indexName => new UniqueConstraint(indexName, uc.GetIsPrimaryKey()));
-                        uniqueConstraint.Columns.AddRange(uc.Columns.Select(c => c.Name));
+                        var uniqueConstraint = table.UniqueConstraints.GetOrAdd(new UniqueConstraint(uc.Name, uc.GetIsPrimaryKey())
+                        {
+                            Columns = uc.Columns.Select(c => c.Name).ToList(),
+                        });
                     }
                 }
             }

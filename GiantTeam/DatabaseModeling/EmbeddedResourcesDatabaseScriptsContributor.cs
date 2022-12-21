@@ -25,7 +25,10 @@ public class EmbeddedResourcesDatabaseScriptsContributor
                 {
                     using var reader = new StreamReader(stream);
                     string text = reader.ReadToEnd();
-                    database.Scripts[name] = text;
+                    database.Scripts.Add($"""
+-- RESOURCE: {name}
+{text}
+""");
                 }
             }
         }

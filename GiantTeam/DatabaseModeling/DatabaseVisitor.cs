@@ -13,10 +13,8 @@
         {
             visitor(database);
 
-            foreach (var schemaKVP in database.Schemas)
+            foreach (var schema in database.Schemas)
             {
-                var schema = schemaKVP.Value;
-                visitor(schemaKVP);
                 visitor(schema);
                 foreach (var defaultPrivileges in schema.DefaultPrivileges)
                 {
@@ -26,28 +24,20 @@
                 {
                     visitor(privileges);
                 }
-                foreach (var tableKVP in schema.Tables)
+                foreach (var table in schema.Tables)
                 {
-                    var table = tableKVP.Value;
-                    visitor(tableKVP);
                     visitor(table);
-                    foreach (var columnKVP in table.Columns)
+                    foreach (var column in table.Columns)
                     {
-                        var column = columnKVP.Value;
-                        visitor(columnKVP);
                         visitor(column);
                     }
-                    foreach (var indexKVP in table.Indexes)
+                    foreach (var index in table.Indexes)
                     {
-                        var index = indexKVP.Value;
-                        visitor(indexKVP);
                         visitor(index);
                     }
-                    foreach (var uniqueConstraintKVP in table.UniqueConstraints)
+                    foreach (var uniqueConstraint in table.UniqueConstraints)
                     {
-                        var uniqueConstrain = uniqueConstraintKVP.Value;
-                        visitor(uniqueConstraintKVP);
-                        visitor(uniqueConstrain);
+                        visitor(uniqueConstraint);
                     }
                 }
             }

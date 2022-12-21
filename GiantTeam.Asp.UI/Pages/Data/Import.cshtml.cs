@@ -113,15 +113,14 @@ namespace GiantTeam.Asp.UI.Pages.Data
                                 {
                                     Owner = $"t:{WorkspaceId}:d",
                                 };
-                                table.Columns.TryAdd("Id", new("Id", "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
-                                table.UniqueConstraints.TryAdd($"{tableName}_pkey", new($"{tableName}_pkey", isPrimaryKey: true)
+                                table.Columns.GetOrAdd(new("Id", "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
+                                table.UniqueConstraints.GetOrAdd(new($"{tableName}_pkey", isPrimaryKey: true)
                                 {
                                     Columns = { "Id" },
                                 });
                                 foreach (var fieldName in fieldNames)
                                 {
-                                    Column column = new(fieldName, "text", isNullable: true, defaultValueSql: null, computedColumnSql: null);
-                                    table.Columns.TryAdd(column.Name, column);
+                                    table.Columns.GetOrAdd(new(fieldName, "text", isNullable: true, defaultValueSql: null, computedColumnSql: null));
                                 }
 
                                 Schema schema = new(schemaName)
@@ -129,7 +128,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
                                     Owner = $"t:{WorkspaceId}:d",
                                     Tables =
                                     {
-                                        [tableName] = table
+                                        table
                                     },
                                     Privileges =
                                     {
@@ -155,7 +154,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
                                 {
                                     Schemas =
                                     {
-                                        [schemaName] = schema
+                                        schema
                                     }
                                 };
 

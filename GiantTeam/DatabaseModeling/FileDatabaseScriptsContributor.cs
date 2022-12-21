@@ -24,11 +24,12 @@ public class FileDatabaseScriptsContributor
 
         foreach (var file in Directory.EnumerateFiles(absolute, "*.pgsql"))
         {
-            string name = Path.GetFileNameWithoutExtension(file);
             string contents = File.ReadAllText(file);
 
-            // Last contribution wins
-            database.Scripts[name] = contents;
+            database.Scripts.Add($"""
+-- FILE: {file}
+{contents}
+""");
         }
     }
 }

@@ -1,17 +1,27 @@
-﻿using System.Collections.Concurrent;
+﻿using GiantTeam.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GiantTeam.DatabaseModeling;
 
 public class Schema
 {
+    [JsonConstructor]
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    public Schema() { }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public Schema(string name)
     {
         Name = name;
     }
 
-    public string Name { get; }
+    [Required, StringLength(50), Identifier]
+    public string Name { get; set; }
+
+    [StringLength(50), Identifier]
     public string? Owner { get; set; }
-    public ConcurrentDictionary<string, Table> Tables { get; } = new();
-    public List<SchemaPrivileges> Privileges { get; } = new();
-    public List<DefaultPrivileges> DefaultPrivileges { get; } = new();
+
+    public List<Table> Tables { get; set; } = new();
+    public List<SchemaPrivileges> Privileges { get; set; } = new();
+    public List<DefaultPrivileges> DefaultPrivileges { get; set; } = new();
 }

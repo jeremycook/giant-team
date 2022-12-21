@@ -1,7 +1,15 @@
-﻿namespace GiantTeam.DatabaseModeling;
+﻿using GiantTeam.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
+namespace GiantTeam.DatabaseModeling;
 
 public class Column
 {
+    [JsonConstructor]
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    public Column() { }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public Column(string name, string storeType, bool isNullable, string? defaultValueSql, string? computedColumnSql)
     {
         Name = name;
@@ -11,9 +19,17 @@ public class Column
         ComputedColumnSql = computedColumnSql;
     }
 
-    public string Name { get; }
-    public string StoreType { get; }
-    public bool IsNullable { get; }
+    [Required, StringLength(50), Identifier]
+    public string Name { get; set; }
+
+    [Required, StringLength(50), RegularExpression("^[a-zA-Z]*$", ErrorMessage = "The {0} may only contain letters.")]
+    public string StoreType { get; set; }
+
+    public bool IsNullable { get; set; }
+
+    [JsonIgnore]
     public string? DefaultValueSql { get; }
+
+    [JsonIgnore]
     public string? ComputedColumnSql { get; }
 }
