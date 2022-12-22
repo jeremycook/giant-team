@@ -13,6 +13,7 @@ namespace GiantTeam.Tools
         static readonly string[] include = new[]
         {
             "GiantTeam.*.Controllers.*",
+            "GiantTeam.*.Models.*",
             "GiantTeam.*.Services.*",
             "GiantTeam.RecordsManagement.Data.*",
         }.Select(o => "^" + Regex.Escape(o).Replace("\\*", ".+") + "$").ToArray();
@@ -123,7 +124,19 @@ namespace GiantTeam.Tools
                             sb.Append(": ");
                             sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
                             sb.Append(";\n");
-
+                        }
+                        sb.Append("}\n\n");
+                    }
+                    else if (type.IsAbstract && type.IsSealed)
+                    {
+                        sb.Append($"export const {type.Name} = {{\n");
+                        foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Static))
+                        {
+                            sb.Append(tab);
+                            sb.Append(CamelCase(field.Name));
+                            sb.Append(": ");
+                            sb.Append($"'{field.GetValue(null)}'");
+                            sb.Append(",\n");
                         }
                         sb.Append("}\n\n");
                     }
@@ -141,7 +154,6 @@ namespace GiantTeam.Tools
                             sb.Append(": ");
                             sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
                             sb.Append(";\n");
-
                         }
                         sb.Append("}\n\n");
                     }

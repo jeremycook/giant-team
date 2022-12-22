@@ -1,4 +1,5 @@
 ﻿using GiantTeam.DatabaseModeling;
+using GiantTeam.DatabaseModeling.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System.ComponentModel.DataAnnotations;

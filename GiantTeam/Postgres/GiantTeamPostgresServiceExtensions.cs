@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using GiantTeam.DatabaseModeling;
+using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,7 @@ namespace GiantTeam.Postgres
 
             // Build SQL
             StringBuilder sql = new();
-            sql.Append(scripter.Script(database).TrimEnd('\n') + "\n\n");
+            sql.Append(scripter.ScriptIfNotExists(database).TrimEnd('\n') + "\n\n");
 
             // Build connection
             var dbConnectionStringBuilder = dbContextConnectionOptions.ToConnectionStringBuilder();

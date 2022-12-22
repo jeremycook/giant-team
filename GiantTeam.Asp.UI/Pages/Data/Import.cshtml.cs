@@ -1,5 +1,6 @@
 using Dapper;
 using GiantTeam.DatabaseModeling;
+using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Postgres;
 using GiantTeam.Text;
 using GiantTeam.WorkspaceAdministration.Services;
@@ -159,7 +160,7 @@ namespace GiantTeam.Asp.UI.Pages.Data
                                 };
 
                                 PgDatabaseScripter scripter = new();
-                                string migrationScript = scripter.Script(database);
+                                string migrationScript = scripter.ScriptIfNotExists(database);
 
                                 logger.LogInformation("Execute migration script: {CommandText}", migrationScript);
 

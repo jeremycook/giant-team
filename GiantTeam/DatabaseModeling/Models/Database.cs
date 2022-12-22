@@ -2,11 +2,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace GiantTeam.DatabaseModeling;
+namespace GiantTeam.DatabaseModeling.Models;
 
 public class Database
 {
-    [StringLength(50), Identifier]
+    [StringLength(50), PgIdentifier]
     public string? DefaultSchema { get; set; }
 
     public List<Schema> Schemas { get; } = new();

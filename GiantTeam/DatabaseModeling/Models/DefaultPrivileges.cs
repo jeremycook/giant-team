@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace GiantTeam.DatabaseModeling
+namespace GiantTeam.DatabaseModeling.Models
 {
     // ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA "Finance"
     //  GRANT ALL ON TABLES TO "t:DB1:d";

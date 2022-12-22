@@ -59,7 +59,7 @@ namespace GiantTeam.Asp.UI.Pages
         public class FormModel
         {
             [RegularExpression("^[A-Za-z][A-Za-z0-9]*$")]
-            [StringLength(100, MinimumLength = 3)]
+            [StringLength(100)]
             public string Username { get; set; } = default!;
 
             [DataType(DataType.Password)]

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace GiantTeam.DatabaseModeling;
+namespace GiantTeam.DatabaseModeling.Models;
 
 //GRANT ALL ON SCHEMA "Finance" TO "t:DB1:d";
 //GRANT USAGE ON SCHEMA "Finance" TO "t:DB1:m";

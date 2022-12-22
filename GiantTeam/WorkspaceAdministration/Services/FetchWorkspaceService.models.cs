@@ -5,9 +5,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
 {
     public class FetchWorkspaceInput
     {
-        [Required]
-        [Identifier]
-        [StringLength(50, MinimumLength = 3)]
+        [Required, StringLength(50), PgIdentifier]
         public string? WorkspaceName { get; set; }
     }
 

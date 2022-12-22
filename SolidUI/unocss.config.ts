@@ -94,6 +94,7 @@ export function createConfig(): VitePluginConfig {
         'stack-item': 'px-2 py-1 max-w-sm overflow-x-hidden overflow-ellipsis whitespace-nowrap block',
 
         'text-ok': 'text-green-500',
+        'text-danger': 'text-red-500',
         'text-error': 'text-red-500',
         'text-info': 'text-cyan-500',
       }],

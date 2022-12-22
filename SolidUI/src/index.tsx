@@ -1,3 +1,5 @@
+import './directives';
+
 import { render } from 'solid-js/web';
 import { Router } from '@solidjs/router';
 
@@ -8,9 +10,9 @@ import './style/typo.css';
 import './style/plugins.css';
 import './style/overrides.css';
 import './style/theme.css';
-// import './index.css';
-import App from './App';
+
 import { refreshSession, session } from './utils/session';
+import App from './App';
 
 if (session.status === -1) {
   // Refresh the session before first render

@@ -1,4 +1,4 @@
-﻿using GiantTeam.DatabaseModeling;
+﻿using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Text;
 using System.Text;
 using static GiantTeam.Postgres.PgQuote;
@@ -9,7 +9,25 @@ namespace GiantTeam.Postgres
     {
         public static PgDatabaseScripter Singleton { get; } = new PgDatabaseScripter();
 
+        public string ScriptIfNotExists(Database database)
+        {
+            return Script(database, new()
+            {
+                CreateSchemaIfNotExists = true,
+            });
+        }
+
+        /// <summary>
+        /// Script with default <see cref="PgDatabaseScripterOptions"/>.
+        /// </summary>
+        /// <param name="database"></param>
+        /// <returns></returns>
         public string Script(Database database)
+        {
+            return Script(database, new());
+        }
+
+        public string Script(Database database, PgDatabaseScripterOptions options)
         {
             var script = new StringBuilder();
 
@@ -17,37 +35,40 @@ namespace GiantTeam.Postgres
 
             foreach (var schema in database.Schemas)
             {
-                if (schema.Owner is not null)
+                if (!string.IsNullOrEmpty(schema.Owner))
                 {
                     script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
                 }
 
-                // Create missing schema
-                // https://www.postgresql.org/docs/current/sql-createschema.html
-                script.AppendLine($@"CREATE SCHEMA IF NOT EXISTS {Identifier(schema.Name)};");
-                script.AppendLine();
-
-                // Apply privileges
-                foreach (var privilege in schema.Privileges)
+                if (options.CreateSchemaIfNotExists)
                 {
-                    script.AppendLine($@"GRANT {privilege.Privileges} ON SCHEMA {Identifier(schema.Name)} TO {Identifier(privilege.Grantee)};");
-                }
-                script.AppendLine();
+                    // Create missing schema
+                    // https://www.postgresql.org/docs/current/sql-createschema.html
+                    script.AppendLine($@"CREATE SCHEMA IF NOT EXISTS {Identifier(schema.Name)};");
+                    script.AppendLine();
 
-                // Apply default privileges
-                foreach (var privilege in schema.DefaultPrivileges)
-                {
-                    script.AppendLine($@"ALTER DEFAULT PRIVILEGES IN SCHEMA {Identifier(schema.Name)} GRANT {privilege.Privileges} ON {privilege.ObjectType} TO {Identifier(privilege.Grantee)};");
+                    // Apply privileges
+                    foreach (var privilege in schema.Privileges)
+                    {
+                        script.AppendLine($@"GRANT {privilege.Privileges} ON SCHEMA {Identifier(schema.Name)} TO {Identifier(privilege.Grantee)};");
+                    }
+                    script.AppendLine();
+
+                    // Apply default privileges
+                    foreach (var privilege in schema.DefaultPrivileges)
+                    {
+                        script.AppendLine($@"ALTER DEFAULT PRIVILEGES IN SCHEMA {Identifier(schema.Name)} GRANT {privilege.Privileges} ON {privilege.ObjectType} TO {Identifier(privilege.Grantee)};");
+                    }
+                    script.AppendLine();
                 }
-                script.AppendLine();
 
                 foreach (var table in schema.Tables)
                 {
-                    if (table.Owner is not null)
+                    if (!string.IsNullOrEmpty(table.Owner))
                     {
                         script.AppendLine($"SET ROLE {Identifier(table.Owner)};");
                     }
-                    else if (schema.Owner is not null)
+                    else if (!string.IsNullOrEmpty(schema.Owner))
                     {
                         script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
                     }
@@ -73,7 +94,7 @@ namespace GiantTeam.Postgres
                         tableParts = Enumerable.Empty<string>();
                     }
                     string? tableOwner = table.Owner ?? schema.Owner;
-                    script.AppendLine($@"CREATE TABLE IF NOT EXISTS {Identifier(schema.Name, table.Name)} ({string.Join(", ", tableParts)});");
+                    script.AppendLine($@"{(options.CreateSchemaIfNotExists ? "CREATE TABLE IF NOT EXISTS" : "CREATE TABLE")} {Identifier(schema.Name, table.Name)} ({string.Join(", ", tableParts)});");
                     script.AppendLine();
 
                     // Add missing columns
@@ -119,7 +140,7 @@ namespace GiantTeam.Postgres
         {
             return $"{Identifier(column.Name)} {column.StoreType} {(column.IsNullable ? "NULL" : "NOT NULL")}" +
                 ScriptDefault(column) +
-                (column.ComputedColumnSql is not null ? $" GENERATED ALWAYS AS ({column.ComputedColumnSql}) STORED" : "");
+                (!string.IsNullOrEmpty(column.ComputedColumnSql) ? $" GENERATED ALWAYS AS ({column.ComputedColumnSql}) STORED" : "");
         }
 
         private static readonly Dictionary<string, string> DefaultValueSqlMap = new(StringComparer.InvariantCultureIgnoreCase)
@@ -133,7 +154,7 @@ namespace GiantTeam.Postgres
 
         private static string ScriptDefault(Column column)
         {
-            if (column.DefaultValueSql is not null)
+            if (!string.IsNullOrEmpty(column.DefaultValueSql))
             {
                 if (column.DefaultValueSql != string.Empty)
                 {

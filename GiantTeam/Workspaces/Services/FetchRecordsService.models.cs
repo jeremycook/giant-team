@@ -11,19 +11,13 @@ namespace GiantTeam.Workspaces.Services
         /// </summary>
         public bool? Verbose { get; set; } = false;
 
-        [Required]
-        [Identifier]
-        [StringLength(50, MinimumLength = 3)]
+        [Required, StringLength(50), PgIdentifier]
         public string Database { get; set; } = null!;
 
-        [Required]
-        [Identifier]
-        [StringLength(100)]
+        [Required, StringLength(50), PgIdentifier]
         public string Schema { get; set; } = null!;
 
-        [Required]
-        [Identifier]
-        [StringLength(100)]
+        [Required, StringLength(50), PgIdentifier]
         public string Table { get; set; } = null!;
 
         public List<FetchRecordsInputColumn>? Columns { get; set; }
@@ -38,9 +32,7 @@ namespace GiantTeam.Workspaces.Services
 
     public class FetchRecordsInputColumn
     {
-        [Required]
-        [Identifier]
-        [StringLength(100)]
+        [Required, StringLength(50), PgIdentifier]
         public string Name { get; set; } = null!;
         public int? Position { get; set; }
         public Sort Sort { get; set; }
@@ -58,9 +50,7 @@ namespace GiantTeam.Workspaces.Services
 
         public string Discriminator { get; set; }
 
-        [Required]
-        [Identifier]
-        [StringLength(100)]
+        [Required, StringLength(50), PgIdentifier]
         public string Column { get; set; } = null!;
     }
 
@@ -79,9 +69,7 @@ namespace GiantTeam.Workspaces.Services
 
     public class FetchRecordsInputOrder
     {
-        [Required]
-        [Identifier]
-        [StringLength(100)]
+        [Required, StringLength(50), PgIdentifier]
         public string Column { get; set; } = null!;
 
         public bool? Desc { get; set; } = false;
@@ -101,9 +89,7 @@ namespace GiantTeam.Workspaces.Services
 
     public class FetchRecordsColumn
     {
-        [Required]
-        [Identifier]
-        [StringLength(100)]
+        [Required, StringLength(50), PgIdentifier]
         public string Name { get; set; } = null!;
         public string DataType { get; set; } = null!;
         public bool Nullable { get; set; }

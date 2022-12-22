@@ -1,4 +1,4 @@
-﻿namespace GiantTeam.DatabaseModeling
+﻿namespace GiantTeam.DatabaseModeling.Models
 {
     public enum DefaultPrivilegesEnum
     {

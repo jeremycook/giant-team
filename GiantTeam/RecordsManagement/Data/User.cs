@@ -13,8 +13,7 @@ namespace GiantTeam.RecordsManagement.Data
         [StringLength(100)]
         public string Name { get; set; } = null!;
 
-        [Identifier]
-        [StringLength(50, MinimumLength = 3)]
+        [StringLength(50), PgIdentifier]
         public string Username { get; set; } = null!;
         public string InvariantUsername { get => Username?.ToLowerInvariant()!; private set { } }
 

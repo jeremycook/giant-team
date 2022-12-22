@@ -9,7 +9,7 @@ namespace GiantTeam.UserManagement.Services
     {
         public class VerifyPasswordInput
         {
-            [StringLength(50, MinimumLength = 3)]
+            [StringLength(50)]
             public string Username { get; set; } = default!;
 
             [StringLength(100, MinimumLength = 10)]

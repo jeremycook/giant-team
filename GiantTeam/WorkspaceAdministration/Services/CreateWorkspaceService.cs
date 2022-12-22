@@ -15,13 +15,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public class CreateWorkspaceInput
         {
             [Required]
-            [Identifier]
-            [StringLength(50, MinimumLength = 3)]
+            [StringLength(50), PgIdentifier]
             public string? WorkspaceName { get; set; }
 
             [Required]
-            [Identifier]
-            [StringLength(50, MinimumLength = 3)]
+            [StringLength(50), PgIdentifier]
             public string? WorkspaceOwner { get; set; }
         }
 

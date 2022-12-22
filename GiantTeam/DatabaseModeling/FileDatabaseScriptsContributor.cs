@@ -1,4 +1,6 @@
-﻿namespace GiantTeam.DatabaseModeling;
+﻿using GiantTeam.DatabaseModeling.Models;
+
+namespace GiantTeam.DatabaseModeling;
 
 public class FileDatabaseScriptsContributor
 {

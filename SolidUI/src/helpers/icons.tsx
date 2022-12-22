@@ -10,6 +10,8 @@ import beakerOutline from '@iconify-icons/fluent/beaker-16-regular';
 import chevronDown from '@iconify-icons/fluent/chevron-down-12-filled';
 import columnEditFilled from '@iconify-icons/fluent/column-edit-20-filled';
 import columnEditOutline from '@iconify-icons/fluent/column-edit-20-regular';
+import deleteFilled from '@iconify-icons/fluent/delete-12-filled';
+import deleteOutline from '@iconify-icons/fluent/delete-12-regular';
 import dismissFilled from '@iconify-icons/fluent/dismiss-12-filled';
 import editFilled from '@iconify-icons/fluent/edit-16-filled';
 import editOutline from '@iconify-icons/fluent/edit-16-regular';
@@ -46,6 +48,8 @@ export const BeakerOutlineIcon = (props: any) => <Icon icon={beakerOutline} aria
 export const ChevronDownIcon = (props: any) => <Icon icon={chevronDown} aria-hidden {...props} />;
 export const ColumnEditFilledIcon = (props: any) => <Icon icon={columnEditFilled} aria-hidden {...props} />;
 export const ColumnEditOutlineIcon = (props: any) => <Icon icon={columnEditOutline} aria-hidden {...props} />;
+export const DeleteFilledIcon = (props: any) => <Icon icon={deleteFilled} aria-hidden {...props} />;
+export const DeleteOutlineIcon = (props: any) => <Icon icon={deleteOutline} aria-hidden {...props} />;
 export const DismissIcon = (props: any) => <Icon icon={dismissFilled} aria-hidden {...props} />;
 export const EditFilledIcon = (props: any) => <Icon icon={editFilled} aria-hidden {...props} />;
 export const EditOutlineIcon = (props: any) => <Icon icon={editOutline} aria-hidden {...props} />;

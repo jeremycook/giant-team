@@ -2,24 +2,24 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace GiantTeam.DatabaseModeling;
+namespace GiantTeam.DatabaseModeling.Models;
 
-public class UniqueConstraint
+public class TableIndex
 {
     [JsonConstructor]
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public UniqueConstraint() { }
+    public TableIndex() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public UniqueConstraint(string name, bool isPrimaryKey)
+    public TableIndex(string name, bool isUnique)
     {
         Name = name;
-        IsPrimaryKey = isPrimaryKey;
+        IsUnique = isUnique;
     }
 
-    [Required, StringLength(50), Identifier]
+    [Required, StringLength(50), PgIdentifier]
     public string Name { get; set; }
 
-    public bool IsPrimaryKey { get; set; }
+    public bool IsUnique { get; set; }
 
     [Required, MinLength(1)]
     public List<string> Columns { get; set; } = new();

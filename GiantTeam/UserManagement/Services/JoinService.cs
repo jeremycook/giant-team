@@ -12,23 +12,16 @@ namespace GiantTeam.UserManagement.Services
     {
         public class JoinInput
         {
-            [Required]
-            [StringLength(100, MinimumLength = 3)]
+            [Required, StringLength(100)]
             public string Name { get; set; } = default!;
 
-            [Required]
-            [EmailAddress]
-            [StringLength(200, MinimumLength = 3)]
+            [Required, StringLength(200), EmailAddress]
             public string Email { get; set; } = default!;
 
-            [Required]
-            [Identifier]
-            [StringLength(50, MinimumLength = 3)]
+            [Required, StringLength(50), PgIdentifier]
             public string Username { get; set; } = default!;
 
-            [Required]
-            [StringLength(100, MinimumLength = 10)]
-            [DataType(DataType.Password)]
+            [Required, StringLength(100, MinimumLength = 10), DataType(DataType.Password)]
             public string Password { get; set; } = default!;
         }
 
