@@ -1,4 +1,5 @@
 ﻿using GiantTeam.ComponentModel.Services;
+using GiantTeam.DatabaseModeling.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 
@@ -40,7 +41,7 @@ FROM gt.workspace
                     {
                         Name = reader.GetString("Name"),
                         Owner = reader.GetString("Owner"),
-                        Schemas = reader.GetFieldValue<FetchWorkspaceSchema[]>("Schemas"),
+                        Schemas = reader.GetFieldValue<Schema[]>("Schemas"),
                     };
                     return output;
                 }

@@ -114,14 +114,14 @@ namespace GiantTeam.Asp.UI.Pages.Data
                                 {
                                     Owner = $"t:{WorkspaceId}:d",
                                 };
-                                table.Columns.GetOrAdd(new("Id", "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
-                                table.UniqueConstraints.GetOrAdd(new($"{tableName}_pkey", isPrimaryKey: true)
+                                table.Columns.GetOrAdd(new("Id", StoreType.Uuid, isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
+                                table.Indexes.GetOrAdd(new($"pk_{tableName}", TableIndexType.PrimaryKey)
                                 {
                                     Columns = { "Id" },
                                 });
                                 foreach (var fieldName in fieldNames)
                                 {
-                                    table.Columns.GetOrAdd(new(fieldName, "text", isNullable: true, defaultValueSql: null, computedColumnSql: null));
+                                    table.Columns.GetOrAdd(new(fieldName, StoreType.Text, isNullable: true, defaultValueSql: null, computedColumnSql: null));
                                 }
 
                                 Schema schema = new(schemaName)

@@ -9,27 +9,20 @@ namespace GiantTeam.Postgres
     {
         public static PgDatabaseScripter Singleton { get; } = new PgDatabaseScripter();
 
-        public string ScriptIfNotExists(Database database)
-        {
-            return Script(database, new()
-            {
-                CreateSchemaIfNotExists = true,
-            });
-        }
-
         /// <summary>
-        /// Script with default <see cref="PgDatabaseScripterOptions"/>.
+        /// Script missing objects. Useful when developing.
         /// </summary>
         /// <param name="database"></param>
         /// <returns></returns>
-        public string Script(Database database)
-        {
-            return Script(database, new());
-        }
-
-        public string Script(Database database, PgDatabaseScripterOptions options)
+        public string ScriptIfNotExists(Database database)
         {
             var script = new StringBuilder();
+
+            script.AppendLine("""
+DO $MIGRATION$
+BEGIN
+
+""");
 
             // TODO: Sort object creation by dependency graph.
 
@@ -40,27 +33,24 @@ namespace GiantTeam.Postgres
                     script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
                 }
 
-                if (options.CreateSchemaIfNotExists)
+                // Create missing schema
+                // https://www.postgresql.org/docs/current/sql-createschema.html
+                script.AppendLine($@"CREATE SCHEMA IF NOT EXISTS {Identifier(schema.Name)};");
+                script.AppendLine();
+
+                // Apply privileges
+                foreach (var privilege in schema.Privileges)
                 {
-                    // Create missing schema
-                    // https://www.postgresql.org/docs/current/sql-createschema.html
-                    script.AppendLine($@"CREATE SCHEMA IF NOT EXISTS {Identifier(schema.Name)};");
-                    script.AppendLine();
-
-                    // Apply privileges
-                    foreach (var privilege in schema.Privileges)
-                    {
-                        script.AppendLine($@"GRANT {privilege.Privileges} ON SCHEMA {Identifier(schema.Name)} TO {Identifier(privilege.Grantee)};");
-                    }
-                    script.AppendLine();
-
-                    // Apply default privileges
-                    foreach (var privilege in schema.DefaultPrivileges)
-                    {
-                        script.AppendLine($@"ALTER DEFAULT PRIVILEGES IN SCHEMA {Identifier(schema.Name)} GRANT {privilege.Privileges} ON {privilege.ObjectType} TO {Identifier(privilege.Grantee)};");
-                    }
-                    script.AppendLine();
+                    script.AppendLine($@"GRANT {privilege.Privileges} ON SCHEMA {Identifier(schema.Name)} TO {Identifier(privilege.Grantee)};");
                 }
+                script.AppendLine();
+
+                // Apply default privileges
+                foreach (var privilege in schema.DefaultPrivileges)
+                {
+                    script.AppendLine($@"ALTER DEFAULT PRIVILEGES IN SCHEMA {Identifier(schema.Name)} GRANT {privilege.Privileges} ON {privilege.ObjectType} TO {Identifier(privilege.Grantee)};");
+                }
+                script.AppendLine();
 
                 foreach (var table in schema.Tables)
                 {
@@ -76,7 +66,7 @@ namespace GiantTeam.Postgres
                     // Create missing table
                     // https://www.postgresql.org/docs/current/sql-createtable.html
                     IEnumerable<string> tableParts;
-                    if (table.UniqueConstraints.FirstOrDefault(uc => uc.IsPrimaryKey) is UniqueConstraint primaryKey)
+                    if (table.Indexes.FirstOrDefault(uc => uc.IndexType == TableIndexType.PrimaryKey) is TableIndex primaryKey)
                     {
                         tableParts =
                             // Columns
@@ -93,8 +83,7 @@ namespace GiantTeam.Postgres
                     {
                         tableParts = Enumerable.Empty<string>();
                     }
-                    string? tableOwner = table.Owner ?? schema.Owner;
-                    script.AppendLine($@"{(options.CreateSchemaIfNotExists ? "CREATE TABLE IF NOT EXISTS" : "CREATE TABLE")} {Identifier(schema.Name, table.Name)} ({string.Join(", ", tableParts)});");
+                    script.AppendLine($@"CREATE TABLE IF NOT EXISTS {Identifier(schema.Name, table.Name)} ({string.Join(", ", tableParts)});");
                     script.AppendLine();
 
                     // Add missing columns
@@ -107,24 +96,190 @@ namespace GiantTeam.Postgres
 
                     // Add missing unique constraints
                     // https://www.postgresql.org/docs/current/sql-altertable.html
-                    var uniqueConstraints = table.UniqueConstraints.Where(uc => !uc.IsPrimaryKey);
+                    var uniqueConstraints = table.Indexes.Where(uc => uc.IndexType != TableIndexType.Index);
                     foreach (var constraint in uniqueConstraints)
                     {
-                        script.AppendLine($@"ALTER TABLE {Identifier(schema.Name, table.Name)} ADD CONSTRAINT IF NOT EXISTS {Identifier(constraint.Name)} {(constraint.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE")} ({string.Join(", ", constraint.Columns.Select(Identifier))});");
+                        string indexType = constraint.IndexType == TableIndexType.PrimaryKey ? "PRIMARY KEY" : "UNIQUE";
+                        script.AppendLine($"""
+IF NOT EXISTS (SELECT NULL FROM information_schema.table_constraints WHERE constraint_schema = {Literal(schema.Name)} AND constraint_name = {Literal(constraint.Name)})
+THEN
+    ALTER TABLE {Identifier(schema.Name, table.Name)} ADD CONSTRAINT {Identifier(constraint.Name)} {indexType} ({string.Join(", ", constraint.Columns.Select(Identifier))});
+END IF;
+""");
                     }
                     if (uniqueConstraints.Any()) script.AppendLine();
 
                     // Add missing indexes
                     // https://www.postgresql.org/docs/current/sql-createindex.html
-                    foreach (var index in table.Indexes)
+                    foreach (var index in table.Indexes.Where(o => o.IndexType == TableIndexType.Index))
                     {
-                        script.AppendLine($@"CREATE {(index.IsUnique ? "UNIQUE INDEX" : "INDEX")} IF NOT EXISTS {Identifier(index.Name)} ON {Identifier(schema.Name, table.Name)} ({string.Join(", ", index.Columns.Select(Identifier))});");
+                        script.AppendLine($@"CREATE INDEX IF NOT EXISTS {Identifier(index.Name)} ON {Identifier(schema.Name, table.Name)} ({string.Join(", ", index.Columns.Select(Identifier))});");
                     }
                     if (table.Indexes.Any()) script.AppendLine();
                 }
 
                 script.AppendLine();
             }
+
+            script.AppendLine("""
+END $MIGRATION$;
+""");
+
+            // Add scripts.
+            foreach (var sql in database.Scripts)
+            {
+                script.Append(sql);
+                script.AppendLine();
+            }
+
+            return script.ToString();
+        }
+
+        public string ScriptCreateTables(Database database)
+        {
+            var script = new StringBuilder();
+
+            script.AppendLine("""
+DO $MIGRATION$
+BEGIN
+
+""");
+
+            // TODO: Sort object creation by dependency graph.
+
+            foreach (var schema in database.Schemas)
+            {
+                if (!string.IsNullOrEmpty(schema.Owner))
+                {
+                    script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
+                }
+
+                foreach (var table in schema.Tables)
+                {
+                    if (!string.IsNullOrEmpty(table.Owner))
+                    {
+                        script.AppendLine($"SET ROLE {Identifier(table.Owner)};");
+                    }
+                    else if (!string.IsNullOrEmpty(schema.Owner))
+                    {
+                        script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
+                    }
+
+                    // Create missing table
+                    // https://www.postgresql.org/docs/current/sql-createtable.html
+                    TableIndex? primaryKey = table.Indexes.FirstOrDefault(uc => uc.IndexType == TableIndexType.PrimaryKey);
+                    var columns = table.Columns.Select(column =>
+                            ScriptColumn(column) +
+                            // TODO: Drive this from the Database model. Assuming that integer primary keys are identity columns.
+                            (primaryKey?.Columns.Contains(column.Name) == true && column.StoreType == "integer" ? " GENERATED ALWAYS AS IDENTITY" : "")
+                        );
+                    var constraints = table.Indexes
+                        .Where(ix => ix.IndexType != TableIndexType.Index)
+                        .Select(constraint => $"CONSTRAINT {Identifier(constraint.Name)} {(constraint.IndexType == TableIndexType.PrimaryKey ? "PRIMARY KEY" : "UNIQUE")} ({string.Join(", ", constraint.Columns.Select(Identifier))})");
+                    var tableParts = columns.Concat(constraints);
+                    script.AppendLine($@"CREATE TABLE {Identifier(schema.Name, table.Name)} ({string.Join(", ", tableParts)});");
+                    script.AppendLine();
+
+                    // Add indexes
+                    // https://www.postgresql.org/docs/current/sql-createindex.html
+                    foreach (var index in table.Indexes.Where(o => o.IndexType == TableIndexType.Index))
+                    {
+                        script.AppendLine($@"CREATE INDEX {Identifier(index.Name)} ON {Identifier(schema.Name, table.Name)} ({string.Join(", ", index.Columns.Select(Identifier))});");
+                    }
+                    if (table.Indexes.Any()) script.AppendLine();
+                }
+
+                script.AppendLine();
+            }
+
+            script.AppendLine("""
+END $MIGRATION$;
+""");
+
+            // Add scripts.
+            foreach (var sql in database.Scripts)
+            {
+                script.Append(sql);
+                script.AppendLine();
+            }
+
+            return script.ToString();
+        }
+
+        public string ScriptAlterTables(Database database)
+        {
+            var script = new StringBuilder();
+
+            script.AppendLine("""
+DO $MIGRATION$
+BEGIN
+
+""");
+
+            // TODO: Sort object creation by dependency graph.
+
+            foreach (var schema in database.Schemas)
+            {
+                if (!string.IsNullOrEmpty(schema.Owner))
+                {
+                    script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
+                }
+
+                foreach (var table in schema.Tables)
+                {
+                    if (!string.IsNullOrEmpty(table.Owner))
+                    {
+                        script.AppendLine($"SET ROLE {Identifier(table.Owner)};");
+                    }
+                    else if (!string.IsNullOrEmpty(schema.Owner))
+                    {
+                        script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
+                    }
+
+                    // Add missing columns
+                    // TODO: Alter existing columns
+                    // TODO: Drop removed columns
+                    // https://www.postgresql.org/docs/current/sql-altertable.html
+                    foreach (var column in table.Columns)
+                    {
+                        script.AppendLine($@"ALTER TABLE {Identifier(schema.Name, table.Name)} ADD COLUMN IF NOT EXISTS {ScriptColumn(column)};");
+                    }
+                    script.AppendLine();
+
+                    // Add missing unique constraints
+                    // TODO: Alter existing unique constraints
+                    // TODO: Drop removed unique constraints
+                    // https://www.postgresql.org/docs/current/sql-altertable.html
+                    var uniqueConstraints = table.Indexes.Where(uc => uc.IndexType != TableIndexType.Index);
+                    foreach (var constraint in uniqueConstraints)
+                    {
+                        string indexType = constraint.IndexType == TableIndexType.PrimaryKey ? "PRIMARY KEY" : "UNIQUE";
+                        script.AppendLine($"""
+IF NOT EXISTS (SELECT NULL FROM information_schema.table_constraints WHERE constraint_schema = {Literal(schema.Name)} AND constraint_name = {Literal(constraint.Name)})
+THEN
+    ALTER TABLE {Identifier(schema.Name, table.Name)} ADD CONSTRAINT {Identifier(constraint.Name)} {indexType} ({string.Join(", ", constraint.Columns.Select(Identifier))});
+END IF;
+""");
+                    }
+                    if (uniqueConstraints.Any()) script.AppendLine();
+
+                    // Add missing indexes
+                    // TODO: Alter modified indexes
+                    // TODO: Drop removed indexes
+                    // https://www.postgresql.org/docs/current/sql-createindex.html
+                    foreach (var index in table.Indexes.Where(o => o.IndexType == TableIndexType.Index))
+                    {
+                        script.AppendLine($@"CREATE INDEX IF NOT EXISTS {Identifier(index.Name)} ON {Identifier(schema.Name, table.Name)} ({string.Join(", ", index.Columns.Select(Identifier))});");
+                    }
+                    if (table.Indexes.Any()) script.AppendLine();
+                }
+
+                script.AppendLine();
+            }
+
+            script.AppendLine("""
+END $MIGRATION$;
+""");
 
             // Add scripts.
             foreach (var sql in database.Scripts)

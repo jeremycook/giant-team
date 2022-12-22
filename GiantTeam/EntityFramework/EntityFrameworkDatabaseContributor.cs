@@ -36,29 +36,32 @@ public class EntityFrameworkDatabaseContributor
                 {
                     var table = schema.Tables.GetOrAdd(new Table(tableMapping.Table.Name));
 
-                    foreach (var columnMapping in tableMapping.ColumnMappings)
+                    foreach (var (columnMapping, i) in tableMapping.ColumnMappings.Select((c, i) => (columnMaping: c, i)))
                     {
                         var column = table.Columns.GetOrAdd(new Column(
                             name: columnMapping.Column.Name,
                             storeType: columnMapping.Column.StoreType,
                             isNullable: columnMapping.Column.IsNullable,
                             defaultValueSql: columnMapping.Column.DefaultValueSql,
-                            computedColumnSql: columnMapping.Column.ComputedColumnSql));
+                            computedColumnSql: columnMapping.Column.ComputedColumnSql)
+                        {
+                            Position = i + 1,
+                        });
                     }
 
                     foreach (var tableIndex in tableMapping.Table.Indexes)
                     {
-                        var index = table.Indexes.GetOrAdd(new TableIndex(tableIndex.Name, tableIndex.IsUnique)
+                        var index = table.Indexes.GetOrAdd(new TableIndex(tableIndex.Name, tableIndex.IsUnique ? TableIndexType.UniqueConstraint : TableIndexType.Index)
                         {
-                            Columns = tableIndex.Columns.Select(c => c.Name).ToList(),
+                            Columns = tableIndex.Columns.OrderBy(o => o.Order).Select(c => c.Name).ToList(),
                         });
                     }
 
-                    foreach (var uc in tableMapping.Table.UniqueConstraints)
+                    foreach (var uniqueConstraint in tableMapping.Table.UniqueConstraints)
                     {
-                        var uniqueConstraint = table.UniqueConstraints.GetOrAdd(new UniqueConstraint(uc.Name, uc.GetIsPrimaryKey())
+                        var index = table.Indexes.GetOrAdd(new TableIndex(uniqueConstraint.Name, uniqueConstraint.GetIsPrimaryKey() ? TableIndexType.PrimaryKey : TableIndexType.UniqueConstraint)
                         {
-                            Columns = uc.Columns.Select(c => c.Name).ToList(),
+                            Columns = uniqueConstraint.Columns.OrderBy(o => o.Order).Select(c => c.Name).ToList(),
                         });
                     }
                 }

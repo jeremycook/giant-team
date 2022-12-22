@@ -4,8 +4,12 @@
 CREATE SCHEMA IF NOT EXISTS gt
     AUTHORIZATION pg_database_owner;
 
-GRANT ALL ON SCHEMA gt TO pg_database_owner;
 GRANT USAGE ON SCHEMA gt TO PUBLIC;
+
+GRANT ALL ON SCHEMA gt TO pg_database_owner;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE pg_database_owner IN SCHEMA gt
+GRANT SELECT ON TABLES TO PUBLIC;
 
 -- VIEW: gt.workspace
 -- DROP VIEW gt.workspace;
@@ -16,17 +20,39 @@ CREATE OR REPLACE VIEW gt.workspace
          SELECT c.table_catalog AS catalog_name,
             c.table_schema AS schema_name,
             c.table_name,
+            c.ordinal_position AS "Position",
             c.column_name AS "Name",
-            c.data_type AS "DataType",
+            c.udt_name AS "StoreType",
                 CASE
                     WHEN c.is_nullable::text = 'YES'::text THEN true
                     ELSE false
                 END AS "IsNullable",
+				c.column_default AS "DefaultValueSql",
+				c.generation_expression AS "ComputedColumnSql",
                 CASE
                     WHEN c.is_updatable::text = 'YES'::text THEN true
                     ELSE false
                 END AS "IsUpdatable"
-           FROM information_schema.columns c
+	            FROM information_schema.columns c
+        ), indexes AS (SELECT 
+schema_ns.nspname schema_name, 
+table_class.relname table_name,
+index_class.relname "Name", 
+CASE WHEN i.indisprimary THEN 2 WHEN i.indisunique THEN 1 ELSE 0 END "IndexType", 
+json_agg(c.column_name) "Columns"
+FROM   pg_catalog.pg_namespace schema_ns
+JOIN   pg_catalog.pg_class     index_class ON index_class.relnamespace = schema_ns.oid
+JOIN   pg_catalog.pg_index     i ON i.indexrelid = index_class.oid
+JOIN   pg_catalog.pg_class     table_class ON i.indrelid = table_class.oid
+JOIN information_schema.columns c ON c.table_schema = schema_ns.nspname AND c.table_name = table_class.relname AND c.ordinal_position = ANY (i.indkey)
+WHERE  schema_ns.nspname !~ '^pg_'
+AND    index_class.relkind = 'i'
+GROUP BY 
+schema_ns.nspname, 
+table_class.relname,
+index_class.relname, 
+i.indisunique, 
+i.indisprimary
         ), tables AS (
          SELECT st.table_catalog AS catalog_name,
             st.table_schema AS schema_name,
@@ -36,15 +62,21 @@ CREATE OR REPLACE VIEW gt.workspace
                     WHEN st.is_insertable_into::text = 'YES'::text THEN true
                     ELSE false
                 END AS "IsInsertableInto",
-            COALESCE(c.columns, '[]'::json) AS "Columns"
+            COALESCE(c.columns, '[]'::json) AS "Columns",
+            COALESCE(i.indexes, '[]'::json) AS "Indexes"
            FROM information_schema.tables st
              JOIN pg_tables t ON st.table_schema::name = t.schemaname AND st.table_name::name = t.tablename
              LEFT JOIN ( SELECT c_1.catalog_name,
                     c_1.schema_name,
                     c_1.table_name,
-                    json_agg(to_jsonb(c_1.*) - ARRAY['catalog_name'::text, 'schema_name'::text, 'table_name'::text] ORDER BY 'Name'::text) AS columns
+                    json_agg(to_jsonb(c_1.*) - ARRAY['catalog_name'::text, 'schema_name'::text, 'table_name'::text] ORDER BY c_1."Position", c_1."Name") AS columns
                    FROM columns c_1
                   GROUP BY c_1.catalog_name, c_1.schema_name, c_1.table_name) c ON c.catalog_name::name = st.table_catalog::name AND c.schema_name::name = st.table_schema::name AND c.table_name::name = st.table_name::name
+             LEFT JOIN ( SELECT c_1.schema_name,
+                    c_1.table_name,
+                    json_agg(to_jsonb(c_1.*) - ARRAY['catalog_name'::text, 'schema_name'::text, 'table_name'::text]) AS indexes
+                   FROM indexes c_1
+                  GROUP BY c_1.schema_name, c_1.table_name) i ON i.schema_name::name = st.table_schema::name AND i.table_name::name = st.table_name::name
         ), schemas AS (
          SELECT s.catalog_name,
             s.schema_name AS "Name",
@@ -75,7 +107,8 @@ CREATE OR REPLACE VIEW gt.workspace
     databases."Schemas"
    FROM databases;
 
-ALTER TABLE gt.workspace OWNER TO pg_database_owner;
+ALTER TABLE gt.workspace
+    OWNER TO pg_database_owner;
 
 GRANT ALL ON TABLE gt.workspace TO pg_database_owner;
 GRANT SELECT ON TABLE gt.workspace TO PUBLIC;

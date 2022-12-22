@@ -104,7 +104,7 @@ namespace GiantTeam.Workspaces.Services
                         idColumnName = "Id";
                         table.Columns.Add(new(idColumnName, "uuid", isNullable: false, defaultValueSql: "gen_random_uuid()", computedColumnSql: null));
                     }
-                    table.UniqueConstraints.GetOrAdd(new($"{tableName}_pkey", isPrimaryKey: true)
+                    table.Indexes.GetOrAdd(new($"pk_{tableName}", TableIndexType.PrimaryKey)
                     {
                         Columns = { idColumnName },
                     });

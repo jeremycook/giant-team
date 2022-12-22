@@ -42,18 +42,5 @@ namespace GiantTeam.DatabaseModeling
 
             return item;
         }
-
-        public static UniqueConstraint GetOrAdd(this ICollection<UniqueConstraint> collection, UniqueConstraint newItem)
-        {
-            var item = collection.FirstOrDefault(o => o.Name == newItem.Name);
-
-            if (item is null)
-            {
-                item = newItem;
-                collection.Add(item);
-            }
-
-            return item;
-        }
     }
 }

@@ -8,48 +8,86 @@ namespace GiantTeam.Postgres.Parser
         {
             if (source.IfOpenParen())
             {
-                var tempResult = source
+                var parenResult = source
                     .OpenParen();
 
-                if (tempResult.IfExpression(out tempResult, out var innerExpression))
+                ParenExpression parenExpression;
+                if (parenResult.IfExpression(out parenResult, out var innerExpression))
                 {
-                    expression = new ParenExpression(innerExpression);
+                    parenExpression = new ParenExpression(innerExpression);
                 }
                 else
                 {
-                    expression = new ParenExpression(null);
+                    parenExpression = new ParenExpression(null);
                 }
 
-                tempResult = tempResult
+                parenResult = parenResult
                     .IgnoreWhitespace()
                     .CloseParen();
 
-                result = tempResult;
-                return true;
+                if (parenResult.IfCast(out parenResult, out string typeName))
+                {
+                    result = parenResult;
+                    expression = new CastExpression(parenExpression, typeName);
+                    return true;
+                }
+                else
+                {
+                    result = parenResult;
+                    expression = parenExpression;
+                    return true;
+                }
             }
             else if (source.IfFunction(out var functionResult, out var function))
             {
-                result = functionResult;
-                expression = function;
-                return true;
+                if (functionResult.IfCast(out functionResult, out string typeName))
+                {
+                    result = functionResult;
+                    expression = new CastExpression(function, typeName);
+                    return true;
+                }
+                else
+                {
+                    result = functionResult;
+                    expression = function;
+                    return true;
+                }
             }
-            else if (source.IfStatement(out var specialResult, out var special))
+            else if (source.IfStatement(out var statementResult, out var special))
             {
-                result = specialResult;
+                result = statementResult;
                 expression = special;
                 return true;
             }
             else if (source.IfIdentifier(out var identifierResult, out var identifier))
             {
-                result = identifierResult;
-                expression = identifier;
-                return true;
+                if (identifierResult.IfCast(out identifierResult, out string typeName))
+                {
+                    result = identifierResult;
+                    expression = new CastExpression(identifier, typeName);
+                    return true;
+                }
+                else
+                {
+                    result = identifierResult;
+                    expression = identifier;
+                    return true;
+                }
             }
             else if (source.IfLiteral(out var literalResult, out var literal))
             {
-                result = literalResult;
-                expression = literal;
-                return true;
+                if (literalResult.IfCast(out literalResult, out string typeName))
+                {
+                    result = literalResult;
+                    expression = new CastExpression(literal, typeName);
+                    return true;
+                }
+                else
+                {
+                    result = literalResult;
+                    expression = literal;
+                    return true;
+                }
             }
 
             result = source;
@@ -157,17 +195,26 @@ namespace GiantTeam.Postgres.Parser
 
         public static bool IfStatement(this ReadOnlySpan<char> source, out ReadOnlySpan<char> result, out StatementExpression statement)
         {
-            if (source.IfString("CURRENT_TIMESTAMP AT TIME ZONE", out result, out var name))
+            if (source.IfString("CURRENT_TIMESTAMP AT TIME ZONE", out var temp, out var name))
             {
-                result = result.IgnoreWhitespace();
+                temp = temp.IgnoreWhitespace();
 
-                if (!result.IfLiteral(out var literalResult, out var literal))
+                if (temp.IfExpression(out var temp2, out var expression) &&
+                    (
+                        expression is LiteralExpression ||
+                        (expression is CastExpression cast && cast.Expression is LiteralExpression)
+                    ))
                 {
-                    throw new PostgresParserException("a string literal", result.Length);
+                    // OK
+                    temp = temp2;
+                }
+                else
+                {
+                    throw new PostgresParserException("a string literal", temp.Length);
                 }
 
-                result = literalResult;
-                statement = new(name.ToString(), new[] { literal });
+                result = temp;
+                statement = new(name.ToString(), new[] { expression });
                 return true;
             }
 
@@ -190,31 +237,54 @@ namespace GiantTeam.Postgres.Parser
             return false;
         }
 
-
         public static bool IfLiteral(this ReadOnlySpan<char> source, out ReadOnlySpan<char> result, out LiteralExpression identifier)
         {
             if (!source.IsEmpty && source[0] == PostgresParserConstants.SingleQuote)
             {
-                result = source
+                var tmpResult = source
                     .Char(PostgresParserConstants.SingleQuote);
 
-                var index = result.IndexOf(PostgresParserConstants.SingleQuote);
+                var index = tmpResult.IndexOf(PostgresParserConstants.SingleQuote);
 
-                if (index > -1)
+                if (index < 0)
                 {
-                    identifier = new LiteralExpression(result[..index].ToString());
-
-                    result = result[index..]
-                        .Char(PostgresParserConstants.SingleQuote);
-
-                    return true;
+                    throw new PostgresParserException("a literal string terminated by a single quote", index);
                 }
 
-                throw new PostgresParserException("a literal string terminated by a single quote", index);
+                identifier = new LiteralExpression(tmpResult[..index].ToString());
+
+                tmpResult = tmpResult[index..]
+                    .Char(PostgresParserConstants.SingleQuote);
+
+                result = tmpResult;
+                return true;
+
             }
 
             result = source;
             identifier = null!;
+            return false;
+        }
+
+        public static bool IfCast(this ReadOnlySpan<char> source, out ReadOnlySpan<char> result, out string typeName)
+        {
+            var temp = source;
+
+            if (temp.IfString("::", out temp, out _))
+            {
+                if (!temp.IfUnquotedIdentifier(out temp, out var identifier))
+                {
+                    throw new PostgresParserException("a data type to cast to", temp.Length);
+                }
+
+                result = temp;
+                typeName = identifier.Name;
+                return true;
+
+            }
+
+            result = source;
+            typeName = null!;
             return false;
         }
 

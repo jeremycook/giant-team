@@ -40,7 +40,7 @@ export function ColumnDialog(props: ColumnDialogProps) {
     return (
         <div>
             <div class='grid grid-cols-2 gap-2 mb items-center'>
-            <div class='text-center'>Sorting</div>
+                <div class='text-center'>Sorting</div>
                 <div>
                     <div class='flex-inline items-center border children:p-1 children:not-first:ml-1'>
                         <button type='button' onclick={() => setMeta('columns', column().name, 'sort', Sort.Asc)} class={(column().sort === Sort.Asc ? 'paint-primary border shadow shadow-inset' : '')}>
@@ -71,7 +71,7 @@ export function ColumnDialog(props: ColumnDialogProps) {
                         <button type='button' onclick={() => moveTo(column().position - 1)} class='border'>
                             <LeftIcon /> <span class='sr-only'>Move Left</span>
                         </button>
-                        <input value={column().position} onchange={e => moveTo(parseInt((e.target as HTMLInputElement).value))} type='number' min='1' max={Object.keys(meta.columns).length} class='w-3em text-center border-0' />
+                        <input value={column().position} onchange={e => moveTo(parseInt((e.target as HTMLInputElement).value) || 0)} type='number' min='1' max={Object.keys(meta.columns).length} class='w-3em text-center border-0' />
                         <button type='button' onclick={() => moveTo(column().position + 1)} class='border'>
                             <RightIcon /> <span class='sr-only'>Move Right</span>
                         </button>

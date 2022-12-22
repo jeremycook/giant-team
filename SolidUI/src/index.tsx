@@ -5,8 +5,8 @@ import { Router } from '@solidjs/router';
 
 import './style/reset.css';
 import './style/vars.css';
-import 'uno.css';
 import './style/typo.css';
+import 'uno.css';
 import './style/plugins.css';
 import './style/overrides.css';
 import './style/theme.css';

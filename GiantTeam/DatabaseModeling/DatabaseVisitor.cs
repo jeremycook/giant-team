@@ -37,10 +37,6 @@ namespace GiantTeam.DatabaseModeling
                     {
                         visitor(index);
                     }
-                    foreach (var uniqueConstraint in table.UniqueConstraints)
-                    {
-                        visitor(uniqueConstraint);
-                    }
                 }
             }
         }

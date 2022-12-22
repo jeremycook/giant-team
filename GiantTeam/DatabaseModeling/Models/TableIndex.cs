@@ -1,25 +1,20 @@
 ﻿using GiantTeam.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace GiantTeam.DatabaseModeling.Models;
 
 public class TableIndex
 {
-    [JsonConstructor]
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public TableIndex() { }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public TableIndex(string name, bool isUnique)
+    public TableIndex(string name, TableIndexType indexType)
     {
         Name = name;
-        IsUnique = isUnique;
+        IndexType = indexType;
     }
 
     [Required, StringLength(50), PgIdentifier]
     public string Name { get; set; }
 
-    public bool IsUnique { get; set; }
+    public TableIndexType IndexType { get; set; }
 
     [Required, MinLength(1)]
     public List<string> Columns { get; set; } = new();

@@ -1,4 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
+using GiantTeam.DatabaseModeling.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.WorkspaceAdministration.Services
@@ -13,19 +14,6 @@ namespace GiantTeam.WorkspaceAdministration.Services
     {
         public string Name { get; set; } = null!;
         public string Owner { get; set; } = null!;
-        public FetchWorkspaceSchema[] Schemas { get; set; } = null!;
-    }
-
-    public class FetchWorkspaceSchema
-    {
-        public string Name { get; set; } = null!;
-        public string Owner { get; set; } = null!;
-        public FetchWorkspaceTable[] Tables { get; set; } = null!;
-    }
-
-    public class FetchWorkspaceTable
-    {
-        public string Name { get; set; } = null!;
-        public string Owner { get; set; } = null!;
+        public Schema[] Schemas { get; set; } = null!;
     }
 }

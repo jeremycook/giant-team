@@ -1,22 +1,38 @@
 ﻿using Dapper;
+using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;
 using Npgsql;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Workspaces.Services
 {
-    public class CreateTableService
+    public class AlterTableInput
     {
-        private readonly ILogger<CreateTableService> logger;
+        [Required, StringLength(50), PgIdentifier]
+        public string DatabaseName { get; set; } = null!;
+
+        [Required, StringLength(50), PgIdentifier]
+        public string SchemaName { get; set; } = null!;
+
+        [Required]
+        public Table Table { get; set; } = null!;
+    }
+
+    public class AlterTable
+    {
+    }
+
+    public class AlterTableService
+    {
+        private readonly ILogger<AlterTableService> logger;
         private readonly ValidationService validationService;
         private readonly UserConnectionService connectionService;
 
-        public CreateTableService(
-            ILogger<CreateTableService> logger,
+        public AlterTableService(
+            ILogger<AlterTableService> logger,
             ValidationService validationService,
             UserConnectionService connectionService)
         {
@@ -25,14 +41,14 @@ namespace GiantTeam.Workspaces.Services
             this.connectionService = connectionService;
         }
 
-        public async Task<CreateTable> CreateTableAsync(CreateTableInput input)
+        public async Task<AlterTable> AlterTableAsync(AlterTableInput input)
         {
             validationService.Validate(input);
 
             return await ProcessAsync(input);
         }
 
-        private async Task<CreateTable> ProcessAsync(CreateTableInput input)
+        private async Task<AlterTable> ProcessAsync(AlterTableInput input)
         {
             Database database = new()
             {
@@ -49,9 +65,9 @@ namespace GiantTeam.Workspaces.Services
             };
 
             PgDatabaseScripter scripter = new();
-            string migrationScript = scripter.ScriptCreateTables(database);
+            string migrationScript = scripter.ScriptAlterTables(database);
 
-            logger.LogInformation("Executing table creation script: {CommandText}", migrationScript);
+            logger.LogInformation("Executing alter table script: {CommandText}", migrationScript);
 
             using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(input.DatabaseName);
             try
@@ -88,7 +104,7 @@ namespace GiantTeam.Workspaces.Services
                 throw;
             }
 
-            return new CreateTable()
+            return new AlterTable()
             {
             };
         }
