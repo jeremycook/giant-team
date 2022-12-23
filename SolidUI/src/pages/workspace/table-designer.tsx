@@ -3,6 +3,7 @@ import { createEffect, createResource, Show } from "solid-js";
 import { createMutable, unwrap } from "solid-js/store";
 import { Table } from "../../api/GiantTeam";
 import { postAlterTable, postFetchWorkspace } from "../../api/GiantTeam.Data.Api";
+import { SaveEditFilledIcon } from "../../helpers/icons";
 import { setTitle } from "../../utils/page"
 import { TableDesignerWidget } from "../../widgets/TableDesigner";
 
@@ -19,7 +20,7 @@ export default function CreateTablePage() {
     };
 
     const model = createMutable<{ table: Table | null }>({
-        table: null
+        table: null,
     });
 
     const [resource] = createResource(async () => await postFetchWorkspace({
@@ -33,7 +34,6 @@ export default function CreateTablePage() {
                 ?.tables.find(t => t.name === info.table);
             if (typeof table !== 'undefined') {
                 model.table = table;
-                console.log(table);
             }
         }
     })
@@ -58,17 +58,22 @@ export default function CreateTablePage() {
     };
 
     return (
-        <section class='card card md:w-900px max-w-100% md:mx-auto'>
+        <section class='pxy md:w-900px max-w-100% md:mx-auto'>
 
             <h1>Table Designer</h1>
 
             <Show when={model.table}>
                 <form onsubmit={onsubmitform}>
 
-                    <TableDesignerWidget table={model.table!} />
+                    <div class='flex mb rounded paint-gray-100 children:text-lg'>
+                        <button class='button'>
+                            <SaveEditFilledIcon />
+                            Save
+                        </button>
+                    </div>
 
-                    <div>
-                        <button class='button'>Apply Changes</button>
+                    <div class="pxy b rounded">
+                        <TableDesignerWidget table={model.table!} />
                     </div>
 
                 </form>

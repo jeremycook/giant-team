@@ -80,7 +80,7 @@ export function createConfig(): VitePluginConfig {
       [/^paint-([a-z]*)$/, ([, c, n]) => `bg-${c} color-white border-${c}-600`],
       [/^paint-([a-z]+)-([0-9]{3})$/, ([, c, n]) => `bg-${c + (n ? ('-' + n) : '')} color-white border-${c}-${n ? (parseInt(n) + 100) : '600'}`],
       {
-        'p-button': 'px py-2',
+        'p-button': 'px-2 py-1',
 
         'button': 'p-button border paint-primary rounded-1 shadow active:shadow-inset active:bg-primary-400',
 

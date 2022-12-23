@@ -30,6 +30,7 @@ import person from '@iconify-icons/fluent/person-12-filled';
 import personOutline from '@iconify-icons/fluent/person-12-regular';
 import presenceOffline10Regular from '@iconify-icons/fluent/presence-offline-10-regular';
 import right from '@iconify-icons/fluent/arrow-right-12-filled';
+import saveEditFilled from '@iconify-icons/fluent/save-edit-20-filled';
 import search from '@iconify-icons/fluent/search-12-regular';
 import sortAsc from '@iconify-icons/fluent/text-sort-ascending-16-regular';
 import sortDesc from '@iconify-icons/fluent/text-sort-descending-16-regular';
@@ -37,8 +38,8 @@ import sparkles from '@iconify-icons/fluent/sparkle-16-filled';
 import sparklesOutline from '@iconify-icons/fluent/sparkle-16-regular';
 import warning from '@iconify-icons/fluent/warning-12-regular';
 
-export const Alert = (props: any) => <Icon icon={alert} aria-hidden {...props} />;
-export const AlertOutline = (props: any) => <Icon icon={alertOutline} aria-hidden {...props} />;
+export const AlertIcon = (props: any) => <Icon icon={alert} aria-hidden {...props} />;
+export const AlertOutlineIcon = (props: any) => <Icon icon={alertOutline} aria-hidden {...props} />;
 export const ArrowDownCircleIcon = (props: any) => <Icon icon={arrowDownCircle} aria-hidden {...props} />;
 export const ArrowDownCircleOutlineIcon = (props: any) => <Icon icon={arrowDownCircleOutline} aria-hidden {...props} />;
 export const ArrowUpCircleIcon = (props: any) => <Icon icon={arrowUpCircle} aria-hidden {...props} />;
@@ -68,6 +69,7 @@ export const OffIcon = (props: any) => <Icon icon={presenceOffline10Regular} ari
 export const PersonIcon = (props: any) => <Icon icon={person} aria-hidden {...props} />;
 export const PersonOutlineIcon = (props: any) => <Icon icon={personOutline} aria-hidden {...props} />;
 export const RightIcon = (props: any) => <Icon icon={right} aria-hidden {...props} />;
+export const SaveEditFilledIcon = (props: any) => <Icon icon={saveEditFilled} aria-hidden {...props} />;
 export const SearchIcon = (props: any) => <Icon icon={search} aria-hidden {...props} />;
 export const SortAscIcon = (props: any) => <Icon icon={sortAsc} aria-hidden {...props} />;
 export const SortDescIcon = (props: any) => <Icon icon={sortDesc} aria-hidden {...props} />;
