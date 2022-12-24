@@ -7,15 +7,15 @@ enum AlertType {
 }
 
 export const [page, setPage] = createStore({
-    title: 'Welcome',
+    title: [],
     alerts: [] as { visible: boolean, ts: Date, type: AlertType, content: JSX.Element }[],
     showAlerts: false,
 });
 
-export const title = () => page.title;
+export const title = () => page.title.join(' • ');
 
 export const setTitle = (title: string) => {
-    setPage('title', title);
+    // setPage('title', [title]);
 }
 
 export const pushError = (content: JSX.Element) => {
@@ -37,6 +37,6 @@ export const pushError = (content: JSX.Element) => {
     // }, 5000)
 }
 
-createEffect(() => {
-    document.title = page.title;
-});
+// createEffect(() => {
+//     document.title = title();
+// });

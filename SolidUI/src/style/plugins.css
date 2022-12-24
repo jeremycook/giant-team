@@ -1,41 +1,5 @@
 @import url(./vars.css);
 
-/* Badge */
-
-[class|='badge'] {
-    background-color: var(--gray);
-    color: white;
-    border-radius: 1em;
-    display: inline-block;
-    font-family: 'Franklin Gothic Condensed', 'Arial Narrow', Arial, sans-serif;
-    font-size: .8em;
-    padding: .1em .5em;
-}
-
-.badge-black {
-    background-color: black;
-}
-
-.badge-blue {
-    background-color: var(--blue);
-}
-
-.badge-gray {
-    background-color: var(--gray);
-}
-
-.badge-green {
-    background-color: var(--green);
-}
-
-.badge-red {
-    background-color: var(--red);
-}
-
-.badge-orange {
-    background-color: var(--orange);
-}
-
 /* Dropdown */
 
 .dropdown .dropdown-anchor {
@@ -56,14 +20,6 @@
     overflow: visible;
     opacity: 1;
     top: 0;
-}
-
-/* Iframe*/
-
-iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
 }
 
 /* Modal */

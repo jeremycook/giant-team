@@ -1,4 +1,6 @@
 using GiantTeam.WorkspaceAdministration.Services;
+using GiantTeam.Workspaces.Models;
+using GiantTeam.Workspaces.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.UserManagement.Services.CreateTeamService;
@@ -86,7 +88,7 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
                 WorkspaceName = workspaceName,
             });
             fetchWorkspaceResponse.EnsureSuccessStatusCode();
-            var fetchWorkspaceOutput = await fetchWorkspaceResponse.Content.ReadFromJsonAsync<FetchWorkspaceOutput>();
+            var fetchWorkspaceOutput = await fetchWorkspaceResponse.Content.ReadFromJsonAsync<Workspace>();
 
             Assert.NotNull(fetchWorkspaceOutput);
             Assert.Equal(workspaceName, fetchWorkspaceOutput.Name);

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using GiantTeam.ComponentModel;
+using GiantTeam.ComponentModel.Models;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserManagement.Services;
@@ -86,7 +87,7 @@ new
 
             if (output is null)
             {
-                throw new DetailedValidationException($"Role not found.");
+                throw new NotFoundException($"Role not found.");
             }
 
             output.Members = await gridReader.ReadAsync<FetchRoleMemberOutput>();

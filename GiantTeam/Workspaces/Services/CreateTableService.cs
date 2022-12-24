@@ -4,7 +4,6 @@ using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;
 using Npgsql;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Workspaces.Services

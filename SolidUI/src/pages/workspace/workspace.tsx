@@ -1,83 +1,41 @@
-import { A, Outlet, RouteDataFuncArgs, useRouteData } from '@solidjs/router';
-import { createEffect, createResource, For, Show } from 'solid-js';
-import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api';
-import { title, setTitle } from '../../utils/page';
-import { createUrl } from '../../helpers/urlHelpers';
-
-const fetchWorkspace = async (workspaceName: string) => {
-  const output = await postFetchWorkspace({
-      workspaceName
-  });
-  return output;
-};
-
-export const WorkspacePageData = ({ params }: RouteDataFuncArgs) => {
-  const [workspace] = createResource(() => params.workspace, fetchWorkspace);
-  return workspace;
-};
+import { A, Outlet } from "@solidjs/router";
+import { For } from "solid-js";
+import { createId } from "../../helpers/htmlHelpers";
+import { useWorkspaceRouteData } from "./workspace-layout";
 
 export default function WorkspacePage() {
-  setTitle('Workspace');
+    const workspaceRouteData = useWorkspaceRouteData();
 
-  const model = useRouteData<typeof WorkspacePageData>();
+    const workspace = () => {
+        const ws = workspaceRouteData();
+        return ws?.ok ? ws.data : null;
+    };
 
-  const ok = () => model()?.ok == true;
-  const message = () => model()?.message || null;
-  const data = () => model()?.data;
+    return (<>
 
-  createEffect(() => setTitle(data()?.name ?? 'Workspace'));
+        <div class='flex gap-1 children:button'>
+            <A href={'./import-data'}>Import Data</A>
+            <A href={'./create-schema'}>Add Schema</A>
 
-  return (
-    <section>
-
-      <h1 class='sr-only'>{title()}</h1>
-
-      <Show when={message()}>
-        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
-          {message}
-        </p>
-      </Show>
-
-      <Show when={ok()}>
-
-        <div class='md:flex'>
-
-          {/* <div class='md:min-w-200px md:p1'>
-
-            <div class='flex flex-col mb'>
-              <A class='button p-1 rounded-0' href={'./import-data'}>Import Data</A>
-              <A class='button p-1 rounded-0' href={'./create-schema'}>Add Schema</A>
-              <A class='button p-1 rounded-0' href={'./create-table'}>Add Table</A>
-              <A class='button p-1 rounded-0' href={'./create-view'}>Add View</A>
-            </div>
-
-            <For each={data()!.schemas}>{(schema =>
-              <>
-                <div class='md:flex flex-col mb'>
-                  <div>
-                    <strong>{schema.name}</strong>
-                    <A href={`schemas/${schema.name}/edit`}>Edit</A>
-                  </div>
-                  <For each={schema.tables}>{(table =>
-                    <A href={createUrl('table', { schema: schema.name, table: table.name })} class='is-active:font-bold'>{table.name}</A>
-                  )}</For>
+            <div class='dropdown'>
+                <button type='button' class='dropdown-button' id={createId('SchemasDropdown')}>
+                    Schemas
+                </button>
+                <div class='dropdown-anchor' aria-labelledby={createId('SchemasDropdown')}>
+                    <div class='dropdown-content stack'>
+                        <For each={workspace()!.zones}>{(zone =>
+                            <A href={`./zone/${zone.name}`}>{zone.name}</A>
+                        )}</For>
+                    </div>
                 </div>
-              </>
-            )}</For>
+            </div>
 
             <div>
-              <span>Owner: {data()!.owner}</span>
+                Owner: {workspace()!.owner}
             </div>
-          </div> */}
-
-          <div class='flex-grow'>
-            <Outlet />
-          </div>
-
         </div>
 
-      </Show>
+        <Outlet />
 
-    </section >
-  );
+    </>)
 }

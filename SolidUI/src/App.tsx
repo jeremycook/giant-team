@@ -3,6 +3,7 @@ import { Component, Show } from 'solid-js';
 import AppRoutes from './routes';
 import { session, isAuthenticated } from './utils/session';
 import { HomeIcon, AlertOutlineIcon, PersonOutlineIcon, PersonIcon, SearchIcon, SparklesIcon, SparklesOutlineIcon, HomeOutlineIcon, MenuOutline, MenuIcon } from './helpers/icons';
+import { BreadcrumbTrail } from './utils/nav';
 
 const App: Component = () => {
   return (
@@ -12,19 +13,19 @@ const App: Component = () => {
         <Show when={isAuthenticated()} fallback={(
           <>
             <div />
-            <div class='md:flex md:mx-auto'>
+            <div class='md:flex md:mx-auto children:px-4 children:py-2'>
 
-              <A href='/' end={true} class='pxy'>
+              <A href='/' end={true}>
                 <HomeIcon class='parent-active' />
                 <HomeOutlineIcon class='parent-inactive' />
                 <span> Home</span>
               </A>
-              <A href='/login' class='pxy'>
+              <A href='/login'>
                 <PersonIcon class='parent-active' />
                 <PersonOutlineIcon class='parent-inactive' />
                 {' Login'}
               </A>
-              <A href='/join' class='pxy'>
+              <A href='/join'>
                 <SparklesIcon class='parent-active' />
                 <SparklesOutlineIcon class='parent-inactive' />
                 {' Join'}
@@ -35,7 +36,7 @@ const App: Component = () => {
           </>
         )}>
 
-          <div class='site-nav-group flex md:ml-auto'>
+          <div class='flex md:ml-auto children:px-4 children:py-2'>
             <A href='/' end={true}>
               <HomeIcon class='parent-active' />
               <HomeOutlineIcon class='parent-inactive' />
@@ -59,7 +60,7 @@ const App: Component = () => {
             </div>
           </div>
 
-          <div class='site-nav-group px md:px-0'>
+          <div class='px md:px-0'>
 
             <form action='/search' class='flex'>
               <input name='q' class='rounded-l grow' placeholder='Search…' />
@@ -71,7 +72,7 @@ const App: Component = () => {
 
           </div>
 
-          <div class='site-nav-group flex md:mr-auto'>
+          <div class='flex md:mr-auto children:px-4 children:py-2'>
 
             <A href='/notifications'>
               <AlertOutlineIcon />
@@ -97,6 +98,10 @@ const App: Component = () => {
         </Show>
 
       </nav>
+
+      <div class='flex gap-2 children:button'>
+        <BreadcrumbTrail />
+      </div>
 
       <main>
         <AppRoutes />

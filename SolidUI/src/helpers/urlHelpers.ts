@@ -1,7 +1,17 @@
+export const combinePaths = (basePath: string, ...paths: string[]) => {
+    let combined = basePath.replace(/\/^/, '');
+
+    for (const url of paths) {
+        combined += '/' + url.replace(/\/^/, '');
+    }
+
+    return combined.replace(/\/^/, '');
+}
+
 export const createUrl = (url: string, params?: Record<string, string>) => {
     const isRelative = !/^([\sA-Z]*:|\s*\/\/)/i.test(url);
     if (isRelative) {
-        const search = params ?  new URLSearchParams(params).toString() : '';
+        const search = params ? new URLSearchParams(params).toString() : '';
         if (search.length > 0) {
             return encodeURI(url) + '?' + search;
         }

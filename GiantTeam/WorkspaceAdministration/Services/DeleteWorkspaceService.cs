@@ -3,6 +3,7 @@ using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.UserManagement.Services;
+using GiantTeam.Workspaces.Services;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 

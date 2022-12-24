@@ -1,12 +1,12 @@
 import { A, useParams, useSearchParams } from "@solidjs/router";
-import { createEffect, createResource, Show } from "solid-js";
+import { createEffect, createResource } from "solid-js";
 import { createMutable, unwrap } from "solid-js/store";
-import { AlterTableInput, Table } from "../../api/GiantTeam";
-import { postAlterTable, postFetchWorkspace } from "../../api/GiantTeam.Data.Api";
-import { SaveEditFilledIcon } from "../../helpers/icons";
-import { createUrl } from "../../helpers/urlHelpers";
-import { setTitle } from "../../utils/page"
-import { TableDesignerWidget } from "../../widgets/TableDesigner";
+import { AlterTableInput, Table } from "../../../api/GiantTeam";
+import { postAlterTable, postFetchWorkspace } from "../../../api/GiantTeam.Data.Api";
+import { SaveEditFilledIcon } from "../../../helpers/icons";
+import { createUrl } from "../../../helpers/urlHelpers";
+import { setTitle } from "../../../utils/page"
+import { TableDesignerWidget } from "../../../widgets/TableDesigner";
 
 export default function CreateTablePage() {
     setTitle('Create a Table');

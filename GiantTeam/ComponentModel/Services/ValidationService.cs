@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GiantTeam.ComponentModel.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.ComponentModel.Services
 {
@@ -51,7 +52,7 @@ namespace GiantTeam.ComponentModel.Services
         {
             if (!TryValidate(model, out var validationResults))
             {
-                throw new DetailedValidationException(validationResults);
+                throw new InvalidRequestException(validationResults);
             }
         }
 
@@ -76,7 +77,7 @@ namespace GiantTeam.ComponentModel.Services
 
             if (validationResults.Any())
             {
-                throw new DetailedValidationException(validationResults);
+                throw new InvalidRequestException(validationResults);
             }
         }
 

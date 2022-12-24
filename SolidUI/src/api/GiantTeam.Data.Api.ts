@@ -11,9 +11,9 @@ import {
     FetchRecords,
     FetchRecordsInput,
     FetchWorkspaceInput,
-    FetchWorkspaceOutput,
     ImportDataInput,
-    ImportDataOutput
+    ImportDataOutput,
+    Workspace
 } from './GiantTeam';
 
 // DO NOT MODIFY BELOW THIS LINE
@@ -35,7 +35,7 @@ export const postFetchRecords = async (input: FetchRecordsInput) =>
     await postJson('/api/fetch-records', input) as DataResponse<FetchRecords>;
 
 export const postFetchWorkspace = async (input: FetchWorkspaceInput) =>
-    await postJson('/api/fetch-workspace', input) as DataResponse<FetchWorkspaceOutput>;
+    await postJson('/api/fetch-workspace', input) as DataResponse<Workspace>;
 
 export const postImportData = async (input: ImportDataInput) =>
     await postJson('/api/import-data', input) as DataResponse<ImportDataOutput>;

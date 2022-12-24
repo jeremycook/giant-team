@@ -91,14 +91,19 @@ export function createConfig(): VitePluginConfig {
     ],
     shortcuts: [
       [/^paint-([a-z]*)$/, ([, c, n]) => `bg-${c} color-white border-${c}-600`],
-      [/^paint-([a-z]+)-([0-9]{3})$/, ([, c, n]) => `bg-${c + (n ? ('-' + n) : '')} ${parseInt(n) >= 500 ? 'color-white' : 'color-black'} border-${c}-${n ? (parseInt(n) + 100) : '600'}`],
+      [/^paint-([a-z]+)-([0-9]{3})$/, ([, c, n]) => `bg-${c + (n ? ('-' + n) : '')} ${parseInt(n) >= 400 ? 'color-white' : 'color-black'} border-${c}-${n ? (parseInt(n) + 100) : '600'}`],
       {
         'p-button': 'px-2 py-1',
         'p-input': 'p-1',
 
-        'button': 'p-button border paint-secondary rounded-1 shadow active:shadow-inset',
+        'badge': 'inline-block rounded text-.8em px-.5em py-.1em font-thin',
+
+        'button': 'p-button border paint-secondary-400 rounded-1 shadow active:shadow-inset',
 
         'card': 'pxy bg-white border rounded-b shadow',
+
+        // 'dropdown-anchor': 'z-1 relative overflow-hidden opacity-0 top-15px transition-opacity transition-top',
+        // 'dropdown-content': 'absolute',
 
         'form-grid': 'grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-2',
 

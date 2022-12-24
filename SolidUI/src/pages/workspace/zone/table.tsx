@@ -1,10 +1,10 @@
 import { createStore, unwrap } from 'solid-js/store';
 import { batch, createEffect, createResource, Show } from 'solid-js';
-import { FetchRecordsInput, Sort } from '../../../../api/GiantTeam';
-import { postFetchRecords } from '../../../../api/GiantTeam.Data.Api';
-import { setTitle } from '../../../../utils/page';
-import { Data, DataRecord, Meta, MetaColumn } from '../../../../widgets/SmartTable';
-import SmartTable from '../../../../widgets/SmartTable';
+import { FetchRecordsInput, Sort } from '../../../api/GiantTeam';
+import { postFetchRecords } from '../../../api/GiantTeam.Data.Api';
+import { setTitle } from '../../../utils/page';
+import { Data, DataRecord, Meta, MetaColumn } from '../../../widgets/SmartTable';
+import SmartTable from '../../../widgets/SmartTable';
 import { Portal } from 'solid-js/web';
 import { useParams, useSearchParams } from '@solidjs/router';
 

@@ -1,4 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
+using GiantTeam.ComponentModel.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.ComponentModel.DataAnnotations;
@@ -24,27 +25,18 @@ namespace GiantTeam.Asp.Filters
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context.Exception is DetailedValidationException detailedValidationException)
+            if (context.Exception is ObjectStatusException objectStatusException)
             {
-                context.Result = new ObjectResult(detailedValidationException.Message)
+                context.Result = new ObjectResult(objectStatusException.ObjectStatus)
                 {
-                    StatusCode = detailedValidationException.StatusCode,
-                };
-
-                context.ExceptionHandled = true;
-            }
-            else if(context.Exception is StatusCodeException statusCodeException)
-            {
-                context.Result = new ObjectResult(statusCodeException.Message)
-                {
-                    StatusCode = statusCodeException.StatusCode,
+                    StatusCode = objectStatusException.ObjectStatus.Status,
                 };
 
                 context.ExceptionHandled = true;
             }
             else if (context.Exception is ValidationException validationException)
             {
-                context.Result = new ObjectResult(validationException.Message)
+                context.Result = new ObjectResult(ObjectStatus.InvalidRequest(validationException.Message))
                 {
                     StatusCode = 400,
                 };

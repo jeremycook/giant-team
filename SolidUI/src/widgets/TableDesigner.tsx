@@ -3,7 +3,6 @@ import { StoreType, Table, TableIndexType } from "../api/GiantTeam";
 import { removeItem } from "../helpers/arrayHelpers";
 import { createId } from "../helpers/htmlHelpers";
 import { DeleteOutlineIcon } from "../helpers/icons";
-import { snakeCase } from "../helpers/textHelpers";
 
 interface TableDesignerWidgetProps {
     table: Table;

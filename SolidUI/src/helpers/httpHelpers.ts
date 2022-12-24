@@ -1,4 +1,5 @@
 import { useNavigate } from '@solidjs/router';
+import { ObjectStatus } from '../api/GiantTeam';
 import { authorize, refreshSession } from '../utils/session';
 
 export enum HttpStatusCode {
@@ -11,13 +12,18 @@ export enum HttpStatusCode {
     InternalServerError = 500,
 }
 
-export interface DataResponse<TData> {
-    ok: boolean,
+export type ObjectStatusResponse = {
+    ok: false
+} & ObjectStatus
+
+export type OkDataResponse<TData> = {
+    ok: true,
     status: number,
     message: string,
-    data: TData | null,
-    errorData?: any,
+    data: TData,
 }
+
+export type DataResponse<TData> = OkDataResponse<TData> | ObjectStatusResponse
 
 export const postJson = async <TInput, TData>(url: string, input?: TInput): Promise<DataResponse<TData>> => {
     try {
@@ -34,24 +40,22 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
         if (response.ok) {
             if (isJsonResponse) {
                 const data = await response.json();
-                const result = {
+                const result: DataResponse<TData> = {
                     ok: true,
                     status: response.status,
                     message: data?.message ?? '',
                     data: data,
-                    errorData: null,
                 };
                 console.debug(url, result);
                 return result;
             }
             else {
                 const message = await response.text();
-                const result = {
+                const result: DataResponse<any> = {
                     ok: true,
                     status: response.status,
                     message: message ?? '',
                     data: null,
-                    errorData: null,
                 };
                 console.debug(url, result);
                 return result;
@@ -63,12 +67,12 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                 await refreshSession();
                 authorize();
 
-                const result = {
+                const result: ObjectStatusResponse = {
                     ok: false,
                     status: response.status,
-                    message: 'Login required',
-                    data: null,
-                    errorData: null,
+                    statusText: 'Login Required',
+                    message: 'Please login to access the requested resource.',
+                    details: []
                 };
                 console.debug(url, result);
                 return result;
@@ -77,36 +81,35 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                 const navigate = useNavigate();
                 navigate('/access-denied', { state: { returnUrl: location.href } });
 
-                const result = {
+                const result: ObjectStatusResponse = {
                     ok: false,
                     status: response.status,
-                    message: 'Access denied',
-                    data: null,
-                    errorData: null,
+                    statusText: 'Access Denied',
+                    message: 'You do not have permission to access the requested resource.',
+                    details: []
                 };
                 console.debug(url, result);
                 return result;
             }
             else if (isJsonResponse) {
                 const data = await response.json();
-                const result = {
-                    ok: false,
+                const result: ObjectStatusResponse = {
                     status: response.status,
-                    message: data?.message ?? '',
-                    data: null,
-                    errorData: data,
+                    statusText: response.statusText,
+                    ...data,
+                    ok: false,
                 };
                 console.debug(url, result);
                 return result;
             }
             else {
                 const errorMessage = await response.text();
-                const result = {
+                const result: ObjectStatusResponse = {
                     ok: false,
                     status: response.status,
-                    message: errorMessage ?? '',
-                    data: null,
-                    errorData: null,
+                    statusText: response.statusText ?? 'Unexpected Error',
+                    message: errorMessage ?? 'An unexpected error occurred.',
+                    details: [],
                 };
                 console.debug(url, result);
                 return result;
@@ -119,9 +122,9 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
         return {
             ok: false,
             status: HttpStatusCode.ConnectionFailure,
-            message: 'Unable to connect to server. Please check your Internet connection or try again later.',
-            data: null,
-            errorData: err,
-        }
+            statusText: "Network Connection Failure",
+            message: 'Unable to connect to the server. Please check your Internet connection or try again later.',
+            details: [],
+        } as ObjectStatusResponse;
     }
 }

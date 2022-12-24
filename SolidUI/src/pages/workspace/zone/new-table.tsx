@@ -1,13 +1,18 @@
 import { useParams, useSearchParams } from "@solidjs/router";
 import { createMutable, unwrap } from "solid-js/store";
-import { StoreType, Table, TableIndexType } from "../../api/GiantTeam";
-import { postCreateTable } from "../../api/GiantTeam.Data.Api";
-import { SaveEditFilledIcon } from "../../helpers/icons";
-import { setTitle } from "../../utils/page"
-import { TableDesignerWidget } from "../../widgets/TableDesigner";
+import { StoreType, Table, TableIndexType } from "../../../api/GiantTeam";
+import { postCreateTable } from "../../../api/GiantTeam.Data.Api";
+import { SaveEditFilledIcon } from "../../../helpers/icons";
+import { combinePaths } from "../../../helpers/urlHelpers";
+import { Breadcrumb, BreadcrumbTrail } from "../../../utils/nav";
+import { setTitle } from "../../../utils/page"
+import { TableDesignerWidget } from "../../../widgets/TableDesigner";
+import { createZoneUrl, useZoneData } from "./zone-layout";
 
 export default function CreateTablePage() {
-    setTitle('Create a Table');
+    const zoneData = useZoneData();
+
+    // setTitle('Create a Table');
 
     const params = useParams();
     const [search] = useSearchParams();
@@ -100,49 +105,47 @@ export default function CreateTablePage() {
         }
     };
 
-    return (
+    return (<>
+        <Breadcrumb link={{ text: 'New Table', href: combinePaths(createZoneUrl(), 'table-maker') }} />
+
         <section class='pxy md:w-900px max-w-100% md:mx-auto'>
 
             <h1>Table Maker</h1>
 
-            {table ?
-                <form onsubmit={onsubmitform}>
+            <form onsubmit={onsubmitform}>
 
-                    <div class='flex gap-1 mb rounded paint-gray-100'>
-                        <button class='button paint-primary'>
-                            <SaveEditFilledIcon />
-                            Save
-                        </button>
-                        <button type='button' class='button'
-                            onclick={e => {
-                                table.columns = [{
-                                    position: tmpPosition++,
-                                    name: 'Id',
-                                    storeType: StoreType.uuid,
-                                    isNullable: false,
-                                    computedColumnSql: '',
-                                    defaultValueSql: 'gen_random_uuid()',
-                                }];
-                                table.indexes = [{
-                                    name: '',
-                                    indexType: TableIndexType.PrimaryKey,
-                                    columns: ['Id'],
-                                }];
-                            }}>
-                            <SaveEditFilledIcon />
-                            Clear Form
-                        </button>
-                    </div>
+                <div class='flex gap-1 mb rounded paint-gray-100'>
+                    <button class='button paint-primary'>
+                        <SaveEditFilledIcon />
+                        Save
+                    </button>
+                    <button type='button' class='button'
+                        onclick={e => {
+                            table.columns = [{
+                                position: tmpPosition++,
+                                name: 'Id',
+                                storeType: StoreType.uuid,
+                                isNullable: false,
+                                computedColumnSql: '',
+                                defaultValueSql: 'gen_random_uuid()',
+                            }];
+                            table.indexes = [{
+                                name: '',
+                                indexType: TableIndexType.PrimaryKey,
+                                columns: ['Id'],
+                            }];
+                        }}>
+                        <SaveEditFilledIcon />
+                        Clear Form
+                    </button>
+                </div>
 
-                    <div class="pxy b rounded">
-                        <TableDesignerWidget table={table} />
-                    </div>
+                <div class="pxy b rounded">
+                    <TableDesignerWidget table={table} />
+                </div>
 
-                </form>
-                :
-                null
-            }
+            </form>
 
         </section>
-    )
+    </>);
 }

@@ -1,10 +1,19 @@
-﻿using GiantTeam.ComponentModel.Services;
+﻿using GiantTeam.ComponentModel;
+using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseModeling.Models;
+using GiantTeam.WorkspaceAdministration.Services;
+using GiantTeam.Workspaces.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 
-namespace GiantTeam.WorkspaceAdministration.Services
+namespace GiantTeam.Workspaces.Services
 {
+    public class FetchWorkspaceInput
+    {
+        [Required, StringLength(50), PgIdentifier]
+        public string? WorkspaceName { get; set; }
+    }
+
     public class FetchWorkspaceService
     {
         private readonly ILogger<FetchWorkspaceService> logger;
@@ -21,7 +30,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
             this.connectionService = connectionService;
         }
 
-        public async Task<FetchWorkspaceOutput> FetchWorkspaceAsync(FetchWorkspaceInput input)
+        public async Task<Workspace> FetchWorkspaceAsync(FetchWorkspaceInput input)
         {
             validationService.Validate(input);
 
@@ -30,18 +39,18 @@ namespace GiantTeam.WorkspaceAdministration.Services
                 using var connection = await connectionService.OpenConnectionAsync(input.WorkspaceName!);
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = $"""
-SELECT "Name", "Owner", "Schemas"
+SELECT "Name", "Owner", "Zones"
 FROM gt.workspace
 """;
 
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    var output = new FetchWorkspaceOutput()
+                    var output = new Workspace()
                     {
                         Name = reader.GetString("Name"),
                         Owner = reader.GetString("Owner"),
-                        Schemas = reader.GetFieldValue<Schema[]>("Schemas"),
+                        Zones = reader.GetFieldValue<Schema[]>("Zones"),
                     };
                     return output;
                 }
@@ -51,7 +60,7 @@ FROM gt.workspace
                 logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
             }
 
-            throw new ValidationException($"Workspace not found.");
+            throw new NotFoundException("Workspace not found.");
         }
     }
 }

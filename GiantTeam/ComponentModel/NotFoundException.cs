@@ -1,9 +1,11 @@
-﻿namespace GiantTeam.ComponentModel
+﻿using GiantTeam.ComponentModel.Models;
+
+namespace GiantTeam.ComponentModel
 {
-    public class NotFoundException : StatusCodeException
+    public class NotFoundException : ObjectStatusException
     {
-        public NotFoundException()
-            : base(404, "Not Found", "The requested resource was not found.")
+        public NotFoundException(string message)
+            : base(ObjectStatus.NotFound(message))
         {
         }
     }

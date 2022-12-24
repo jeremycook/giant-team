@@ -104,7 +104,7 @@ i.indisprimary
         )
  SELECT databases."Name",
     databases."Owner",
-    databases."Schemas"
+    databases."Schemas" "Zones"
    FROM databases;
 
 ALTER TABLE gt.workspace

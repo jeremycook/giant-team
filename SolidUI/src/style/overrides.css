@@ -1,12 +1,12 @@
-﻿.ace_editor {
-    border: 1px solid var(--border-color);
+﻿/* Vendor overrides */
+
+.ace_editor {
+    border-width: 1px;
+    border-style: solid;
     min-height: 70vh;
 }
 
 iconify-icon {
     position: relative;
     top: 2px;
-    
-    /* font-size: .8em; */
-    margin-bottom: 0px;
 }

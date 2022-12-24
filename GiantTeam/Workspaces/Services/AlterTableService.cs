@@ -63,12 +63,12 @@ namespace GiantTeam.Workspaces.Services
             });
 
             Table? table = workspace
-                .Schemas.SingleOrDefault(o => o.Name == input.SchemaName)
+                .Zones.SingleOrDefault(o => o.Name == input.SchemaName)
                 ?.Tables.SingleOrDefault(o => o.Name == input.TableName);
 
             if (table is null)
             {
-                throw new NotFoundException();
+                throw new NotFoundException("Table not found.");
             }
 
             List<DatabaseChange> changes = DatabaseChangeCalculator.CalculateTableChanges(input.SchemaName, table, input.Table);

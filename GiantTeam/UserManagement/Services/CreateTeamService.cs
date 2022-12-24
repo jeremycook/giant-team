@@ -46,14 +46,10 @@ namespace GiantTeam.UserManagement.Services
             {
                 return await ProcessAsync(input);
             }
-            catch (ValidationException ex) when (ex is not DetailedValidationException)
-            {
-                throw new DetailedValidationException(ex);
-            }
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
                 logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                throw new DetailedValidationException($"The \"{input.TeamName}\" team was not created: {ex.MessageText.TrimEnd('.')}. {ex.Detail}");
+                throw new ValidationException($"The \"{input.TeamName}\" team was not created: {ex.MessageText.TrimEnd('.')}. {ex.Detail}");
             }
         }
 

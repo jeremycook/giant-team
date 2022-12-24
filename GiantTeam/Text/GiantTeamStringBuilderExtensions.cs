@@ -1,4 +1,6 @@
-﻿namespace System.Text
+﻿using System.Text;
+
+namespace GiantTeam.Text
 {
     public static class GiantTeamStringBuilderExtensions
     {
