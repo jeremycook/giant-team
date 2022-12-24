@@ -55,7 +55,7 @@ export default function LoginPage() {
   };
 
   if (!isAuthenticated()) {
-    const refresher = setInterval(() => isAuthenticated() ? clearInterval(refresher) : refreshSession(), 15 * 1000)
+    const refresher = setInterval(() => isAuthenticated() ? clearInterval(refresher) : refreshSession(), 5 * 1000)
   }
 
   return (

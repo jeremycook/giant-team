@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.DatabaseModeling.Changes;
 using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;
@@ -17,6 +18,9 @@ namespace GiantTeam.Workspaces.Services
         [Required, StringLength(50), PgIdentifier]
         public string SchemaName { get; set; } = null!;
 
+        [Required, StringLength(50), PgIdentifier]
+        public string TableName { get; set; } = null!;
+
         [Required]
         public Table Table { get; set; } = null!;
     }
@@ -30,15 +34,18 @@ namespace GiantTeam.Workspaces.Services
         private readonly ILogger<AlterTableService> logger;
         private readonly ValidationService validationService;
         private readonly UserConnectionService connectionService;
+        private readonly FetchWorkspaceService fetchWorkspaceService;
 
         public AlterTableService(
             ILogger<AlterTableService> logger,
             ValidationService validationService,
-            UserConnectionService connectionService)
+            UserConnectionService connectionService,
+            FetchWorkspaceService fetchWorkspaceService)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.connectionService = connectionService;
+            this.fetchWorkspaceService = fetchWorkspaceService;
         }
 
         public async Task<AlterTable> AlterTableAsync(AlterTableInput input)
@@ -50,58 +57,62 @@ namespace GiantTeam.Workspaces.Services
 
         private async Task<AlterTable> ProcessAsync(AlterTableInput input)
         {
-            Database database = new()
+            var workspace = await fetchWorkspaceService.FetchWorkspaceAsync(new()
             {
-                Schemas =
-                {
-                    new(input.SchemaName)
-                    {
-                        Tables =
-                        {
-                            input.Table
-                        },
-                    }
-                },
-            };
+                WorkspaceName = input.DatabaseName,
+            });
 
-            PgDatabaseScripter scripter = new();
-            string migrationScript = scripter.ScriptAlterTables(database);
+            Table? table = workspace
+                .Schemas.SingleOrDefault(o => o.Name == input.SchemaName)
+                ?.Tables.SingleOrDefault(o => o.Name == input.TableName);
 
-            logger.LogInformation("Executing alter table script: {CommandText}", migrationScript);
-
-            using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(input.DatabaseName);
-            try
+            if (table is null)
             {
-                await designConnection.ExecuteAsync(migrationScript);
+                throw new NotFoundException();
             }
-            catch (Exception ex)
+
+            List<DatabaseChange> changes = DatabaseChangeCalculator.CalculateTableChanges(input.SchemaName, table, input.Table);
+
+            string migrationScript = PgDatabaseScripter.Singleton.ScriptChanges(changes);
+
+            if (migrationScript != string.Empty)
             {
-                logger.LogWarning(ex,
-                    "{ExceptionType}: {ExceptionMessage} when executing {Sql}",
-                    ex.GetBaseException().GetType(),
-                    ex.GetBaseException().Message,
-                    migrationScript);
+                logger.LogInformation("Executing alter table script: {CommandText}", migrationScript);
 
-                if (ex.GetBaseException() is PostgresException postgresException)
+                using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(input.DatabaseName);
+                try
                 {
-                    string message = $"Database error: {postgresException.MessageText.TrimEnd('.')}.";
-
-                    if (postgresException.Detail is not null)
-                    {
-                        message += $" Detail: {postgresException.Detail.TrimEnd('.')}.";
-                    }
-
-                    if (postgresException.Hint is not null)
-                    {
-                        message += $" Hint: {postgresException.Hint.TrimEnd('.')}.";
-                    }
-
-                    message += $" SQL:\n{migrationScript}";
-
-                    throw new ValidationException(message);
+                    await designConnection.ExecuteAsync(migrationScript);
                 }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex,
+                        "{ExceptionType}: {ExceptionMessage} when executing {Sql}",
+                        ex.GetBaseException().GetType(),
+                        ex.GetBaseException().Message,
+                        migrationScript);
 
-                throw;
+                    if (ex.GetBaseException() is PostgresException postgresException)
+                    {
+                        string message = $"Database Error: {postgresException.MessageText.TrimEnd('.')}.";
+
+                        if (postgresException.Detail is not null)
+                        {
+                            message += $" Detail: {postgresException.Detail.TrimEnd('.')}.";
+                        }
+
+                        if (postgresException.Hint is not null)
+                        {
+                            message += $" Hint: {postgresException.Hint.TrimEnd('.')}.";
+                        }
+
+                        message += $" SQL:\n{migrationScript}";
+
+                        throw new ValidationException(message);
+                    }
+
+                    throw;
+                }
             }
 
             return new AlterTable()

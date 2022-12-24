@@ -29,4 +29,15 @@ public class Column
 
     [PgExpression]
     public string? ComputedColumnSql { get; set; }
+
+    public bool Same(Column column)
+    {
+        return
+            Position == column.Position &&
+            Name == column.Name &&
+            StoreType == column.StoreType &&
+            IsNullable == column.IsNullable &&
+            DefaultValueSql == column.DefaultValueSql &&
+            ComputedColumnSql == column.ComputedColumnSql;
+    }
 }

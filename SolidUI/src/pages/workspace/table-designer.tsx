@@ -1,9 +1,10 @@
-import { useParams, useSearchParams } from "@solidjs/router";
+import { A, useParams, useSearchParams } from "@solidjs/router";
 import { createEffect, createResource, Show } from "solid-js";
 import { createMutable, unwrap } from "solid-js/store";
-import { Table } from "../../api/GiantTeam";
+import { AlterTableInput, Table } from "../../api/GiantTeam";
 import { postAlterTable, postFetchWorkspace } from "../../api/GiantTeam.Data.Api";
 import { SaveEditFilledIcon } from "../../helpers/icons";
+import { createUrl } from "../../helpers/urlHelpers";
 import { setTitle } from "../../utils/page"
 import { TableDesignerWidget } from "../../widgets/TableDesigner";
 
@@ -41,9 +42,10 @@ export default function CreateTablePage() {
     const onsubmitform = async (e: SubmitEvent) => {
         e.preventDefault();
 
-        const input = {
+        const input: AlterTableInput = {
             databaseName: info.workspace,
             schemaName: info.schema,
+            tableName: info.table,
             table: unwrap(model.table!),
         };
 
@@ -62,22 +64,27 @@ export default function CreateTablePage() {
 
             <h1>Table Designer</h1>
 
-            <Show when={model.table}>
+            {model.table ?
                 <form onsubmit={onsubmitform}>
 
-                    <div class='flex mb rounded paint-gray-100 children:text-lg'>
-                        <button class='button'>
+                    <div class='flex gap-1 mb rounded paint-gray-100'>
+                        <button class='button paint-primary'>
                             <SaveEditFilledIcon />
                             Save
                         </button>
+                        <A class='button' href={createUrl('../table', { schema: info.schema, table: info.table })}>Open Table</A>
                     </div>
 
                     <div class="pxy b rounded">
-                        <TableDesignerWidget table={model.table!} />
+                        <TableDesignerWidget
+                            table={model.table}
+                            lockedColumnNames={model.table.columns.map(c => c.name)} />
                     </div>
 
                 </form>
-            </Show>
+                :
+                null
+            }
 
         </section>
     )

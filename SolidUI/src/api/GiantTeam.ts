@@ -127,7 +127,7 @@ export interface Table {
 }
 
 export interface TableIndex {
-    name: string;
+    name?: string;
     indexType: TableIndexType;
     columns: string[];
 }
@@ -249,6 +249,7 @@ export interface AlterTable {
 export interface AlterTableInput {
     databaseName: string;
     schemaName: string;
+    tableName: string;
     table: Table;
 }
 

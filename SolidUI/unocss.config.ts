@@ -30,6 +30,19 @@ export function createConfig(): VitePluginConfig {
           800: '#075985',
           900: '#0c4a6e',
         },
+        'secondary': {
+          DEFAULT: '#6b7280',
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
+        },
         'disabled': {
           DEFAULT: '#6b7280',
           50: '#f9fafb',
@@ -78,11 +91,12 @@ export function createConfig(): VitePluginConfig {
     ],
     shortcuts: [
       [/^paint-([a-z]*)$/, ([, c, n]) => `bg-${c} color-white border-${c}-600`],
-      [/^paint-([a-z]+)-([0-9]{3})$/, ([, c, n]) => `bg-${c + (n ? ('-' + n) : '')} color-white border-${c}-${n ? (parseInt(n) + 100) : '600'}`],
+      [/^paint-([a-z]+)-([0-9]{3})$/, ([, c, n]) => `bg-${c + (n ? ('-' + n) : '')} ${parseInt(n) >= 500 ? 'color-white' : 'color-black'} border-${c}-${n ? (parseInt(n) + 100) : '600'}`],
       {
         'p-button': 'px-2 py-1',
+        'p-input': 'p-1',
 
-        'button': 'p-button border paint-primary rounded-1 shadow active:shadow-inset active:bg-primary-400',
+        'button': 'p-button border paint-secondary rounded-1 shadow active:shadow-inset',
 
         'card': 'pxy bg-white border rounded-b shadow',
 

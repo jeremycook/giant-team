@@ -33,6 +33,15 @@ namespace GiantTeam.Asp.Filters
 
                 context.ExceptionHandled = true;
             }
+            else if(context.Exception is StatusCodeException statusCodeException)
+            {
+                context.Result = new ObjectResult(statusCodeException.Message)
+                {
+                    StatusCode = statusCodeException.StatusCode,
+                };
+
+                context.ExceptionHandled = true;
+            }
             else if (context.Exception is ValidationException validationException)
             {
                 context.Result = new ObjectResult(validationException.Message)

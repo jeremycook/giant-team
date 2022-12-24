@@ -2,6 +2,7 @@ import { useParams, useSearchParams } from "@solidjs/router";
 import { createMutable, unwrap } from "solid-js/store";
 import { StoreType, Table, TableIndexType } from "../../api/GiantTeam";
 import { postCreateTable } from "../../api/GiantTeam.Data.Api";
+import { SaveEditFilledIcon } from "../../helpers/icons";
 import { setTitle } from "../../utils/page"
 import { TableDesignerWidget } from "../../widgets/TableDesigner";
 
@@ -69,12 +70,12 @@ export default function CreateTablePage() {
             defaultValueSql: 'CURRENT_USER',
         }],
         indexes: [{
-            name: 'pk_Blog_Post',
+            name: '',
             indexType: TableIndexType.PrimaryKey,
             columns: ['Id'],
         },
         {
-            name: 'ux_Blog_Post_Slug',
+            name: '',
             indexType: TableIndexType.UniqueConstraint,
             columns: ['Slug'],
         }],
@@ -100,18 +101,48 @@ export default function CreateTablePage() {
     };
 
     return (
-        <section class='card card md:w-900px max-w-100% md:mx-auto'>
+        <section class='pxy md:w-900px max-w-100% md:mx-auto'>
+
             <h1>Table Maker</h1>
 
-            <form onsubmit={onsubmitform}>
+            {table ?
+                <form onsubmit={onsubmitform}>
 
-                <TableDesignerWidget table={table} />
+                    <div class='flex gap-1 mb rounded paint-gray-100'>
+                        <button class='button paint-primary'>
+                            <SaveEditFilledIcon />
+                            Save
+                        </button>
+                        <button type='button' class='button'
+                            onclick={e => {
+                                table.columns = [{
+                                    position: tmpPosition++,
+                                    name: 'Id',
+                                    storeType: StoreType.uuid,
+                                    isNullable: false,
+                                    computedColumnSql: '',
+                                    defaultValueSql: 'gen_random_uuid()',
+                                }];
+                                table.indexes = [{
+                                    name: '',
+                                    indexType: TableIndexType.PrimaryKey,
+                                    columns: ['Id'],
+                                }];
+                            }}>
+                            <SaveEditFilledIcon />
+                            Clear Form
+                        </button>
+                    </div>
 
-                <div>
-                    <button class='button'>Create Table</button>
-                </div>
+                    <div class="pxy b rounded">
+                        <TableDesignerWidget table={table} />
+                    </div>
 
-            </form>
+                </form>
+                :
+                null
+            }
+
         </section>
     )
 }

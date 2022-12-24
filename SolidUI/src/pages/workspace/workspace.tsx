@@ -42,7 +42,7 @@ export default function WorkspacePage() {
 
         <div class='md:flex'>
 
-          <div class='md:min-w-200px md:p1'>
+          {/* <div class='md:min-w-200px md:p1'>
 
             <div class='flex flex-col mb'>
               <A class='button p-1 rounded-0' href={'./import-data'}>Import Data</A>
@@ -68,7 +68,7 @@ export default function WorkspacePage() {
             <div>
               <span>Owner: {data()!.owner}</span>
             </div>
-          </div>
+          </div> */}
 
           <div class='flex-grow'>
             <Outlet />

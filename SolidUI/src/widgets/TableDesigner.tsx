@@ -7,9 +7,10 @@ import { snakeCase } from "../helpers/textHelpers";
 
 interface TableDesignerWidgetProps {
     table: Table;
+    lockedColumnNames?: string[];
 }
 
-export function TableDesignerWidget({ table }: TableDesignerWidgetProps) {
+export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerWidgetProps) {
 
     return (
         <>
@@ -46,27 +47,21 @@ export function TableDesignerWidget({ table }: TableDesignerWidgetProps) {
                     <table class='w-100% text-center'>
                         <thead>
                             <tr>
-                                <th title='Default position'>#</th>
                                 <th>Name</th>
                                 <th>Store Type</th>
-                                <th>Default Value SQL</th>
-                                <th>Computed Column SQL</th>
+                                <th>Default SQL</th>
+                                <th>Computed SQL</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <For each={table.columns}>{(column) => (
                                 <tr>
-                                    <td>
-                                        {column.position}
-                                        {/* <input value={column.position}
-                                            oninput={e => column.position = parseInt((e.target as HTMLInputElement).value) || 0}
-                                            required /> */}
-                                    </td>
-                                    <td>
+                                    <td>{lockedColumnNames && lockedColumnNames.indexOf(column.name) > -1 ?
+                                        <div class='p-input'>{column.name}</div> :
                                         <input value={column.name} oninput={e => column.name = (e.target as HTMLInputElement).value}
                                             required />
-                                    </td>
+                                    }</td>
                                     <td>
                                         <div class='flex'>
                                             <input class='flex-grow'
@@ -75,11 +70,11 @@ export function TableDesignerWidget({ table }: TableDesignerWidgetProps) {
                                                 required
                                                 list={createId('datalist')} />
                                             <button type='button'
-                                                class='input w-auto font-bold font-mono'
+                                                class='input w-auto font-mono'
                                                 onclick={e => column.isNullable = !column.isNullable}
                                                 title={column.isNullable ? 'Null values are allowed. Click to disallow.' : 'Null values are not allowed. Click to allow.'}
                                             >
-                                                {column.isNullable ? '?' : '!'}
+                                                {column.isNullable ? 'OPT' : 'REQ'}
                                             </button>
                                         </div>
                                     </td>
@@ -98,12 +93,12 @@ export function TableDesignerWidget({ table }: TableDesignerWidgetProps) {
                                 </tr>
                             )}</For>
                             <tr>
-                                <td colspan='6'>
+                                <td colspan='100'>
                                     <button type='button' class='button' onclick={e => table.columns.push({
                                         position: table.columns.length + 1,
                                         name: '',
                                         storeType: '',
-                                        isNullable: true,
+                                        isNullable: false,
                                         computedColumnSql: '',
                                         defaultValueSql: '',
                                     })}>
@@ -131,8 +126,7 @@ export function TableDesignerWidget({ table }: TableDesignerWidgetProps) {
                                 <tr>
                                     <td>
                                         <input value={index.name}
-                                            oninput={e => index.name = (e.target as HTMLInputElement).value}
-                                            required />
+                                            oninput={e => index.name = (e.target as HTMLInputElement).value} />
                                     </td>
                                     <td class='text-left'>
                                         <select class='w-auto'
@@ -142,8 +136,8 @@ export function TableDesignerWidget({ table }: TableDesignerWidgetProps) {
                                             <option value={TableIndexType.UniqueConstraint} selected={index.indexType === TableIndexType.UniqueConstraint}>Unique</option>
                                         </select>
                                     </td>
-                                    <td>
-                                        <div class='input'>
+                                    <td class='vertical-middle'>
+                                        <div>
                                             <For each={table.columns}>{column => (<>
                                                 <label>
                                                     <input type='checkbox'
@@ -165,10 +159,10 @@ export function TableDesignerWidget({ table }: TableDesignerWidgetProps) {
                                 </tr>
                             )}</For>
                             <tr>
-                                <td colspan='4'>
+                                <td colspan='100'>
                                     <button type='button' class='button'
                                         onclick={e => table.indexes.push({
-                                            name: `ix_${snakeCase(table.name)}_${table.indexes.length + 1}`,
+                                            name: '',
                                             indexType: TableIndexType.Index,
                                             columns: [],
                                         })}>
