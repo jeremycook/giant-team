@@ -17,6 +17,6 @@ namespace GiantTeam.Postgres.Parser
         public static Regex OpenFunction { get; } = new(@"^([a-zA-Z][a-zA-Z0-9_]*)\s*\(");
 
         public static Regex UnquotedIdentifier { get; } = new(@"^[a-zA-Z][a-zA-Z0-9_]*");
-        public static Regex QuotedIdentifier { get; } = new(@"^""([a-zA-Z][\w0-9 _-]*)""");
+        public static Regex QuotedIdentifier { get; } = new(@"^""([a-zA-Z][\w0-9 ._-]*)""");
     }
 }

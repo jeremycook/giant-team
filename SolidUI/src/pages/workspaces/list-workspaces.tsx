@@ -18,14 +18,18 @@ export function WorkspacesPageData() {
 export default function WorkspacePage() {
   setTitle('Workspaces');
 
-  const model = useRouteData<typeof WorkspacesPageData>();
+  const resource = useRouteData<typeof WorkspacesPageData>();
 
-  const ok = () => model()?.ok == true;
-  const message = () => model()?.message ?? '';
-  const data = (): TableData => ({
-    columns: model()?.data?.columns.map(c => c.name) ?? [],
-    records: model()?.data?.records ?? []
-  });
+  const ok = () => resource()?.ok == true;
+  const message = () => resource()?.message ?? '';
+  const data = (): TableData => {
+    const response = resource();
+    const data = response?.ok ? response.data : undefined;
+    return {
+      columns: data?.columns.map(c => c.name) ?? [],
+      records: data?.records ?? [],
+    };
+  };
 
   return (
     <section class='card md:w-md md:mx-auto'>

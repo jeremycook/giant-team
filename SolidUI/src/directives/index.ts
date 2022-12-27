@@ -1,6 +1,8 @@
+import { autofocus } from './autofocus';
 import { input } from './input';
 
 const directives = {
+    autofocus,
     input,
 };
 

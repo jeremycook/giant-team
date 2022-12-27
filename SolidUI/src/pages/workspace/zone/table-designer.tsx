@@ -29,9 +29,11 @@ export default function CreateTablePage() {
     }));
 
     createEffect(() => {
-        if (resource()?.ok) {
-            const table = resource()?.data
-                ?.schemas.find(s => s.name === info.schema)
+        const response = resource();
+        const data = response?.ok ? response.data : undefined;
+        if (data) {
+            const table = data
+                ?.zones.find(z => z.name === info.schema)
                 ?.tables.find(t => t.name === info.table);
             if (typeof table !== 'undefined') {
                 model.table = table;

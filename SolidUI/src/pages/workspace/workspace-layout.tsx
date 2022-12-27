@@ -1,10 +1,9 @@
-import { NavLink, Outlet, RouteDataFuncArgs, useBeforeLeave, useParams, useRouteData } from '@solidjs/router';
-import { createEffect, createResource, Show } from 'solid-js';
-import { Workspace } from '../../api/GiantTeam';
+import { Outlet, RouteDataFuncArgs, useParams, useRouteData } from '@solidjs/router';
+import { createResource, Show } from 'solid-js';
 import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api';
 import { ObjectStatusResponse } from '../../helpers/httpHelpers';
-import { combinePaths, createUrl } from '../../helpers/urlHelpers';
-import { Breadcrumb, useBreadcrumbContext } from '../../utils/nav';
+import { combinePaths } from '../../helpers/urlHelpers';
+import { Breadcrumb } from '../../utils/nav';
 import StatusCodePage from '../status-code';
 
 const fetchWorkspace = async ({ workspaceName }: { workspaceName: string }) => {
@@ -26,9 +25,9 @@ export const useWorkspaceParams = () => {
   };
 };
 
-export function createWorkspaceUrl() {
+export function createWorkspaceUrl(...paths: string[]) {
   const params = useWorkspaceParams();
-  return `/workspace/${params.workspace}`;
+  return combinePaths(`/workspace/${params.workspace}`, ...paths);
 }
 
 export const useWorkspaceRouteData = () => {

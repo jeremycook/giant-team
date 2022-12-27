@@ -1,7 +1,7 @@
 import { A, Outlet } from "@solidjs/router";
 import { For } from "solid-js";
 import { createId } from "../../helpers/htmlHelpers";
-import { useWorkspaceRouteData } from "./workspace-layout";
+import { createWorkspaceUrl, useWorkspaceRouteData } from "./workspace-layout";
 
 export default function WorkspacePage() {
     const workspaceRouteData = useWorkspaceRouteData();
@@ -13,19 +13,18 @@ export default function WorkspacePage() {
 
     return (<>
 
-        <div class='flex gap-1 children:button'>
-            <A href={'./import-data'}>Import Data</A>
-            <A href={'./create-schema'}>Add Schema</A>
-
+        <div class='flex gap-1'>
+            <A class='button' href={createWorkspaceUrl('import-data')}>Import Data</A>
             <div class='dropdown'>
-                <button type='button' class='dropdown-button' id={createId('SchemasDropdown')}>
-                    Schemas
+                <button type='button' class='dropdown-button button' id={createId('ZonesDropdown')}>
+                    Zones
                 </button>
-                <div class='dropdown-anchor' aria-labelledby={createId('SchemasDropdown')}>
-                    <div class='dropdown-content stack'>
+                <div class='dropdown-anchor' aria-labelledby={createId('ZonesDropdown')}>
+                    <div class='dropdown-content flex flex-col card p-1'>
                         <For each={workspace()!.zones}>{(zone =>
-                            <A href={`./zone/${zone.name}`}>{zone.name}</A>
+                            <A class='p-1 max-w-sm truncate' href={createWorkspaceUrl('zone', zone.name)}>{zone.name}</A>
                         )}</For>
+                        <A class='p-1 max-w-sm truncate' href={createWorkspaceUrl('new-zone')}>Add Zone</A>
                     </div>
                 </div>
             </div>

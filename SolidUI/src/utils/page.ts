@@ -1,4 +1,4 @@
-import { createEffect, JSX } from 'solid-js';
+import { JSX } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
 enum AlertType {

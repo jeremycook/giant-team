@@ -34,7 +34,8 @@ export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerW
                 <label for={createId('name')}>Name</label>
                 <div>
                     <input id={createId('name')} value={table.name} oninput={e => table.name = (e.target as HTMLInputElement).value}
-                        required />
+                        required 
+                        use:autofocus={true}/>
                 </div>
 
                 <label for={createId('owner')}>Owner</label>

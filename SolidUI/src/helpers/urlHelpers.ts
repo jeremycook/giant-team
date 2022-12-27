@@ -1,11 +1,5 @@
 export const combinePaths = (basePath: string, ...paths: string[]) => {
-    let combined = basePath.replace(/\/^/, '');
-
-    for (const url of paths) {
-        combined += '/' + url.replace(/\/^/, '');
-    }
-
-    return combined.replace(/\/^/, '');
+    return [basePath, ...paths].join('/');
 }
 
 export const createUrl = (url: string, params?: Record<string, string>) => {

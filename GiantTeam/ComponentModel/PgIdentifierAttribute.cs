@@ -8,7 +8,7 @@ namespace GiantTeam.ComponentModel
     {
         public PgIdentifierAttribute() : base()
         {
-            ErrorMessage = "The {0} field is not a valid identifier.";
+            ErrorMessage = "The value of {0} is not a valid identifier ({1}).";
         }
 
         protected virtual bool IsIdentifier(string input)
@@ -66,7 +66,7 @@ namespace GiantTeam.ComponentModel
                 var memberNames = string.IsNullOrEmpty(validationContext.MemberName) ?
                     Array.Empty<string>() :
                     new[] { validationContext.MemberName };
-                return new(string.Format(ErrorMessage!, validationContext.DisplayName), memberNames);
+                return new(string.Format(ErrorMessage!, validationContext.DisplayName, value), memberNames);
             }
         }
     }

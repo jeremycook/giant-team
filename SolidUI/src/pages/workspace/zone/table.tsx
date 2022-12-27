@@ -6,13 +6,12 @@ import { setTitle } from '../../../utils/page';
 import { Data, DataRecord, Meta, MetaColumn } from '../../../widgets/SmartTable';
 import SmartTable from '../../../widgets/SmartTable';
 import { Portal } from 'solid-js/web';
-import { useParams, useSearchParams } from '@solidjs/router';
+import { useParams } from '@solidjs/router';
 
 export default function WorkspacePage() {
     setTitle('Table');
 
     const params = useParams();
-    const [search] = useSearchParams();
 
     const [data, setData] = createStore<Data>({
         columns: [],
@@ -25,7 +24,7 @@ export default function WorkspacePage() {
 
     createEffect(() => {
         // Dependencies
-        params.workspace, search.schema, search.table;
+        params.workspace, params.zone, params.table;
 
         setMeta({
             columns: {},
@@ -61,8 +60,8 @@ export default function WorkspacePage() {
 
         return {
             database: params.workspace,
-            schema: search.schema,
-            table: search.table,
+            schema: params.zone,
+            table: params.table,
             columns: columns,
             filters: filters,
             // skip: params.skip,
@@ -107,7 +106,10 @@ export default function WorkspacePage() {
     createEffect(() => {
         batch(() => {
 
-            const columns = resource()?.data?.columns;
+            const response = resource();
+            const data = response?.ok ? response.data : undefined;
+
+            const columns = data?.columns;
             if (columns) {
                 setData('columns', columns.map(c => c.name));
 
@@ -137,7 +139,7 @@ export default function WorkspacePage() {
                 setMeta('columns', returnedColumns)
             }
 
-            const records = resource()?.data?.records;
+            const records = data?.records;
             if (records) {
                 // TODO: Diff based on primary key or unique columns if known?
                 setData('records', []);
@@ -151,7 +153,7 @@ export default function WorkspacePage() {
         });
     });
 
-    createEffect(() => setTitle(search.table ?? 'Table'));
+    // createEffect(() => setTitle(params.table ?? 'Table'));
 
     // REMOVE
     // setTimeout(() => data.records.length > 0 ? toggleActiveRecord(1) : null, 500);

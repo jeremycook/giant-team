@@ -30,7 +30,7 @@ export const refreshSession = async () => {
 
   var response = await postSession();
 
-  if (response.data) {
+  if (response.ok) {
     setSession(response.data);
   }
 }

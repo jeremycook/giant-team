@@ -1,5 +1,5 @@
 import { A, Outlet, useParams, useRouteData } from "@solidjs/router";
-import { combinePaths } from "../../../helpers/urlHelpers";
+import { For } from "solid-js";
 import { Breadcrumb } from "../../../utils/nav";
 import { createWorkspaceUrl, WorkspaceLayoutData } from "../workspace-layout";
 
@@ -11,9 +11,9 @@ export const useZoneParams = () => {
     };
 };
 
-export function createZoneUrl() {
+export function createZoneUrl(...paths: string[]) {
     const params = useZoneParams();
-    return combinePaths(createWorkspaceUrl(), `zone/${params.zone}`);
+    return createWorkspaceUrl(`zone/${params.zone}`, ...paths);
 }
 
 export const useZoneData = () => {
@@ -33,52 +33,25 @@ export const useZoneData = () => {
 export default function ZoneLayout() {
     const zoneData = useZoneData();
 
-    // const breadcrumbLink = () => {
-    //     return zoneData() ? { title: zoneData()!.name, url: './', } : undefined
-    // };
-    // const breadcrumbs = useBreadcrumbContext();
-
-    // const navLink = createMutable({
-    //     title: 'Loading zone…',
-    //     url: './',
-    // })
-
-
-    // createEffect(() => {
-    //     const zd = zoneData();
-    //     if (zd) {
-    //         breadcrumbs.push(navLink);
-    //     }
-    //     else    {
-
-    //     }
-    // });
-
-    // onCleanup(() => {
-    //     breadcrumbs.remove(navLink);
-    // });
-
     return (<>
 
         <Breadcrumb link={{ text: zoneData()!.name, href: createZoneUrl() }} />
 
         <div class='flex gap-1 children:button'>
-            <A href={'../../'}>Workspace</A>
-            <A href={'./import-data'}>Import Data</A>
-            <A href={'./table-maker'}>Add Table</A>
-
-            {/* <div class='dropdown'>
+            <A href={createZoneUrl('import-data')}>Import Data</A>
+            <A href={createZoneUrl('table-maker')}>Add Table</A>
+            <div class='dropdown'>
                 <button type='button' class='dropdown-button'>
-                    Schemas
+                    Tables
                 </button>
                 <div class='dropdown-anchor'>
                     <div class='dropdown-content stack'>
-                        <For each={workspace()!.zones}>{(zone =>
-                            <A href={`./zone/${zone.name}`}>{zone.name}</A>
+                        <For each={zoneData()!.tables}>{(table =>
+                            <A href={createZoneUrl('table', table.name)}>{table.name}</A>
                         )}</For>
                     </div>
                 </div>
-            </div> */}
+            </div>
         </div>
 
         <Outlet />

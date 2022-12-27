@@ -1,6 +1,5 @@
 import { A } from "@solidjs/router";
-import { createSignal, createContext, useContext, JSX, createEffect, Accessor, Show, For, untrack, onMount, onCleanup } from "solid-js";
-import { unwrap } from "solid-js/store";
+import { createSignal, createContext, useContext, JSX, createEffect, For, untrack, onMount, onCleanup } from "solid-js";
 import { removeItem } from "../helpers/arrayHelpers";
 
 export interface Link {

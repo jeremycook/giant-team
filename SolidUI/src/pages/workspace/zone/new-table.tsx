@@ -4,16 +4,11 @@ import { StoreType, Table, TableIndexType } from "../../../api/GiantTeam";
 import { postCreateTable } from "../../../api/GiantTeam.Data.Api";
 import { SaveEditFilledIcon } from "../../../helpers/icons";
 import { combinePaths } from "../../../helpers/urlHelpers";
-import { Breadcrumb, BreadcrumbTrail } from "../../../utils/nav";
-import { setTitle } from "../../../utils/page"
+import { Breadcrumb } from "../../../utils/nav";
 import { TableDesignerWidget } from "../../../widgets/TableDesigner";
-import { createZoneUrl, useZoneData } from "./zone-layout";
+import { createZoneUrl } from "./zone-layout";
 
 export default function CreateTablePage() {
-    const zoneData = useZoneData();
-
-    // setTitle('Create a Table');
-
     const params = useParams();
     const [search] = useSearchParams();
 
