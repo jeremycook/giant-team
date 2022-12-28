@@ -37,18 +37,18 @@ export default function ZoneLayout() {
 
         <Breadcrumb link={{ text: zoneData()!.name, href: createZoneUrl() }} />
 
-        <div class='flex gap-1 children:button'>
-            <A href={createZoneUrl('import-data')}>Import Data</A>
-            <A href={createZoneUrl('table-maker')}>Add Table</A>
+        <div class='flex gap-1'>
+            <A class='button' href={createZoneUrl('import-data')}>Import Data</A>
             <div class='dropdown'>
-                <button type='button' class='dropdown-button'>
+                <button type='button' class='dropdown-button button'>
                     Tables
                 </button>
                 <div class='dropdown-anchor'>
-                    <div class='dropdown-content stack'>
+                    <div class='dropdown-content card p-1 children:p-1 children:max-w-sm children:truncate'>
                         <For each={zoneData()!.tables}>{(table =>
                             <A href={createZoneUrl('table', table.name)}>{table.name}</A>
                         )}</For>
+                        <A href={createZoneUrl('new-table')}>New Table</A>
                     </div>
                 </div>
             </div>

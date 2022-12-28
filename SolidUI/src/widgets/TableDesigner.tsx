@@ -1,8 +1,9 @@
 import { For } from "solid-js";
-import { StoreType, Table, TableIndexType } from "../api/GiantTeam";
+import { Table, TableIndexType } from "../api/GiantTeam";
 import { removeItem } from "../helpers/arrayHelpers";
 import { createId } from "../helpers/htmlHelpers";
 import { DeleteOutlineIcon } from "../helpers/icons";
+import { StoreTypeDatalist, storeTypeDatalistId } from "../pages/workspace/zone/partials/StoreTypeDatalist";
 
 interface TableDesignerWidgetProps {
     table: Table;
@@ -13,21 +14,9 @@ export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerW
 
     return (
         <>
-            <datalist id={createId('datalist')}>
-                <option value={StoreType.boolean}>{StoreType.boolean}</option>
-                <option value={StoreType.bytea}>{StoreType.bytea}</option>
-                <option value={StoreType.bytea}>data</option>
-                <option value={StoreType.date}>{StoreType.date}</option>
-                <option value={StoreType.timestampTz}>date/time</option>
-                <option value={StoreType.integer}>{StoreType.integer}</option>
-                <option value={StoreType.jsonb}>{StoreType.jsonb}</option>
-                <option value={StoreType.text}>{StoreType.text}</option>
-                <option value={StoreType.time}>{StoreType.time}</option>
-                <option value={StoreType.timestampTz}>{StoreType.timestampTz}</option>
-                <option value={StoreType.boolean}>true/false</option>
-                <option value={StoreType.uuid}>{StoreType.uuid}</option>
-                <option value={StoreType.boolean}>yes/no</option>
-            </datalist>
+            <StoreTypeDatalist />
+            <StoreTypeDatalist />
+            <StoreTypeDatalist />
 
             <div class='form-grid'>
 
@@ -68,7 +57,7 @@ export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerW
                                                 value={column.storeType}
                                                 onchange={e => column.storeType = (e.target as HTMLInputElement).value}
                                                 required
-                                                list={createId('datalist')} />
+                                                list={storeTypeDatalistId} />
                                             <button type='button'
                                                 class='input w-auto font-mono'
                                                 onclick={e => column.isNullable = !column.isNullable}

@@ -20,11 +20,11 @@ export default function WorkspacePage() {
                     Zones
                 </button>
                 <div class='dropdown-anchor' aria-labelledby={createId('ZonesDropdown')}>
-                    <div class='dropdown-content flex flex-col card p-1'>
+                    <div class='dropdown-content flex flex-col card p-1 children:p-1 children:max-w-sm children:truncate'>
                         <For each={workspace()!.zones}>{(zone =>
-                            <A class='p-1 max-w-sm truncate' href={createWorkspaceUrl('zone', zone.name)}>{zone.name}</A>
+                            <A href={createWorkspaceUrl('zone', zone.name)}>{zone.name}</A>
                         )}</For>
-                        <A class='p-1 max-w-sm truncate' href={createWorkspaceUrl('new-zone')}>Add Zone</A>
+                        <A href={createWorkspaceUrl('new-zone')}>Add Zone</A>
                     </div>
                 </div>
             </div>

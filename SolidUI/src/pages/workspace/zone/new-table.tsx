@@ -3,7 +3,6 @@ import { createMutable, unwrap } from "solid-js/store";
 import { CreateTableInput, StoreType, Table, TableIndexType } from "../../../api/GiantTeam";
 import { postCreateTable } from "../../../api/GiantTeam.Data.Api";
 import { SaveEditFilledIcon } from "../../../helpers/icons";
-import { combinePaths } from "../../../helpers/urlHelpers";
 import { Breadcrumb } from "../../../utils/nav";
 import { TableDesignerWidget } from "../../../widgets/TableDesigner";
 import { createZoneUrl } from "./zone-layout";
@@ -17,67 +16,22 @@ export default function CreateTablePage() {
         schema: search.schema as string,
     };
 
-    let tmpPosition = 1;
+    let nextPosition = 1;
     const table = createMutable<Table>({
-        name: 'Blog Post',
+        name: '',
         owner: '',
         columns: [{
-            position: tmpPosition++,
-            name: 'Id',
+            position: nextPosition++,
+            name: 'id',
             storeType: StoreType.uuid,
             isNullable: false,
             computedColumnSql: '',
             defaultValueSql: 'gen_random_uuid()',
-        },
-        {
-            position: tmpPosition++,
-            name: 'Title',
-            storeType: StoreType.text,
-            isNullable: false,
-            computedColumnSql: '',
-            defaultValueSql: '',
-        },
-        {
-            position: tmpPosition++,
-            name: 'Body',
-            storeType: StoreType.text, // TODO: 'html'
-            isNullable: false,
-            computedColumnSql: '',
-            defaultValueSql: '',
-        },
-        {
-            position: tmpPosition++,
-            name: 'Slug',
-            storeType: StoreType.text,
-            isNullable: false,
-            computedColumnSql: `trim(regexp_replace("Title", '[^\w]+', '-', 'g'), '-')`,
-            defaultValueSql: '',
-        },
-        {
-            position: tmpPosition++,
-            name: 'Created',
-            storeType: StoreType.timestampTz,
-            isNullable: false,
-            computedColumnSql: '',
-            defaultValueSql: `(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')`,
-        },
-        {
-            position: tmpPosition++,
-            name: 'Created By',
-            storeType: StoreType.text,
-            isNullable: false,
-            computedColumnSql: '',
-            defaultValueSql: 'CURRENT_USER',
         }],
         indexes: [{
             name: '',
             indexType: TableIndexType.PrimaryKey,
-            columns: ['Id'],
-        },
-        {
-            name: '',
-            indexType: TableIndexType.UniqueConstraint,
-            columns: ['Slug'],
+            columns: ['id'],
         }],
     });
 
@@ -105,11 +59,11 @@ export default function CreateTablePage() {
     };
 
     return (<>
-        <Breadcrumb link={{ text: 'New Table', href: combinePaths(createZoneUrl(), 'table-maker') }} />
+        <Breadcrumb link={{ text: 'New Table', href: createZoneUrl('new-table') }} />
 
         <section class='pxy md:w-900px max-w-100% md:mx-auto'>
 
-            <h1>Table Maker</h1>
+            <h1>New Table</h1>
 
             <form onsubmit={onsubmitform}>
 
@@ -120,23 +74,54 @@ export default function CreateTablePage() {
                     </button>
                     <button type='button' class='button'
                         onclick={e => {
-                            table.name = '',
-                            table.columns = [{
-                                position: tmpPosition++,
-                                name: 'Id',
-                                storeType: StoreType.uuid,
+                            table.columns = [...table.columns,
+                            {
+                                position: nextPosition++,
+                                name: 'title',
+                                storeType: StoreType.text,
                                 isNullable: false,
                                 computedColumnSql: '',
-                                defaultValueSql: 'gen_random_uuid()',
+                                defaultValueSql: '',
+                            },
+                            {
+                                position: nextPosition++,
+                                name: 'body',
+                                storeType: StoreType.text,
+                                isNullable: false,
+                                computedColumnSql: '',
+                                defaultValueSql: '',
+                            },
+                            {
+                                position: nextPosition++,
+                                name: 'slug',
+                                storeType: StoreType.text,
+                                isNullable: false,
+                                computedColumnSql: `trim(regexp_replace(title, '[^\w]+', '-', 'g'), '-')`,
+                                defaultValueSql: '',
+                            },
+                            {
+                                position: nextPosition++,
+                                name: 'created',
+                                storeType: StoreType.timestampTz,
+                                isNullable: false,
+                                computedColumnSql: '',
+                                defaultValueSql: `(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')`,
+                            },
+                            {
+                                position: nextPosition++,
+                                name: 'created_by',
+                                storeType: StoreType.text, // TODO: uuid once default value becomes meta.current_user_id()
+                                isNullable: false,
+                                computedColumnSql: '',
+                                defaultValueSql: 'CURRENT_USER', // TODO: meta.current_user_id()
                             }];
-                            table.indexes = [{
+                            table.indexes = [...table.indexes, {
                                 name: '',
-                                indexType: TableIndexType.PrimaryKey,
-                                columns: ['Id'],
+                                indexType: TableIndexType.UniqueConstraint,
+                                columns: ['slug'],
                             }];
                         }}>
-                        <SaveEditFilledIcon />
-                        Clear Form
+                        Add Example
                     </button>
                 </div>
 

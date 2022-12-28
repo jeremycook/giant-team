@@ -42,7 +42,7 @@ export default function AppRoutes() {
 
             <Route path='/table/:table' component={lazy(() => import('./pages/workspace/zone/table'))} />
             <Route path='/table-designer' component={lazy(() => import('./pages/workspace/zone/table-designer'))} />
-            <Route path='/table-maker' component={lazy(() => import('./pages/workspace/zone/new-table'))} />
+            <Route path='/new-table' component={lazy(() => import('./pages/workspace/zone/new-table'))} />
 
             <Route path='/new-view' component={lazy(() => import('./pages/workspace/zone/new-view'))} />
             <Route path='/view' component={lazy(() => import('./pages/workspace/zone/view'))} />
