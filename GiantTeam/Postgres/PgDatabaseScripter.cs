@@ -138,77 +138,6 @@ END $DDL$;
             return script.ToString();
         }
 
-        public string ScriptCreateTables(Database database)
-        {
-            var script = new StringBuilder();
-
-            script.AppendLine("""
-DO $DDL$
-BEGIN
-
-""");
-
-            // TODO: Sort object creation by dependency graph.
-
-            foreach (var schema in database.Schemas)
-            {
-                if (!string.IsNullOrEmpty(schema.Owner))
-                {
-                    script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
-                }
-
-                foreach (var table in schema.Tables)
-                {
-                    if (!string.IsNullOrEmpty(table.Owner))
-                    {
-                        script.AppendLine($"SET ROLE {Identifier(table.Owner)};");
-                    }
-                    else if (!string.IsNullOrEmpty(schema.Owner))
-                    {
-                        script.AppendLine($"SET ROLE {Identifier(schema.Owner)};");
-                    }
-
-                    // Create missing table
-                    // https://www.postgresql.org/docs/current/sql-createtable.html
-                    TableIndex? primaryKey = table.Indexes.FirstOrDefault(uc => uc.IndexType == TableIndexType.PrimaryKey);
-                    var columns = table.Columns.Select(column =>
-                            ScriptAddColumnDefinition(column) +
-                            // TODO: Drive this from the Database model. Assuming that integer primary keys are identity columns.
-                            (primaryKey?.Columns.Contains(column.Name) == true && column.StoreType == "integer" ? " GENERATED ALWAYS AS IDENTITY" : "")
-                        );
-                    var constraints = table.Indexes
-                        .Where(ix => ix.IndexType != TableIndexType.Index)
-                        .Select(constraint => $"CONSTRAINT {Identifier(constraint.GetName(table))} {(constraint.IndexType == TableIndexType.PrimaryKey ? "PRIMARY KEY" : "UNIQUE")} ({string.Join(", ", constraint.Columns.Select(Identifier))})");
-                    var tableParts = columns.Concat(constraints);
-                    script.AppendLine($"CREATE TABLE {Identifier(schema.Name, table.Name)} ({string.Join(", ", tableParts)});");
-                    script.AppendLine();
-
-                    // Add indexes
-                    // https://www.postgresql.org/docs/current/sql-createindex.html
-                    foreach (var index in table.Indexes.Where(o => o.IndexType == TableIndexType.Index))
-                    {
-                        script.AppendLine($"CREATE INDEX {Identifier(index.GetName(table))} ON {Identifier(schema.Name, table.Name)} ({string.Join(", ", index.Columns.Select(Identifier))});");
-                    }
-                    if (table.Indexes.Any()) script.AppendLine();
-                }
-
-                script.AppendLine();
-            }
-
-            script.AppendLine("""
-END $DDL$;
-""");
-
-            // Add scripts.
-            foreach (var sql in database.Scripts)
-            {
-                script.Append(sql);
-                script.AppendLine();
-            }
-
-            return script.ToString();
-        }
-
         private static string ScriptAddColumnDefinition(Column column)
         {
             return $"{Identifier(column.Name)} {column.StoreType} {(column.IsNullable ? "NULL" : "NOT NULL")}" +
@@ -246,7 +175,7 @@ END $DDL$;
             return string.Empty;
         }
 
-        public string ScriptChanges(List<DatabaseChange> changes)
+        public string ScriptChanges(IEnumerable<DatabaseChange> changes)
         {
             var script = new StringBuilder();
 
@@ -254,6 +183,9 @@ END $DDL$;
             {
                 switch (change)
                 {
+                    case CreateTable createTable:
+                        script.AppendLF(ScriptCreateTable(createTable));
+                        break;
                     case RenameTable renameTable:
                         script.AppendLF(ScriptRenameTable(renameTable));
                         break;
@@ -287,6 +219,12 @@ END $DDL$;
             }
 
             return script.ToString();
+        }
+
+        private string ScriptCreateTable(CreateTable change)
+        {
+            var columns = change.Columns.Select(ScriptAddColumnDefinition);
+            return $"CREATE TABLE {Identifier(change.SchemaName, change.TableName)} ({string.Join(", ", columns)});";
         }
 
         private static string ScriptRenameTable(RenameTable change)

@@ -6,7 +6,7 @@ namespace GiantTeam.Data.Api.Controllers;
 public class CreateTableController : ControllerBase
 {
     [HttpPost("/api/[Controller]")]
-    public async Task<CreateTable> Post(
+    public async Task<CreateTableOutput> Post(
         [FromServices] CreateTableService fetchRecordsService,
         CreateTableInput input)
     {

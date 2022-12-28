@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from "@solidjs/router";
 import { createMutable, unwrap } from "solid-js/store";
-import { StoreType, Table, TableIndexType } from "../../../api/GiantTeam";
+import { CreateTableInput, StoreType, Table, TableIndexType } from "../../../api/GiantTeam";
 import { postCreateTable } from "../../../api/GiantTeam.Data.Api";
 import { SaveEditFilledIcon } from "../../../helpers/icons";
 import { combinePaths } from "../../../helpers/urlHelpers";
@@ -84,10 +84,14 @@ export default function CreateTablePage() {
     const onsubmitform = async (e: SubmitEvent) => {
         e.preventDefault();
 
-        const input = {
+        const value = unwrap(table);
+
+        const input: CreateTableInput = {
             databaseName: info.workspace,
             schemaName: info.schema,
-            table: unwrap(table),
+            tableName: table.name,
+            columns: value.columns,
+            indexes: value.indexes,
         };
 
         const response = await postCreateTable(input);
@@ -116,6 +120,7 @@ export default function CreateTablePage() {
                     </button>
                     <button type='button' class='button'
                         onclick={e => {
+                            table.name = '',
                             table.columns = [{
                                 position: tmpPosition++,
                                 name: 'Id',

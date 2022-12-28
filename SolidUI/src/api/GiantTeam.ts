@@ -261,13 +261,15 @@ export interface AlterTableInput {
     table: Table;
 }
 
-export interface CreateTable {
-}
-
 export interface CreateTableInput {
     databaseName: string;
     schemaName: string;
-    table: Table;
+    tableName: string;
+    columns: Column[];
+    indexes: TableIndex[];
+}
+
+export interface CreateTableOutput {
 }
 
 export interface FetchRecords {

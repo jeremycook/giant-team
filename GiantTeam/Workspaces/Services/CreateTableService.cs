@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.DatabaseModeling.Changes;
 using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;
@@ -24,33 +25,26 @@ namespace GiantTeam.Workspaces.Services
             this.connectionService = connectionService;
         }
 
-        public async Task<CreateTable> CreateTableAsync(CreateTableInput input)
+        public async Task<CreateTableOutput> CreateTableAsync(CreateTableInput input)
         {
             validationService.Validate(input);
 
             return await ProcessAsync(input);
         }
 
-        private async Task<CreateTable> ProcessAsync(CreateTableInput input)
+        private async Task<CreateTableOutput> ProcessAsync(CreateTableInput input)
         {
-            Database database = new()
+            var changes = new List<DatabaseChange>
             {
-                Schemas =
-                {
-                    new(input.SchemaName)
-                    {
-                        Tables =
-                        {
-                            input.Table
-                        },
-                    }
-                },
+                new CreateTable(input.SchemaName, input.TableName, input.Columns),
             };
 
-            PgDatabaseScripter scripter = new();
-            string migrationScript = scripter.ScriptCreateTables(database);
+            changes.AddRange(input.Indexes.Select(idx => new CreateIndex(input.SchemaName, input.TableName, idx)));
 
-            logger.LogInformation("Executing table creation script: {CommandText}", migrationScript);
+            PgDatabaseScripter scripter = new();
+            string migrationScript = scripter.ScriptChanges(changes);
+
+            logger.LogInformation("Executing create table script: {CommandText}", migrationScript);
 
             using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(input.DatabaseName);
             try
@@ -87,7 +81,7 @@ namespace GiantTeam.Workspaces.Services
                 throw;
             }
 
-            return new CreateTable()
+            return new CreateTableOutput()
             {
             };
         }

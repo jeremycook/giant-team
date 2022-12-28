@@ -12,11 +12,17 @@ namespace GiantTeam.Workspaces.Services
         [Required, StringLength(50), PgIdentifier]
         public string SchemaName { get; set; } = null!;
 
+        [Required, StringLength(50), PgIdentifier]
+        public string TableName { get; set; } = null!;
+
         [Required]
-        public Table Table { get; set; } = null!;
+        public Column[] Columns { get; set; } = null!;
+
+        [Required]
+        public TableIndex[] Indexes { get; set; } = null!;
     }
 
-    public class CreateTable
+    public class CreateTableOutput
     {
     }
 }

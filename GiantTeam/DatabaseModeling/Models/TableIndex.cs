@@ -5,7 +5,7 @@ namespace GiantTeam.DatabaseModeling.Models;
 
 public class TableIndex
 {
-    public TableIndex(string name, TableIndexType indexType)
+    public TableIndex(string? name, TableIndexType indexType)
     {
         Name = name;
         IndexType = indexType;
