@@ -10,7 +10,9 @@ export interface Session extends SessionOutput {
 }
 
 export const [session, setSession] = createStore<Session>({
-  status: -1
+  status: -1,
+  userId: null,
+  username: null,
 });
 
 export const isAuthenticated = () => session.status === SessionStatus.Authenticated;

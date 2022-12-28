@@ -18,12 +18,12 @@ export interface Column {
     name: string;
     storeType: string;
     isNullable: boolean;
-    defaultValueSql?: string;
-    computedColumnSql?: string;
+    defaultValueSql: string | null;
+    computedColumnSql: string | null;
 }
 
 export interface Database {
-    defaultSchema?: string;
+    defaultSchema: string | null;
     schemas: Schema[];
     scripts: string[];
 }
@@ -43,7 +43,7 @@ export enum DefaultPrivilegesEnum {
 
 export interface Schema {
     name: string;
-    owner?: string;
+    owner: string | null;
     tables: Table[];
     privileges: SchemaPrivileges[];
     defaultPrivileges: DefaultPrivileges[];
@@ -133,13 +133,13 @@ export const StoreType = {
 
 export interface Table {
     name: string;
-    owner?: string;
+    owner: string | null;
     columns: Column[];
     indexes: TableIndex[];
 }
 
 export interface TableIndex {
-    name?: string;
+    name: string | null;
     indexType: TableIndexType;
     columns: string[];
 }
@@ -164,11 +164,11 @@ export interface User {
     emailVerified: boolean;
     created: Date;
     dbRoleId: string;
-    dbRole?: DbRole;
+    dbRole: DbRole | null;
 }
 
 export interface CreateTeamInput {
-    teamName?: string;
+    teamName: string | null;
 }
 
 export interface CreateTeamOutput {
@@ -205,8 +205,8 @@ export interface VerifyPasswordOutput {
 }
 
 export interface CreateWorkspaceInput {
-    workspaceName?: string;
-    workspaceOwner?: string;
+    workspaceName: string | null;
+    workspaceOwner: string | null;
 }
 
 export interface CreateWorkspaceOutput {
@@ -214,12 +214,12 @@ export interface CreateWorkspaceOutput {
 }
 
 export interface DeleteWorkspaceInput {
-    workspaceId?: string;
+    workspaceId: string | null;
 }
 
 export interface DeleteWorkspaceOutput {
     status: DeleteWorkspaceStatus;
-    message?: string;
+    message: string | null;
 }
 
 export enum DeleteWorkspaceStatus {
@@ -228,7 +228,7 @@ export enum DeleteWorkspaceStatus {
 }
 
 export interface FetchRoleInput {
-    roleName?: string;
+    roleName: string | null;
 }
 
 export interface FetchRoleMemberOutput {
@@ -273,7 +273,7 @@ export interface CreateTableOutput {
 }
 
 export interface FetchRecords {
-    sql?: string;
+    sql: string | null;
     columns: FetchRecordsColumn[];
     records: any[][];
 }
@@ -285,21 +285,21 @@ export interface FetchRecordsColumn {
 }
 
 export interface FetchRecordsInput {
-    verbose?: boolean;
+    verbose: boolean | null;
     database: string;
     schema: string;
     table: string;
-    columns?: FetchRecordsInputColumn[];
-    filters?: FetchRecordsInputRangeFilter[];
-    skip?: number;
-    take?: number;
+    columns: FetchRecordsInputColumn[] | null;
+    filters: FetchRecordsInputRangeFilter[] | null;
+    skip: number | null;
+    take: number | null;
 }
 
 export interface FetchRecordsInputColumn {
     name: string;
-    position?: number;
+    position: number | null;
     sort: Sort;
-    visible?: boolean;
+    visible: boolean | null;
 }
 
 export interface FetchRecordsInputFilter {
@@ -309,7 +309,7 @@ export interface FetchRecordsInputFilter {
 
 export interface FetchRecordsInputOrder {
     column: string;
-    desc?: boolean;
+    desc: boolean | null;
 }
 
 export interface FetchRecordsInputRangeFilter {
@@ -320,15 +320,15 @@ export interface FetchRecordsInputRangeFilter {
 }
 
 export interface FetchWorkspaceInput {
-    workspaceName?: string;
+    workspaceName: string | null;
 }
 
 export interface ImportDataInput {
     database: string;
-    schema?: string;
-    table?: string;
-    createTableIfNotExists?: boolean;
-    data?: string;
+    schema: string | null;
+    table: string | null;
+    createTableIfNotExists: boolean | null;
+    data: string | null;
 }
 
 export interface ImportDataOutput {

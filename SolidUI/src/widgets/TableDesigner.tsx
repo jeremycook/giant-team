@@ -34,13 +34,13 @@ export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerW
                 <label for={createId('name')}>Name</label>
                 <div>
                     <input id={createId('name')} value={table.name} oninput={e => table.name = (e.target as HTMLInputElement).value}
-                        required 
-                        use:autofocus={true}/>
+                        required
+                        use:autofocus={true} />
                 </div>
 
                 <label for={createId('owner')}>Owner</label>
                 <div>
-                    <input id={createId('owner')} value={table.owner} oninput={e => table.owner = (e.target as HTMLInputElement).value} />
+                    <input id={createId('owner')} value={table.owner ?? undefined} oninput={e => table.owner = (e.target as HTMLInputElement).value} />
                 </div>
                 <details open class='col-span-2'>
                     <summary>Columns ({table.columns.length})</summary>
@@ -79,10 +79,10 @@ export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerW
                                         </div>
                                     </td>
                                     <td>
-                                        <input value={column.defaultValueSql} onchange={e => column.defaultValueSql = (e.target as HTMLInputElement).value} />
+                                        <input value={column.defaultValueSql ?? undefined} onchange={e => column.defaultValueSql = (e.target as HTMLInputElement).value} />
                                     </td>
                                     <td>
-                                        <input value={column.computedColumnSql} onchange={e => column.computedColumnSql = (e.target as HTMLInputElement).value} />
+                                        <input value={column.computedColumnSql ?? undefined} onchange={e => column.computedColumnSql = (e.target as HTMLInputElement).value} />
                                     </td>
                                     <td>
                                         <button type='button' class='whitespace-nowrap button paint-red-600' onclick={() => removeItem(table.columns, column)}>
@@ -125,7 +125,7 @@ export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerW
                             <For each={table.indexes}>{(index, row) => (
                                 <tr>
                                     <td>
-                                        <input value={index.name}
+                                        <input value={index.name ?? undefined}
                                             oninput={e => index.name = (e.target as HTMLInputElement).value} />
                                     </td>
                                     <td class='text-left'>

@@ -10,6 +10,11 @@ export function WorkspacesPageData() {
     database: 'info',
     schema: 'public',
     table: 'gt_database',
+    columns: null,
+    filters: null,
+    skip: null,
+    take: null,
+    verbose: null,
   }));
 
   return resource;

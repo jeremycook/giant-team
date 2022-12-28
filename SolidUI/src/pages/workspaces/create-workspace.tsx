@@ -67,7 +67,7 @@ export default function CreateWorkspacePage() {
         >
           <option>Choose…</option>
           <option
-            value={session.username}
+            value={session.username ?? undefined}
             selected={true}
           >{session.username}</option>
         </select>

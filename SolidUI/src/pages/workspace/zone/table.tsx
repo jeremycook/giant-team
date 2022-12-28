@@ -64,8 +64,9 @@ export default function WorkspacePage() {
             table: params.table,
             columns: columns,
             filters: filters,
-            // skip: params.skip,
-            // take: params.take
+            skip: null,
+            take: null,
+            verbose: null,
         };
 
     }, async (input) => {

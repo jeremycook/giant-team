@@ -120,9 +120,9 @@ namespace GiantTeam.Tools
 
                             sb.Append(tab);
                             sb.Append(CamelCase(prop.Name));
-                            if (nullable) sb.Append('?');
                             sb.Append(": ");
                             sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
+                            if (nullable) sb.Append(" | null");
                             sb.Append(";\n");
                         }
                         sb.Append("}\n\n");
@@ -150,9 +150,9 @@ namespace GiantTeam.Tools
 
                             sb.Append(tab);
                             sb.Append(CamelCase(prop.Name));
-                            if (nullable) sb.Append('?');
                             sb.Append(": ");
                             sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
+                            if (nullable) sb.Append(" | null");
                             sb.Append(";\n");
                         }
                         sb.Append("}\n\n");

@@ -4,5 +4,5 @@
 export interface ReflectOutput {
     baseUrl: string;
     protocol: string;
-    ip?: string;
+    ip: string | null;
 }
