@@ -1,6 +1,7 @@
+import { JSX } from "solid-js";
 import { createId } from "../helpers/htmlHelpers";
 
-export interface TextFieldOptions extends Record<string, string | number | boolean> {
+export interface TextFieldOptions extends JSX.InputHTMLAttributes<HTMLInputElement> {
     type: 'text';
     label: string;
 }

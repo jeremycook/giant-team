@@ -1,6 +1,7 @@
+import { JSX } from "solid-js";
 import { createId } from "../helpers/htmlHelpers";
 
-export interface BooleanFieldOptions extends Record<string, string | number | boolean> {
+export interface BooleanFieldOptions extends JSX.InputHTMLAttributes<HTMLInputElement> {
     type: 'boolean';
     label: string;
 }
