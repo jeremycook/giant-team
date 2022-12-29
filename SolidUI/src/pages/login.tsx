@@ -1,11 +1,17 @@
 import { A, useLocation, useNavigate } from '@solidjs/router';
-import { createSignal, Show } from 'solid-js';
+import { createSignal, onCleanup, Show } from 'solid-js';
 import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
 import { isAuthenticated, refreshSession, session } from '../utils/session';
 import { setTitle } from '../utils/page';
 import { InfoIcon, WarningIcon } from '../helpers/icons';
-import { FieldStack, FieldStackOptions } from '../widgets/FieldStack';
+import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
+
+const dataOptions: FieldSetOptions = {
+  username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
+  password: { type: 'password', label: 'Password', autocomplete: 'current-password' },
+  remainLoggedIn: { type: 'boolean', label: 'Keep me logged in' },
+};
 
 export default function LoginPage() {
   setTitle('Login');
@@ -18,12 +24,6 @@ export default function LoginPage() {
     password: '',
     remainLoggedIn: false,
   });
-
-  const options: FieldStackOptions = {
-    username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
-    password: { type: 'password', label: 'Password', autocomplete: 'current-password' },
-    remainLoggedIn: { type: 'boolean', label: 'Keep me logged in' },
-  };
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal('');
@@ -68,7 +68,9 @@ export default function LoginPage() {
   };
 
   if (!isAuthenticated()) {
-    const refresher = setInterval(() => isAuthenticated() ? clearInterval(refresher) : refreshSession(), 5 * 1000)
+    // TODO: Only do this in development env
+    const refresher = setInterval(() => isAuthenticated() ? clearInterval(refresher) : refreshSession(), 5 * 1000);
+    onCleanup(() => clearTimeout(refresher));
   }
 
   return (
@@ -95,7 +97,7 @@ export default function LoginPage() {
 
       <form onSubmit={formSubmit} class='form-grid'>
 
-        <FieldStack data={data} options={options} />
+        <FieldStack data={data} options={dataOptions} />
 
         <div />
         <div>

@@ -4,7 +4,7 @@ import BooleanField, { BooleanFieldOptions } from "./BooleanField";
 import PasswordField, { PasswordFieldOptions } from "./PasswordFields";
 import TextField, { TextFieldOptions } from "./TextField";
 
-export type FieldStackOptions = Record<string, FieldOptions>;
+export type FieldSetOptions = Record<string, FieldOptions>;
 
 export type FieldOptions =
     BooleanFieldOptions |
@@ -17,9 +17,9 @@ const lookup = {
     password: PasswordField,
 }
 
-export function FieldStack({ data, options: fieldStackOptions }: { data: Record<string, any>, options: FieldStackOptions }) {
+export function FieldStack({ data, options: fieldSetOptions }: { data: Record<string, any>, options: FieldSetOptions }) {
     return (<>
-        {Object.entries(fieldStackOptions).map(([name, options]) => (<>
+        {Object.entries(fieldSetOptions).map(([name, options]) => (<>
             <label for={createId(name)}>{options.label ?? name}</label>
             <Dynamic component={lookup[options.type]} {...{ name, options: options as any, data }} />
         </>))}

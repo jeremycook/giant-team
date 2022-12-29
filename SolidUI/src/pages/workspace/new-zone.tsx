@@ -4,10 +4,10 @@ import { CreateNamespace } from "../../api/GiantTeam";
 import { postChangeDatabase } from "../../api/GiantTeam.Data.Api";
 import { SaveEditFilledIcon } from "../../helpers/icons";
 import { Breadcrumb } from "../../utils/nav";
-import { FieldStack, FieldStackOptions } from "../../widgets/FieldStack";
+import { FieldStack, FieldSetOptions } from "../../widgets/FieldStack";
 import { createWorkspaceUrl, useWorkspaceParams } from "./workspace-layout";
 
-const dataOptions: FieldStackOptions = {
+const dataOptions: FieldSetOptions = {
     name: { type: 'text', label: 'Name', required: true },
 };
 
