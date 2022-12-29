@@ -1,8 +1,7 @@
 ﻿using Dapper;
+using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.DatabaseModeling.Changes;
 using GiantTeam.DatabaseModeling.Changes.Models;
-using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;
 using Npgsql;
@@ -10,14 +9,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Workspaces.Services
 {
-    public class CreateTableService
+    public class ChangeDatabaseInput
     {
-        private readonly ILogger<CreateTableService> logger;
+        [Required, StringLength(50), PgIdentifier]
+        public string DatabaseName { get; set; } = null!;
+
+        [Required, MinLength(1)]
+        public DatabaseChange[] Changes { get; set; } = null!;
+    }
+
+    public class ChangeDatabaseOutput
+    {
+    }
+
+    public class ChangeDatabaseService
+    {
+        private readonly ILogger<ChangeDatabaseService> logger;
         private readonly ValidationService validationService;
         private readonly UserConnectionService connectionService;
 
-        public CreateTableService(
-            ILogger<CreateTableService> logger,
+        public ChangeDatabaseService(
+            ILogger<ChangeDatabaseService> logger,
             ValidationService validationService,
             UserConnectionService connectionService)
         {
@@ -26,28 +38,23 @@ namespace GiantTeam.Workspaces.Services
             this.connectionService = connectionService;
         }
 
-        public async Task<CreateTableOutput> CreateTableAsync(CreateTableInput input)
+        public async Task<ChangeDatabaseOutput> ChangeDatabaseAsync(ChangeDatabaseInput input)
         {
             validationService.Validate(input);
 
             return await ProcessAsync(input);
         }
 
-        private async Task<CreateTableOutput> ProcessAsync(CreateTableInput input)
+        private async Task<ChangeDatabaseOutput> ProcessAsync(ChangeDatabaseInput input)
         {
-            var changes = new List<DatabaseChange>
-            {
-                new CreateTable(input.SchemaName, input.TableName, input.Columns),
-            };
-
-            changes.AddRange(input.Indexes.Select(idx => new CreateIndex(input.SchemaName, input.TableName, idx)));
-
             PgDatabaseScripter scripter = new();
-            string migrationScript = scripter.ScriptChanges(changes);
+            string migrationScript = scripter.ScriptChanges(input.Changes);
 
-            logger.LogInformation("Executing create table script: {CommandText}", migrationScript);
+            string dbRole = $"{input.DatabaseName}:Owner";
 
-            using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(input.DatabaseName);
+            logger.LogInformation("Executing change database script as {DatabaseRole}: {CommandText}", dbRole, migrationScript);
+
+            using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(input.DatabaseName, dbRole);
             try
             {
                 await designConnection.ExecuteAsync(migrationScript);
@@ -82,7 +89,7 @@ namespace GiantTeam.Workspaces.Services
                 throw;
             }
 
-            return new CreateTableOutput()
+            return new ChangeDatabaseOutput()
             {
             };
         }

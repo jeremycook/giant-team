@@ -1,6 +1,7 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.Postgres;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GiantTeam.Workspaces.Services
 {
@@ -41,6 +42,8 @@ namespace GiantTeam.Workspaces.Services
         public bool IsVisible() => Visible != false;
     }
 
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = nameof(Discriminator))]
+    [JsonDerivedType(typeof(FetchRecordsInputRangeFilter))]
     public abstract class FetchRecordsInputFilter
     {
         public FetchRecordsInputFilter(string discriminator)

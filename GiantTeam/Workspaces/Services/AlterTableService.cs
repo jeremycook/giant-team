@@ -2,6 +2,7 @@
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseModeling.Changes;
+using GiantTeam.DatabaseModeling.Changes.Models;
 using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;

@@ -8,9 +8,9 @@ public class FetchWorkspaceController : ControllerBase
 {
     [HttpPost("/api/[Controller]")]
     public async Task<Workspace> Post(
-        [FromServices] FetchWorkspaceService fetchWorkspaceService,
+        [FromServices] FetchWorkspaceService service,
         FetchWorkspaceInput input)
     {
-        return await fetchWorkspaceService.FetchWorkspaceAsync(input);
+        return await service.FetchWorkspaceAsync(input);
     }
 }

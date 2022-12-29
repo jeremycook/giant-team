@@ -34,6 +34,7 @@ export default function AppRoutes() {
         <Route path="/workspace/:workspace" component={lazy(() => import('./pages/workspace/workspace-layout'))} data={WorkspaceLayoutData}>
 
           <Route path='/' component={lazy(() => import('./pages/workspace/workspace'))} />
+          <Route path='/new-zone' component={lazy(() => import('./pages/workspace/new-zone'))} />
 
           <Route path="/zone/:zone" component={lazy(() => import('./pages/workspace/zone/zone-layout'))}>
             <Route path='/' component={lazy(() => import('./pages/workspace/zone/zone'))} />

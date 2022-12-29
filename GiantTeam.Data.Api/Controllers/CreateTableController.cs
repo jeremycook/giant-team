@@ -7,9 +7,9 @@ public class CreateTableController : ControllerBase
 {
     [HttpPost("/api/[Controller]")]
     public async Task<CreateTableOutput> Post(
-        [FromServices] CreateTableService fetchRecordsService,
+        [FromServices] CreateTableService service,
         CreateTableInput input)
     {
-        return await fetchRecordsService.CreateTableAsync(input);
+        return await service.CreateTableAsync(input);
     }
 }

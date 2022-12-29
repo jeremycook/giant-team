@@ -9,26 +9,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.UserManagement.Services
 {
+    public class CreateWorkspaceRoleInput
+    {
+        [Required]
+        [StringLength(50), PgIdentifier]
+        public string? WorkspaceName { get; set; }
+
+        [Required]
+        [StringLength(50), PgIdentifier]
+        public string? RoleName { get; set; }
+    }
+
+    public class CreateWorkspaceRoleOutput
+    {
+    }
+
     public class CreateWorkspaceRoleService
     {
         private readonly ILogger<CreateWorkspaceRoleService> logger;
         private readonly SecurityConnectionService securityConnectionService;
         private readonly ValidationService validationService;
-
-        public class CreateRoleInput
-        {
-            [Required]
-            [StringLength(50), PgIdentifier]
-            public string? WorkspaceName { get; set; }
-
-            [Required]
-            [StringLength(50), PgIdentifier]
-            public string? RoleName { get; set; }
-        }
-
-        public class CreateRoleOutput
-        {
-        }
 
         public CreateWorkspaceRoleService(
             ILogger<CreateWorkspaceRoleService> logger,
@@ -40,7 +40,7 @@ namespace GiantTeam.UserManagement.Services
             this.validationService = validationService;
         }
 
-        public async Task<CreateRoleOutput> CreateRoleAsync(CreateRoleInput input)
+        public async Task<CreateWorkspaceRoleOutput> CreateRoleAsync(CreateWorkspaceRoleInput input)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace GiantTeam.UserManagement.Services
             }
         }
 
-        private async Task<CreateRoleOutput> ProcessAsync(CreateRoleInput input)
+        private async Task<CreateWorkspaceRoleOutput> ProcessAsync(CreateWorkspaceRoleInput input)
         {
             validationService.Validate(input);
 

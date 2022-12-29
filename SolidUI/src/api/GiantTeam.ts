@@ -13,6 +13,94 @@ export interface ObjectStatusDetail {
     members: string[];
 }
 
+export interface AlterColumn extends DatabaseChange {
+    $type: 'AlterColumn';
+    schemaName: string;
+    tableName: string;
+    column: Column;
+    modifications: AlterColumnModification[];
+}
+
+export enum AlterColumnModification {
+    Nullability = 0,
+    Default = 1,
+    Type = 2,
+    Generated = 3,
+}
+
+export interface AlterIndex extends DatabaseChange {
+    $type: 'AlterIndex';
+    schemaName: string;
+    tableName: string;
+    index: TableIndex;
+}
+
+export interface ChangeOwner extends DatabaseChange {
+    $type: 'ChangeOwner';
+    schemaName: string;
+    tableName: string;
+    newOwner: string;
+}
+
+export interface CreateColumn extends DatabaseChange {
+    $type: 'CreateColumn';
+    schemaName: string;
+    tableName: string;
+    column: Column;
+}
+
+export interface CreateIndex extends DatabaseChange {
+    $type: 'CreateIndex';
+    schemaName: string;
+    tableName: string;
+    index: TableIndex;
+}
+
+export interface CreateNamespace extends DatabaseChange {
+    $type: 'CreateNamespace';
+    namespaceName: string;
+}
+
+export interface CreateTable extends DatabaseChange {
+    $type: 'CreateTable';
+    schemaName: string;
+    tableName: string;
+    columns: Column[];
+}
+
+export interface DatabaseChange {
+    $type: string;
+}
+
+export interface DropColumn extends DatabaseChange {
+    $type: 'DropColumn';
+    schemaName: string;
+    tableName: string;
+    columnName: string;
+}
+
+export interface DropIndex extends DatabaseChange {
+    $type: 'DropIndex';
+    schemaName: string;
+    tableName: string;
+    index: TableIndex;
+}
+
+export interface RenameColumn extends DatabaseChange {
+    $type: 'RenameColumn';
+    schemaName: string;
+    tableName: string;
+    columnName: string;
+    newColumnName: string;
+}
+
+export interface RenameTable extends DatabaseChange {
+    $type: 'RenameTable';
+    schemaName: string;
+    tableName: string;
+    newTableName: string;
+}
+
 export interface Column {
     position: number;
     name: string;
@@ -167,12 +255,12 @@ export interface User {
     dbRole: DbRole | null;
 }
 
-export interface CreateRoleInput {
+export interface CreateWorkspaceRoleInput {
     workspaceName: string | null;
     roleName: string | null;
 }
 
-export interface CreateRoleOutput {
+export interface CreateWorkspaceRoleOutput {
 }
 
 export interface JoinInput {
@@ -260,6 +348,14 @@ export interface AlterTableInput {
     table: Table;
 }
 
+export interface ChangeDatabaseInput {
+    databaseName: string;
+    changes: DatabaseChange[];
+}
+
+export interface ChangeDatabaseOutput {
+}
+
 export interface CreateTableInput {
     databaseName: string;
     schemaName: string;
@@ -311,7 +407,7 @@ export interface FetchRecordsInputOrder {
     desc: boolean | null;
 }
 
-export interface FetchRecordsInputRangeFilter {
+export interface FetchRecordsInputRangeFilter extends FetchRecordsInputFilter {
     lowerValue: string;
     upperValue: string;
     discriminator: string;

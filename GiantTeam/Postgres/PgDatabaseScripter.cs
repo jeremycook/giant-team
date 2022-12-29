@@ -1,4 +1,4 @@
-﻿using GiantTeam.DatabaseModeling.Changes;
+﻿using GiantTeam.DatabaseModeling.Changes.Models;
 using GiantTeam.DatabaseModeling.Models;
 using GiantTeam.Text;
 using System.ComponentModel.DataAnnotations;
@@ -183,6 +183,10 @@ END $DDL$;
             {
                 switch (change)
                 {
+                    case CreateNamespace createSchema:
+                        script.AppendLF(ScriptCreateSchema(createSchema));
+                        break;
+
                     case CreateTable createTable:
                         script.AppendLF(ScriptCreateTable(createTable));
                         break;
@@ -220,6 +224,13 @@ END $DDL$;
 
             return script.ToString();
         }
+
+
+        private string ScriptCreateSchema(CreateNamespace change)
+        {
+            return $"CREATE SCHEMA {Identifier(change.NamespaceName)};";
+        }
+
 
         private string ScriptCreateTable(CreateTable change)
         {

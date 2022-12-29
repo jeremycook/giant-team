@@ -7,9 +7,9 @@ public class FetchRecordsController : ControllerBase
 {
     [HttpPost("/api/[Controller]")]
     public async Task<FetchRecords> Post(
-        [FromServices] FetchRecordsService fetchRecordsService,
+        [FromServices] FetchRecordsService service,
         FetchRecordsInput input)
     {
-        return await fetchRecordsService.FetchRecordsAsync(input);
+        return await service.FetchRecordsAsync(input);
     }
 }

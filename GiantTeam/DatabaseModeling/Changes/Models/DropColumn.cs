@@ -1,8 +1,9 @@
-﻿namespace GiantTeam.DatabaseModeling.Changes
+﻿namespace GiantTeam.DatabaseModeling.Changes.Models
 {
     public class DropColumn : DatabaseChange
     {
         public DropColumn(string schemaName, string tableName, string columnName)
+            : base(nameof(DropColumn))
         {
             SchemaName = schemaName;
             TableName = tableName;

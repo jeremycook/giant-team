@@ -1,10 +1,11 @@
 ﻿using GiantTeam.DatabaseModeling.Models;
 
-namespace GiantTeam.DatabaseModeling.Changes
+namespace GiantTeam.DatabaseModeling.Changes.Models
 {
     public class DropIndex : DatabaseChange
     {
         public DropIndex(string schemaName, string tableName, TableIndex index)
+            : base(nameof(DropIndex))
         {
             SchemaName = schemaName;
             TableName = tableName;

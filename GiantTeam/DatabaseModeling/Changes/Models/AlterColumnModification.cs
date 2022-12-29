@@ -1,4 +1,4 @@
-﻿namespace GiantTeam.DatabaseModeling.Changes
+﻿namespace GiantTeam.DatabaseModeling.Changes.Models
 {
     public enum AlterColumnModification
     {

@@ -11,9 +11,11 @@ export const useZoneParams = () => {
     };
 };
 
+const zonePattern = new RegExp('^/workspace/[^/]+/zone/([^/]+)', 'i');
+
 export function createZoneUrl(...paths: string[]) {
-    const params = useZoneParams();
-    return createWorkspaceUrl(`zone/${params.zone}`, ...paths);
+    const zoneName = zonePattern.exec(location.pathname)![1];
+    return createWorkspaceUrl('zone', zoneName, ...paths);
 }
 
 export const useZoneData = () => {

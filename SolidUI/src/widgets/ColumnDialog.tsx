@@ -1,6 +1,6 @@
 import { For } from 'solid-js';
 import { produce, SetStoreFunction, Store } from 'solid-js/store';
-import { Sort } from '../api/GiantTeam';
+import { FetchRecordsInputRangeFilter, Sort } from '../api/GiantTeam';
 import { EyeIcon, EyeOffIcon, FilterAddIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../helpers/icons';
 import { Meta, MetaColumn } from './SmartTable';
 
@@ -82,11 +82,11 @@ export function ColumnDialog(props: ColumnDialogProps) {
                     <button type='button' class='button p-1'
                         onclick={() => setMeta('columns', column().name, 'filters',
                             f => [...f, {
-                                column: column().name,
                                 discriminator: 'FetchRecordsInputRangeFilter',
+                                column: column().name,
                                 lowerValue: '',
                                 upperValue: '',
-                            }])}>
+                            } as FetchRecordsInputRangeFilter])}>
                         <FilterAddIcon /> Add a Filter
                     </button>
                 </div>

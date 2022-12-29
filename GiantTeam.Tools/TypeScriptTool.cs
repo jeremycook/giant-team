@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Namotion.Reflection;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using static System.Console;
 
@@ -110,23 +111,6 @@ namespace GiantTeam.Tools
                         }
                         sb.Append("}\n\n");
                     }
-                    else if (type.IsInterface)
-                    {
-                        sb.Append($"export interface {type.Name} {{\n");
-                        foreach (var prop in type.GetProperties())
-                        {
-                            var contextualProperty = prop.ToContextualProperty();
-                            bool nullable = contextualProperty.Nullability == Nullability.Nullable;
-
-                            sb.Append(tab);
-                            sb.Append(CamelCase(prop.Name));
-                            sb.Append(": ");
-                            sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
-                            if (nullable) sb.Append(" | null");
-                            sb.Append(";\n");
-                        }
-                        sb.Append("}\n\n");
-                    }
                     else if (type.IsAbstract && type.IsSealed)
                     {
                         sb.Append($"export const {type.Name} = {{\n");
@@ -142,17 +126,62 @@ namespace GiantTeam.Tools
                     }
                     else
                     {
-                        sb.Append($"export interface {type.Name} {{\n");
-                        foreach (var prop in type.GetProperties())
-                        {
-                            var contextualProperty = prop.ToContextualProperty();
-                            bool nullable = contextualProperty.Nullability == Nullability.Nullable;
+                        string discriminatorPropertyName = "";
+                        string discrimantorValue = "";
 
+                        sb.Append($"export interface {type.Name} ");
+                        if (type.BaseType?.IsAbstract == true)
+                        {
+                            sb.Append($"extends {TypeScriptTypeName(type.BaseType)} ");
+
+                            discrimantorValue = type.BaseType
+                                .GetCustomAttributes<JsonDerivedTypeAttribute>()
+                                .Where(o => o.DerivedType == type)
+                                .SingleOrDefault()?.TypeDiscriminator as string ?? "";
+
+                            if (discrimantorValue != "")
+                            {
+                                if (type.BaseType.GetCustomAttribute<JsonPolymorphicAttribute>() is JsonPolymorphicAttribute jsonPolymorphic &&
+                                    jsonPolymorphic.TypeDiscriminatorPropertyName is not null)
+                                {
+                                    discriminatorPropertyName = CamelCase(jsonPolymorphic.TypeDiscriminatorPropertyName);
+                                }
+                                else
+                                {
+                                    discriminatorPropertyName = "$type";
+                                }
+                            }
+                        }
+                        sb.Append($"{{\n");
+                        var props = new List<KeyValuePair<string, string>>();
+                        if (discrimantorValue != "")
+                        {
+                            props.Insert(0, new(
+                                discriminatorPropertyName,
+                                $"'{discrimantorValue}'"
+                            ));
+                        }
+                        props.AddRange(type
+                            .GetContextualProperties()
+                            .Select(o => new
+                            {
+                                Name = o.GetContextAttribute<JsonPropertyNameAttribute>() is JsonPropertyNameAttribute jpn ? jpn.Name : CamelCase(o.Name),
+                                o.PropertyType,
+                                o.Nullability,
+                            })
+                            .Where(o => discrimantorValue == "" || discriminatorPropertyName != o.Name)
+                            .Select(o => new KeyValuePair<string, string>(
+                                o.Name,
+                                discrimantorValue != "" && o.Name == discriminatorPropertyName ?
+                                    $"'{discrimantorValue}'" :
+                                    (TypeScriptTypeName(o.PropertyType.Type) + (o.Nullability == Nullability.Nullable ? " | null" : ""))
+                            )));
+                        foreach (var prop in props)
+                        {
                             sb.Append(tab);
-                            sb.Append(CamelCase(prop.Name));
+                            sb.Append(prop.Key);
                             sb.Append(": ");
-                            sb.Append(TypeScriptTypeName(contextualProperty.PropertyType.Type));
-                            if (nullable) sb.Append(" | null");
+                            sb.Append(prop.Value);
                             sb.Append(";\n");
                         }
                         sb.Append("}\n\n");
@@ -311,7 +340,7 @@ namespace GiantTeam.Tools
             }
 
             var suffix = string.Empty;
-            while (type.GetEnumerableItemType() is Type enumerableItemType)
+            while (TryGetEnumerableItemType(type, out Type enumerableItemType))
             {
                 suffix += "[]";
                 type = enumerableItemType;
@@ -320,6 +349,27 @@ namespace GiantTeam.Tools
                 types.TryGetValue(type, out var typeName) ? typeName :
                 type.Name
             ) + suffix;
+        }
+
+        private static bool TryGetEnumerableItemType(Type type, out Type enumerableItemType)
+        {
+            if (type.GetEnumerableItemType() is Type type1)
+            {
+                enumerableItemType = type1;
+                return true;
+            }
+            else if (type.IsGenericType &&
+                type.GetGenericTypeDefinition() == typeof(IReadOnlyCollection<>) &&
+                type.GetGenericArguments()[0] is Type type2)
+            {
+                enumerableItemType = type2;
+                return true;
+            }
+            else
+            {
+                enumerableItemType = null!;
+                return false;
+            }
         }
     }
 }

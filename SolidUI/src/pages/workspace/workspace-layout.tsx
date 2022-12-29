@@ -25,9 +25,11 @@ export const useWorkspaceParams = () => {
   };
 };
 
+const workspacePattern = new RegExp('^/workspace/([^/]+)', 'i');
+
 export function createWorkspaceUrl(...paths: string[]) {
-  const params = useWorkspaceParams();
-  return combinePaths(`/workspace/${params.workspace}`, ...paths);
+  const workspaceName = workspacePattern.exec(location.pathname)![1];
+  return combinePaths('/workspace', workspaceName, ...paths);
 }
 
 export const useWorkspaceRouteData = () => {

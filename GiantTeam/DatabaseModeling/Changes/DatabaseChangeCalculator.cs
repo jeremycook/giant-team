@@ -1,4 +1,5 @@
-﻿using GiantTeam.DatabaseModeling.Models;
+﻿using GiantTeam.DatabaseModeling.Changes.Models;
+using GiantTeam.DatabaseModeling.Models;
 
 namespace GiantTeam.DatabaseModeling.Changes
 {

@@ -1,8 +1,9 @@
-﻿namespace GiantTeam.DatabaseModeling.Changes
+﻿namespace GiantTeam.DatabaseModeling.Changes.Models
 {
     public class RenameTable : DatabaseChange
     {
         public RenameTable(string schemaName, string tableName, string newTableName)
+            : base(nameof(RenameTable))
         {
             SchemaName = schemaName;
             TableName = tableName;

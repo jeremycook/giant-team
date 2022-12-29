@@ -1,10 +1,11 @@
 ﻿using GiantTeam.DatabaseModeling.Models;
 
-namespace GiantTeam.DatabaseModeling.Changes
+namespace GiantTeam.DatabaseModeling.Changes.Models
 {
     public class CreateColumn : DatabaseChange
     {
         public CreateColumn(string schemaName, string tableName, Column column)
+            : base(nameof(CreateColumn))
         {
             SchemaName = schemaName;
             TableName = tableName;

@@ -4,6 +4,7 @@ using System.Text.Json;
 
 namespace GiantTeam.Postgres
 {
+    // TODO? Support writing snake case https://github.com/npgsql/efcore.pg/issues/1107#issuecomment-945126627
     public static class GiantTeamNpgsqlDataReaderExtensions
     {
         public static T? GetFieldValue<T>(this NpgsqlDataReader reader, string name, JsonSerializerOptions jsonSerializerOptions)

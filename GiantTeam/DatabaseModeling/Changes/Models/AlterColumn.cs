@@ -1,10 +1,11 @@
 ﻿using GiantTeam.DatabaseModeling.Models;
 
-namespace GiantTeam.DatabaseModeling.Changes
+namespace GiantTeam.DatabaseModeling.Changes.Models
 {
     public class AlterColumn : DatabaseChange
     {
         public AlterColumn(string schemaName, string tableName, Column column, IReadOnlyCollection<AlterColumnModification> modifications)
+            : base(nameof(AlterColumn))
         {
             if (!modifications.Any())
             {

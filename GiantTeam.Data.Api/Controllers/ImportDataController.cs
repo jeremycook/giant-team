@@ -7,9 +7,9 @@ public class ImportDataController : ControllerBase
 {
     [HttpPost("/api/[Controller]")]
     public async Task<ImportDataOutput> Post(
-        [FromServices] ImportDataService fetchWorkspaceService,
+        [FromServices] ImportDataService service,
         ImportDataInput input)
     {
-        return await fetchWorkspaceService.ImportDataAsync(input);
+        return await service.ImportDataAsync(input);
     }
 }
