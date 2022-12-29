@@ -169,12 +169,10 @@ namespace GiantTeam.Tools
                                 o.PropertyType,
                                 o.Nullability,
                             })
-                            .Where(o => discrimantorValue == "" || discriminatorPropertyName != o.Name)
+                            .Where(o => discriminatorPropertyName != o.Name)
                             .Select(o => new KeyValuePair<string, string>(
                                 o.Name,
-                                discrimantorValue != "" && o.Name == discriminatorPropertyName ?
-                                    $"'{discrimantorValue}'" :
-                                    (TypeScriptTypeName(o.PropertyType.Type) + (o.Nullability == Nullability.Nullable ? " | null" : ""))
+                                TypeScriptTypeName(o.PropertyType.Type) + (o.Nullability == Nullability.Nullable ? " | null" : "")
                             )));
                         foreach (var prop in props)
                         {

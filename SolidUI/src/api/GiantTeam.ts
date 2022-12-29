@@ -398,7 +398,7 @@ export interface FetchRecordsInputColumn {
 }
 
 export interface FetchRecordsInputFilter {
-    discriminator: string;
+    $type: string;
     column: string;
 }
 
@@ -408,9 +408,9 @@ export interface FetchRecordsInputOrder {
 }
 
 export interface FetchRecordsInputRangeFilter extends FetchRecordsInputFilter {
+    $type: 'FetchRecordsInputRangeFilter';
     lowerValue: string;
     upperValue: string;
-    discriminator: string;
     column: string;
 }
 

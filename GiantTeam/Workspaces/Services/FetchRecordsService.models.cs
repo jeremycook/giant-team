@@ -42,16 +42,16 @@ namespace GiantTeam.Workspaces.Services
         public bool IsVisible() => Visible != false;
     }
 
-    [JsonPolymorphic(TypeDiscriminatorPropertyName = nameof(Discriminator))]
-    [JsonDerivedType(typeof(FetchRecordsInputRangeFilter))]
+    [JsonDerivedType(typeof(FetchRecordsInputRangeFilter), nameof(FetchRecordsInputRangeFilter))]
     public abstract class FetchRecordsInputFilter
     {
-        public FetchRecordsInputFilter(string discriminator)
+        protected FetchRecordsInputFilter(string type)
         {
-            Discriminator = discriminator;
+            Type = type;
         }
 
-        public string Discriminator { get; set; }
+        [JsonPropertyName("$type"), JsonPropertyOrder(-1)]
+        public string Type { get; }
 
         [Required, StringLength(50), PgIdentifier]
         public string Column { get; set; } = null!;
@@ -59,7 +59,8 @@ namespace GiantTeam.Workspaces.Services
 
     public class FetchRecordsInputRangeFilter : FetchRecordsInputFilter
     {
-        public FetchRecordsInputRangeFilter() : base(nameof(FetchRecordsInputRangeFilter))
+        public FetchRecordsInputRangeFilter()
+            : base(nameof(FetchRecordsInputRangeFilter))
         {
         }
 
