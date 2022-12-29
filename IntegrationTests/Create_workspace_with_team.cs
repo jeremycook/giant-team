@@ -3,9 +3,7 @@ using GiantTeam.Workspaces.Models;
 using GiantTeam.Workspaces.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
-using static GiantTeam.UserManagement.Services.CreateTeamService;
 using static GiantTeam.UserManagement.Services.JoinService;
-using static GiantTeam.WorkspaceAdministration.Services.CreateWorkspaceService;
 
 namespace IntegrationTests;
 
@@ -24,7 +22,7 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
         // Arrange
         var client = _factory.CreateClient();
         string workspaceName = $"Test {GetType().Name} {DateTime.Now:ddHHmmss}";
-        string workspaceOwner = workspaceName + " Team";
+        string workspaceOwner = workspaceName + ":Owner";
 
         // Register and login with fixed credentials that may already exist
         {
@@ -51,34 +49,16 @@ public class Create_workspace_with_team : IClassFixture<WebApplicationFactory<We
             client.DefaultRequestHeaders.Add("Cookie", setCookie);
         }
 
-        // Create team
-        {
-            using var createTeamResponse = await client.PostAsJsonAsync("/api/create-team", new CreateTeamInput()
-            {
-                TeamName = "My " + workspaceName + " Team",
-            });
-            createTeamResponse.EnsureSuccessStatusCode();
-            var createTeamOutput = await createTeamResponse.Content.ReadFromJsonAsync<CreateTeamOutput>();
-
-            Assert.NotNull(createTeamOutput);
-            Assert.NotNull(createTeamOutput.TeamId);
-
-            // Save for later
-            workspaceOwner = createTeamOutput.TeamId;
-        }
-
         // Create workspace
         {
             using var createWorkspaceResponse = await client.PostAsJsonAsync("/api/create-workspace", new CreateWorkspaceInput()
             {
                 WorkspaceName = workspaceName,
-                WorkspaceOwner = workspaceOwner,
             });
             createWorkspaceResponse.EnsureSuccessStatusCode();
             var createWorkspaceOutput = await createWorkspaceResponse.Content.ReadFromJsonAsync<CreateWorkspaceOutput>();
 
             Assert.NotNull(createWorkspaceOutput);
-            Assert.Equal(workspaceName, createWorkspaceOutput.WorkspaceName);
         }
 
         // Get workspace

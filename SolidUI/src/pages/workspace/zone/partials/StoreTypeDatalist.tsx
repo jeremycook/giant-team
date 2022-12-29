@@ -1,4 +1,4 @@
-import { onCleanup, onMount } from "solid-js";
+import { onCleanup } from "solid-js";
 import { Portal } from "solid-js/web";
 import { StoreType } from "../../../../api/GiantTeam";
 import { createId } from "../../../../helpers/htmlHelpers";

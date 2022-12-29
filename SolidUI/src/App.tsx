@@ -53,10 +53,6 @@ const App: Component = () => {
                 <div class='dropdown-anchor' aria-labelledby='site-navbar-menu-dropdown'>
                   <div class='dropdown-content stack'>
                     <A href='/workspaces' class='stack-item'>Workspaces</A>
-                    <A href='/workspaces/create-workspace' class='stack-item'>New Workspace</A>
-                    <hr class='m-0' />
-                    <A href='/teams' class='stack-item'>Teams</A>
-                    <A href='/create-team' class='stack-item'>New Team</A>
                   </div>
                 </div>
               </div>

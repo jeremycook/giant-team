@@ -2,50 +2,45 @@
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
-using GiantTeam.UserManagement.Services;
+using GiantTeam.Text;
 using GiantTeam.Workspaces.Resources;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace GiantTeam.WorkspaceAdministration.Services
 {
+    public class CreateWorkspaceInput
+    {
+        [Required]
+        [StringLength(50), PgIdentifier]
+        public string? WorkspaceName { get; set; }
+
+        public bool IsPublic { get; set; }
+    }
+
+    public class CreateWorkspaceOutput
+    {
+    }
+
     public class CreateWorkspaceService
     {
-        public class CreateWorkspaceInput
-        {
-            [Required]
-            [StringLength(50), PgIdentifier]
-            public string? WorkspaceName { get; set; }
-
-            [Required]
-            [StringLength(50), PgIdentifier]
-            public string? WorkspaceOwner { get; set; }
-        }
-
-        public class CreateWorkspaceOutput
-        {
-            public string WorkspaceName { get; set; } = null!;
-        }
-
         private readonly ILogger<CreateWorkspaceService> logger;
         private readonly ValidationService validationService;
-        private readonly SessionService sessionService;
-        private readonly FetchRoleService fetchRoleService;
+        private readonly SecurityConnectionService securityConnectionService;
         private readonly UserConnectionService connectionService;
 
         public CreateWorkspaceService(
             ILogger<CreateWorkspaceService> logger,
             ValidationService validationService,
-            SessionService sessionService,
-            FetchRoleService fetchTeamService,
+            SecurityConnectionService securityConnectionService,
             UserConnectionService connectionService)
         {
             this.connectionService = connectionService;
             this.logger = logger;
             this.validationService = validationService;
-            this.sessionService = sessionService;
-            this.fetchRoleService = fetchTeamService;
+            this.securityConnectionService = securityConnectionService;
         }
 
         public async Task<CreateWorkspaceOutput> CreateWorkspaceAsync(CreateWorkspaceInput input)
@@ -71,55 +66,63 @@ namespace GiantTeam.WorkspaceAdministration.Services
             validationService.Validate(input);
 
             string workspaceName = input.WorkspaceName!;
-            string workspaceOwner = input.WorkspaceOwner!;
+            string workspaceOwner = $"{workspaceName}:Owner";
 
-            var role = await fetchRoleService.FetchRoleAsync(new()
-            {
-                RoleName = workspaceOwner,
-            });
-
-            if (!role.Inherit || role.CanLogin)
-            {
-                throw new ValidationException("The workspace owner must be a team role. It appears to be a user role.");
-            }
-
-            using var infoDb = await connectionService.OpenInfoConnectionAsync(workspaceOwner);
             try
             {
-                await infoDb.ExecuteAsync($"CREATE DATABASE {PgQuote.Identifier(workspaceName)};");
+                // The workspace owner must be created before connecting to the info database.
+                // CREATEDB will be allowed until the workspace database is created.
+                using (var securityDb = await securityConnectionService.OpenConnectionAsync())
+                    await securityDb.ExecuteAsync($"CREATE ROLE {PgQuote.Identifier(workspaceOwner)} WITH CREATEDB INHERIT NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {PgQuote.Identifier(connectionService.User.DbRole)};");
 
-                using var workspaceDb = await connectionService.OpenConnectionAsync(workspaceName, workspaceOwner);
+                // Create the database
+                using (var infoDb = await connectionService.OpenInfoConnectionAsync(workspaceOwner))
+                    await infoDb.ExecuteAsync($"CREATE DATABASE {PgQuote.Identifier(workspaceName)};");
 
-                await workspaceDb.ExecuteAsync($"""
-GRANT ALL ON DATABASE {PgQuote.Identifier(workspaceName)} TO pg_database_owner;
-REVOKE ALL ON DATABASE {PgQuote.Identifier(workspaceName)} FROM PUBLIC;
+                // Connect to the info database as the new workspace owner.
+                // Initialize the new workspace database.
+                var sb = new StringBuilder();
+                sb.AppendLF($"GRANT ALL ON DATABASE {PgQuote.Identifier(workspaceName)} TO pg_database_owner;");
+                sb.AppendLF();
+                sb.AppendLF($"REVOKE ALL ON DATABASE {PgQuote.Identifier(workspaceName)} FROM public;");
+                if (input.IsPublic)
+                {
+                    sb.AppendLF($"GRANT CONNECT ON DATABASE {PgQuote.Identifier(workspaceName)} TO public;");
+                }
+                sb.AppendLF();
+                sb.AppendLF($"SET ROLE pg_database_owner;");
+                sb.AppendLF();
+                sb.AppendLF($"DROP SCHEMA IF EXISTS public CASCADE;");
+                sb.AppendLF();
+                sb.AppendLF(WorkspaceResources.WsSql);
 
-DROP SCHEMA IF EXISTS public CASCADE;
-
-CREATE SCHEMA IF NOT EXISTS {PgQuote.Identifier(workspaceName)};
-GRANT ALL PRIVILEGES ON SCHEMA {PgQuote.Identifier(workspaceName)} TO pg_database_owner;
-
-{WorkspaceResources.GtPgsql}
-""");
+                using (var workspaceDb = await connectionService.OpenConnectionAsync(workspaceName))
+                    await workspaceDb.ExecuteAsync(sb.ToString());
             }
             catch (Exception)
             {
-                // Cleanup
                 try
                 {
-                    await infoDb.ExecuteAsync($"DROP DATABASE IF EXISTS {PgQuote.Identifier(workspaceName)};");
+                    using (var infoDb = await connectionService.OpenInfoConnectionAsync(workspaceOwner))
+                        await infoDb.ExecuteAsync($"DROP DATABASE IF EXISTS {PgQuote.Identifier(workspaceName)};");
+
+                    using (var securityDb = await securityConnectionService.OpenConnectionAsync())
+                        await securityDb.ExecuteAsync($"DROP ROLE IF EXISTS {PgQuote.Identifier(workspaceOwner)};");
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                    logger.LogError(ex, "Suppressed cleanup failure {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 }
 
                 throw;
             }
 
+            // Remove the CREATEDB privilege.
+            using (var securityDb = await securityConnectionService.OpenConnectionAsync())
+                await securityDb.ExecuteAsync($"ALTER ROLE {PgQuote.Identifier(workspaceOwner)} NOCREATEDB;");
+
             return new()
             {
-                WorkspaceName = workspaceName,
             };
         }
     }

@@ -4,7 +4,10 @@
     {
         static Type Type { get; } = typeof(WorkspaceResources);
 
-        public static string GtPgsql { get; } = ReadAllText("gt.pgsql");
+        /// <summary>
+        /// The contents of "ws.sql".
+        /// </summary>
+        public static string WsSql { get; } = ReadAllText("ws.sql");
 
         public static string ReadAllText(string name)
         {

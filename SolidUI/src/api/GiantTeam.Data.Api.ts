@@ -2,10 +2,10 @@ import { DataResponse, postJson } from "../helpers/httpHelpers";
 import {
     AlterTable,
     AlterTableInput,
+    CreateRoleInput,
+    CreateRoleOutput,
     CreateTableInput,
     CreateTableOutput,
-    CreateTeamInput,
-    CreateTeamOutput,
     CreateWorkspaceInput,
     CreateWorkspaceOutput,
     FetchRecords,
@@ -25,8 +25,8 @@ export const postAlterTable = async (input: AlterTableInput) =>
 export const postCreateTable = async (input: CreateTableInput) =>
     await postJson('/api/create-table', input) as DataResponse<CreateTableOutput>;
 
-export const postCreateTeam = async (input: CreateTeamInput) =>
-    await postJson('/api/create-team', input) as DataResponse<CreateTeamOutput>;
+export const postCreateTeam = async (input: CreateRoleInput) =>
+    await postJson('/api/create-team', input) as DataResponse<CreateRoleOutput>;
 
 export const postCreateWorkspace = async (input: CreateWorkspaceInput) =>
     await postJson('/api/create-workspace', input) as DataResponse<CreateWorkspaceOutput>;

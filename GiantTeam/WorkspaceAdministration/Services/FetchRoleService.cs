@@ -52,7 +52,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        /// <exception cref="DetailedValidationException">Role not found.</exception>
+        /// <exception cref="NotFoundException">Role not found.</exception>
         public async Task<FetchRoleOutput> FetchRoleAsync(FetchRoleInput input)
         {
             validationService.Validate(input);

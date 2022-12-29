@@ -1,10 +1,14 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseModeling.Models;
+using GiantTeam.Text;
 using GiantTeam.WorkspaceAdministration.Services;
 using GiantTeam.Workspaces.Models;
+using Npgsql;
+using Npgsql.NameTranslation;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Text.Json;
 
 namespace GiantTeam.Workspaces.Services
 {
@@ -39,18 +43,22 @@ namespace GiantTeam.Workspaces.Services
                 using var connection = await connectionService.OpenConnectionAsync(input.WorkspaceName!);
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = $"""
-SELECT "Name", "Owner", "Zones"
-FROM gt.workspace
+SELECT "name", "owner", "zones"
+FROM ws.workspace
 """;
-
+                
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
                     var output = new Workspace()
                     {
-                        Name = reader.GetString("Name"),
-                        Owner = reader.GetString("Owner"),
-                        Zones = reader.GetFieldValue<Schema[]>("Zones"),
+                        Name = reader.GetString("name"),
+                        Owner = reader.GetString("owner"),
+                        // TODO: Streamline this!
+                        Zones = JsonSerializer.Deserialize<Schema[]>(reader.GetFieldValue<JsonDocument>("zones"), new JsonSerializerOptions()
+                        {
+                            PropertyNamingPolicy = new SnakeCaseJsonNamingPolicy(),
+                        })!,
                     };
                     return output;
                 }

@@ -1,14 +1,14 @@
+using GiantTeam.WorkspaceAdministration.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
-using GiantTeam.WorkspaceAdministration.Services;
 
 namespace GiantTeam.Asp.UI.Pages.Data
 {
     public class CreateWorkspaceModel : PageModel
     {
         [BindProperty]
-        public CreateWorkspaceService.CreateWorkspaceInput Model { get; set; } = new();
+        public CreateWorkspaceInput Model { get; set; } = new();
 
         public void OnGet()
         {

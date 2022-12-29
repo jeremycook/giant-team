@@ -68,14 +68,19 @@ namespace GiantTeam.WorkspaceAdministration.Services
             return connection;
         }
 
-        public NpgsqlConnection OpenConnection(string databaseName)
+        public NpgsqlConnection OpenConnection(string databaseName, bool setRole = true)
         {
-            SessionUser user = sessionService.User;
-
-            NpgsqlConnection connection = CreateConnection(databaseName);
-            connection.Open();
-            connection.SetRole(user.DbRole);
-            return connection;
+            if (setRole)
+            {
+                SessionUser user = sessionService.User;
+                return OpenConnection(databaseName, user.DbRole);
+            }
+            else
+            {
+                NpgsqlConnection connection = CreateConnection(databaseName);
+                connection.Open();
+                return connection;
+            }
         }
 
         /// <summary>
@@ -84,14 +89,19 @@ namespace GiantTeam.WorkspaceAdministration.Services
         /// </summary>
         /// <param name="databaseName"></param>
         /// <returns></returns>
-        public async Task<NpgsqlConnection> OpenConnectionAsync(string databaseName)
+        public async Task<NpgsqlConnection> OpenConnectionAsync(string databaseName, bool setRole = true)
         {
-            SessionUser user = sessionService.User;
-
-            NpgsqlConnection connection = CreateConnection(databaseName);
-            await connection.OpenAsync();
-            await connection.SetRoleAsync(user.DbRole);
-            return connection;
+            if (setRole)
+            {
+                SessionUser user = sessionService.User;
+                return await OpenConnectionAsync(databaseName, user.DbRole);
+            }
+            else
+            {
+                NpgsqlConnection connection = CreateConnection(databaseName);
+                await connection.OpenAsync();
+                return connection;
+            }
         }
 
         /// <summary>

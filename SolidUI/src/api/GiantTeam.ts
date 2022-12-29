@@ -167,12 +167,12 @@ export interface User {
     dbRole: DbRole | null;
 }
 
-export interface CreateTeamInput {
-    teamName: string | null;
+export interface CreateRoleInput {
+    workspaceName: string | null;
+    roleName: string | null;
 }
 
-export interface CreateTeamOutput {
-    teamId: string;
+export interface CreateRoleOutput {
 }
 
 export interface JoinInput {
@@ -206,11 +206,10 @@ export interface VerifyPasswordOutput {
 
 export interface CreateWorkspaceInput {
     workspaceName: string | null;
-    workspaceOwner: string | null;
+    isPublic: boolean;
 }
 
 export interface CreateWorkspaceOutput {
-    workspaceName: string;
 }
 
 export interface DeleteWorkspaceInput {

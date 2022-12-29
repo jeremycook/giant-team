@@ -1,9 +1,9 @@
 import { createSignal, Show } from 'solid-js';
 import { createId } from '../../helpers/htmlHelpers';
 import { postCreateWorkspace } from '../../api/GiantTeam.Data.Api';
-import { session } from '../../utils/session';
 import { setTitle } from '../../utils/page';
 import { useNavigate } from '@solidjs/router';
+import { Breadcrumb } from '../../utils/nav';
 
 export default function CreateWorkspacePage() {
   setTitle('Create a Workspace');
@@ -17,16 +17,18 @@ export default function CreateWorkspacePage() {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
 
+    const workspaceName = form.workspaceName.value;
+
     const output = await postCreateWorkspace({
-      workspaceName: form.workspaceName.value,
-      workspaceOwner: form.workspaceOwner.value,
+      workspaceName: workspaceName,
+      isPublic: false,
     });
 
     okSetter(output.ok);
 
     if (output.ok) {
       messageSetter('Workspace created! Taking you to it now…');
-      navigate('/workspace/' + output.data!.workspaceName);
+      navigate('/workspace/' + workspaceName);
     }
     else {
       messageSetter(output.message);
@@ -36,7 +38,9 @@ export default function CreateWorkspacePage() {
   return (
     <section class='card md:w-md md:mx-auto'>
 
-      <h1>Create a Workspace</h1>
+      <Breadcrumb link={{ text: 'New Workspace', href: '/workspaces/new-workspace' }} />
+
+      <h1>New Workspace</h1>
 
       <Show when={message()}>
         <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
@@ -53,28 +57,13 @@ export default function CreateWorkspacePage() {
           id={createId('workspaceName')}
           name='workspaceName'
           required
-          autofocus
           autocomplete='no'
+          use:autofocus
         />
-
-        <label for={createId('workspaceOwner')}>
-          Workspace Owner
-        </label>
-        <select
-          id={createId('workspaceOwner')}
-          name='workspaceOwner'
-          required
-        >
-          <option>Choose…</option>
-          <option
-            value={session.username ?? undefined}
-            selected={true}
-          >{session.username}</option>
-        </select>
 
         <div />
         <div>
-          <button type='submit' class='button'>
+          <button class='button'>
             Create Workspace
           </button>
         </div>
