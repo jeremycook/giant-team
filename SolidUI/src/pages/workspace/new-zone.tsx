@@ -1,15 +1,22 @@
+import { useNavigate } from "@solidjs/router";
 import { createMutable } from "solid-js/store";
 import { CreateNamespace } from "../../api/GiantTeam";
 import { postChangeDatabase } from "../../api/GiantTeam.Data.Api";
 import { SaveEditFilledIcon } from "../../helpers/icons";
 import { Breadcrumb } from "../../utils/nav";
-import { FormFields } from "../../widgets/FormFields";
+import { FieldStack, FieldStackOptions } from "../../widgets/FieldStack";
 import { createWorkspaceUrl, useWorkspaceParams } from "./workspace-layout";
 
+const dataOptions: FieldStackOptions = {
+    name: { type: 'text', label: 'Name', required: true },
+};
+
 export default function NewZonePage() {
+    const navigate = useNavigate();
     const workspaceParams = useWorkspaceParams();
+
     const data = createMutable({
-        name: ''
+        name: '',
     });
 
     async function onsubmitform(e: SubmitEvent) {
@@ -27,7 +34,7 @@ export default function NewZonePage() {
 
         if (output.ok) {
             alert('Zone created!');
-            location.href = createWorkspaceUrl('zone', data.name);
+            navigate(createWorkspaceUrl('zone', data.name));
             return;
         }
         else {
@@ -50,7 +57,9 @@ export default function NewZonePage() {
                     </button>
                 </div>
 
-                <FormFields data={data} meta={{ name: { type: 'text', label: 'Name', required: true } }} />
+                <div class='form-grid'>
+                    <FieldStack data={data} options={dataOptions} />
+                </div>
 
             </form>
         </section>

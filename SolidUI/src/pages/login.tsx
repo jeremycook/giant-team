@@ -2,15 +2,28 @@ import { A, useLocation, useNavigate } from '@solidjs/router';
 import { createSignal, Show } from 'solid-js';
 import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
 import { isAuthenticated, refreshSession, session } from '../utils/session';
-import { setTitle, title } from '../utils/page';
-import { createId } from '../helpers/htmlHelpers';
+import { setTitle } from '../utils/page';
 import { InfoIcon, WarningIcon } from '../helpers/icons';
+import { FieldStack, FieldStackOptions } from '../widgets/FieldStack';
+import { createMutable } from 'solid-js/store';
 
 export default function LoginPage() {
   setTitle('Login');
 
   const location = useLocation<{ returnUrl: string | undefined }>();
   const navigate = useNavigate();
+
+  const data = createMutable({
+    username: '',
+    password: '',
+    remainLoggedIn: false,
+  });
+
+  const options: FieldStackOptions = {
+    username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
+    password: { type: 'password', label: 'Password', autocomplete: 'current-password' },
+    remainLoggedIn: { type: 'boolean', label: 'Keep me logged in' },
+  };
 
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal('');
@@ -61,7 +74,7 @@ export default function LoginPage() {
   return (
     <section class='card md:w-md md:mx-auto'>
 
-      <h1>{title()}</h1>
+      <h1>Login</h1>
 
       <Show when={session.status === SessionStatus.Authenticated}>
         <p class='text-info' role='alert'>
@@ -82,37 +95,11 @@ export default function LoginPage() {
 
       <form onSubmit={formSubmit} class='form-grid'>
 
-        <label for={createId('username')}>
-          Username
-        </label>
-        <input
-          id={createId('username')}
-          name='username'
-          required
-          autofocus
-          autocomplete='username'
-        />
-
-        <label for={createId('password')}>
-          Password
-        </label>
-        <input
-          id={createId('password')}
-          name='password'
-          type='password'
-          required
-          autocomplete='current-password'
-        />
-
-        <div />
-        <label><input
-          name='remainLoggedIn'
-          type='checkbox'
-        /> Keep me logged in</label>
+        <FieldStack data={data} options={options} />
 
         <div />
         <div>
-          <button type='submit' class='button'>
+          <button type='submit' class='button paint-primary'>
             Login
           </button>
           <A href='/join' class='p-button'>Join</A>
