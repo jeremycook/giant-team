@@ -50,8 +50,8 @@ export default function WorkspacePage() {
             .map(c => c.filters
                 .filter(f => f.upperValue)
                 .map(f => ({
+                    $type: f.$type,
                     column: c.name,
-                    discriminator: f.discriminator,
                     lowerValue: f.lowerValue,
                     upperValue: f.upperValue,
                 }))

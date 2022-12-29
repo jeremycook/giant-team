@@ -82,7 +82,7 @@ export function ColumnDialog(props: ColumnDialogProps) {
                     <button type='button' class='button p-1'
                         onclick={() => setMeta('columns', column().name, 'filters',
                             f => [...f, {
-                                discriminator: 'FetchRecordsInputRangeFilter',
+                                $type: 'FetchRecordsInputRangeFilter',
                                 column: column().name,
                                 lowerValue: '',
                                 upperValue: '',

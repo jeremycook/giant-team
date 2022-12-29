@@ -40,7 +40,7 @@ export default function ZoneLayout() {
         <Breadcrumb link={{ text: zoneData()!.name, href: createZoneUrl() }} />
 
         <div class='flex gap-1'>
-            <A class='button' href={createZoneUrl('import-data')}>Import Data</A>
+            <A class='button' href={createWorkspaceUrl('import-data')}>Import Data</A>
             <div class='dropdown'>
                 <button type='button' class='dropdown-button button'>
                     Tables
