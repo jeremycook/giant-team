@@ -1,14 +1,12 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseModeling.Models;
-using GiantTeam.Text;
+using GiantTeam.Postgres;
+using GiantTeam.Text.Json;
 using GiantTeam.WorkspaceAdministration.Services;
 using GiantTeam.Workspaces.Models;
-using Npgsql;
-using Npgsql.NameTranslation;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Text.Json;
 
 namespace GiantTeam.Workspaces.Services
 {
@@ -46,7 +44,7 @@ namespace GiantTeam.Workspaces.Services
 SELECT "name", "owner", "zones"
 FROM ws.workspace
 """;
-                
+
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
@@ -54,11 +52,7 @@ FROM ws.workspace
                     {
                         Name = reader.GetString("name"),
                         Owner = reader.GetString("owner"),
-                        // TODO: Streamline this!
-                        Zones = JsonSerializer.Deserialize<Schema[]>(reader.GetFieldValue<JsonDocument>("zones"), new JsonSerializerOptions()
-                        {
-                            PropertyNamingPolicy = new SnakeCaseJsonNamingPolicy(),
-                        })!,
+                        Zones = reader.GetRequiredFieldValue<Schema[]>("zones", GTJsonSerializerOptions.SnakeCase),
                     };
                     return output;
                 }

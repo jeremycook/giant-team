@@ -138,7 +138,7 @@ namespace WebApp
                 // Ensure actions and action filters have access to formatter exception messages
                 configure.AllowInputFormatterExceptionMessages = true;
 
-                // Be more forgiving about input
+                // Be more forgiving about JSON input
                 configure.JsonSerializerOptions.AllowTrailingCommas = true;
                 configure.JsonSerializerOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
                 // TODO: Write a JsonEnumConverter that can deserialize from string or integer,

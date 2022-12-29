@@ -13,7 +13,7 @@ namespace GiantTeam.Asp.Routing
         {
             if (value is string text)
             {
-                return TextTransformers.Slugify(text);
+                return TextTransformers.Dashify(text);
             }
             else
             {

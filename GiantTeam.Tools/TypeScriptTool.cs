@@ -169,7 +169,7 @@ namespace GiantTeam.Tools
                 foreach (var controller in controllers)
                 {
                     string controllerName = Regex.Replace(controller.Name, "Controller$", "");
-                    string controllerSlug = TextTransformers.Slugify(controllerName);
+                    string controllerSlug = TextTransformers.Dashify(controllerName);
 
                     var postActions = controller
                         .GetMethods()
@@ -180,7 +180,7 @@ namespace GiantTeam.Tools
                     {
                         // TODO: Check for ActionNameAttribute
                         string actionName = method.Name;
-                        string actionSlug = TextTransformers.Slugify(method.Name);
+                        string actionSlug = TextTransformers.Dashify(method.Name);
 
                         string functionName = actionName[..1].ToLower() + actionName[1..] + controllerName;
 

@@ -1,50 +1,48 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using System.Text;
 
 namespace GiantTeam.Text
 {
     public static class TextTransformers
     {
-        private const int caseDifference = 32;
-        private const char dash = '-';
+        private static readonly Rune dash = new('-');
         private static readonly Rune underscore = new('_');
 
-        public static string Slugify(string text)
+        public static string Dashify(string text)
         {
-            var sb = new StringBuilder(text.Length);
+            var sb = new List<Rune>();
 
-            char last = '\0';
-            foreach (var ch in text)
+            bool lastWasLower = false;
+            foreach (var rune in text.EnumerateRunes())
             {
-                if (char.IsUpper(ch))
+                if (Rune.IsUpper(rune))
                 {
-                    if (char.IsLower(last))
+                    if (lastWasLower)
                     {
-                        sb.Append(dash);
+                        sb.Add(dash);
                     }
-                    sb.Append((char)(ch + caseDifference));
+                    sb.Add(Rune.ToLowerInvariant(rune));
                 }
                 else
                 {
-                    sb.Append(ch);
+                    sb.Add(rune);
                 }
 
-                last = ch;
+                lastWasLower = Rune.IsLower(rune);
             }
 
-            return sb.ToString();
+            return string.Concat(sb);
         }
 
         public static string Snakify(string text)
         {
             var sb = new List<Rune>();
 
-            Rune last = new('\0');
+            bool lastWasLower = false;
             foreach (var rune in text.EnumerateRunes())
             {
                 if (Rune.IsUpper(rune))
                 {
-                    if (Rune.IsLower(last))
+                    if (lastWasLower)
                     {
                         sb.Add(underscore);
                     }
@@ -55,7 +53,7 @@ namespace GiantTeam.Text
                     sb.Add(rune);
                 }
 
-                last = rune;
+                lastWasLower = Rune.IsLower(rune);
             }
 
             return string.Concat(sb);
