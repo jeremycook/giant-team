@@ -1,5 +1,5 @@
-﻿using GiantTeam.DatabaseModeling.Changes.Models;
-using GiantTeam.DatabaseModeling.Models;
+﻿using GiantTeam.DatabaseDefinition.Changes.Models;
+using GiantTeam.DatabaseDefinition.Models;
 using GiantTeam.Text;
 using System.ComponentModel.DataAnnotations;
 using System.Data;

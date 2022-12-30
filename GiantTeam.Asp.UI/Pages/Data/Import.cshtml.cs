@@ -1,6 +1,6 @@
 using Dapper;
-using GiantTeam.DatabaseModeling;
-using GiantTeam.DatabaseModeling.Models;
+using GiantTeam.DatabaseDefinition;
+using GiantTeam.DatabaseDefinition.Models;
 using GiantTeam.Postgres;
 using GiantTeam.Text;
 using GiantTeam.WorkspaceAdministration.Services;

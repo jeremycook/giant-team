@@ -1,6 +1,6 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.DatabaseModeling.Models;
+using GiantTeam.DatabaseDefinition.Models;
 using GiantTeam.Postgres;
 using GiantTeam.Text.Json;
 using GiantTeam.WorkspaceAdministration.Services;

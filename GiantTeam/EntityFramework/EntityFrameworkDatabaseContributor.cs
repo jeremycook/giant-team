@@ -1,8 +1,7 @@
-﻿using GiantTeam.DatabaseModeling;
-using GiantTeam.DatabaseModeling.Models;
+﻿using GiantTeam.DatabaseDefinition;
+using GiantTeam.DatabaseDefinition.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.EntityFramework;
 

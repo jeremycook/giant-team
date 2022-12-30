@@ -1,5 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
-using GiantTeam.DatabaseModeling.Models;
+using GiantTeam.DatabaseDefinition.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Workspaces.Services

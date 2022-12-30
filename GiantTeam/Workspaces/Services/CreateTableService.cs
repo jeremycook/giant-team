@@ -1,8 +1,6 @@
 ﻿using Dapper;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.DatabaseModeling.Changes;
-using GiantTeam.DatabaseModeling.Changes.Models;
-using GiantTeam.DatabaseModeling.Models;
+using GiantTeam.DatabaseDefinition.Changes.Models;
 using GiantTeam.Postgres;
 using GiantTeam.WorkspaceAdministration.Services;
 using Npgsql;

@@ -1,4 +1,4 @@
-﻿using GiantTeam.DatabaseModeling.Models;
+﻿using GiantTeam.DatabaseDefinition.Models;
 
 namespace GiantTeam.Workspaces.Models
 {
