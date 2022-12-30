@@ -35,8 +35,8 @@ export interface AlterIndex extends DatabaseChange {
     index: TableIndex;
 }
 
-export interface ChangeOwner extends DatabaseChange {
-    $type: 'ChangeOwner';
+export interface ChangeTableOwner extends DatabaseChange {
+    $type: 'ChangeTableOwner';
     schemaName: string;
     tableName: string;
     newOwner: string;

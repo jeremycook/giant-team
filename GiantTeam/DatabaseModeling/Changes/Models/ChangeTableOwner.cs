@@ -1,9 +1,9 @@
 ﻿namespace GiantTeam.DatabaseModeling.Changes.Models
 {
-    public class ChangeOwner : DatabaseChange
+    public class ChangeTableOwner : DatabaseChange
     {
-        public ChangeOwner(string schemaName, string tableName, string newOwner)
-            : base(nameof(ChangeOwner))
+        public ChangeTableOwner(string schemaName, string tableName, string newOwner)
+            : base(nameof(ChangeTableOwner))
         {
             SchemaName = schemaName;
             TableName = tableName;

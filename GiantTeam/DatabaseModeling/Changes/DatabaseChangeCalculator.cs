@@ -20,7 +20,7 @@ namespace GiantTeam.DatabaseModeling.Changes
 
             if (!string.IsNullOrEmpty(target.Owner) && current.Owner != target.Owner)
             {
-                changes.Add(new ChangeOwner(schemaName, tableName, target.Owner));
+                changes.Add(new ChangeTableOwner(schemaName, tableName, target.Owner));
             }
 
             // Column changes

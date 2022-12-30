@@ -193,7 +193,7 @@ END $DDL$;
                     case RenameTable renameTable:
                         script.AppendLF(ScriptRenameTable(renameTable));
                         break;
-                    case ChangeOwner changeTableOwner:
+                    case ChangeTableOwner changeTableOwner:
                         script.AppendLF(ScriptChangeTableOwner(changeTableOwner));
                         break;
 
@@ -243,7 +243,7 @@ END $DDL$;
             return $"ALTER TABLE {Identifier(change.SchemaName, change.TableName)} RENAME TO {Identifier(change.NewTableName)};";
         }
 
-        private static string ScriptChangeTableOwner(ChangeOwner change)
+        private static string ScriptChangeTableOwner(ChangeTableOwner change)
         {
             return $"ALTER TABLE {Identifier(change.SchemaName, change.TableName)} OWNER TO {Identifier(change.NewOwner)};";
         }
