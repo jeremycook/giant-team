@@ -3,7 +3,7 @@ using GiantTeam.DatabaseDefinition.Models;
 
 namespace GiantTeam.DatabaseDefinition.Changes
 {
-    public class DatabaseChangeCalculator
+    public static class DatabaseChangeCalculator
     {
         public static List<DatabaseChange> CalculateTableChanges(string schemaName, Table current, Table target)
         {
