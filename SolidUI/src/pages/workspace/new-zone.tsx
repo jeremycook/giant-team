@@ -1,6 +1,6 @@
 import { useNavigate } from "@solidjs/router";
 import { createMutable } from "solid-js/store";
-import { CreateNamespace } from "../../api/GiantTeam";
+import { CreateSchema } from "../../api/GiantTeam";
 import { postChangeDatabase } from "../../api/GiantTeam.Data.Api";
 import { SaveEditFilledIcon } from "../../helpers/icons";
 import { Breadcrumb } from "../../utils/nav";
@@ -26,9 +26,9 @@ export default function NewZonePage() {
             databaseName: workspaceParams.workspace,
             changes: [
                 {
-                    $type: 'CreateNamespace',
-                    namespaceName: data.name,
-                } as CreateNamespace
+                    $type: 'CreateSchema',
+                    schemaName: data.name,
+                } as CreateSchema
             ]
         });
 

@@ -56,9 +56,9 @@ export interface CreateIndex extends DatabaseChange {
     index: TableIndex;
 }
 
-export interface CreateNamespace extends DatabaseChange {
-    $type: 'CreateNamespace';
-    namespaceName: string;
+export interface CreateSchema extends DatabaseChange {
+    $type: 'CreateSchema';
+    schemaName: string;
 }
 
 export interface CreateTable extends DatabaseChange {

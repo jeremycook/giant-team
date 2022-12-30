@@ -183,7 +183,7 @@ END $DDL$;
             {
                 switch (change)
                 {
-                    case CreateNamespace createSchema:
+                    case CreateSchema createSchema:
                         script.AppendLF(ScriptCreateSchema(createSchema));
                         break;
 
@@ -226,9 +226,9 @@ END $DDL$;
         }
 
 
-        private string ScriptCreateSchema(CreateNamespace change)
+        private string ScriptCreateSchema(CreateSchema change)
         {
-            return $"CREATE SCHEMA {Identifier(change.NamespaceName)};";
+            return $"CREATE SCHEMA {Identifier(change.SchemaName)};";
         }
 
 

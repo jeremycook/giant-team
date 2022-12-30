@@ -7,7 +7,7 @@ namespace GiantTeam.DatabaseModeling.Changes.Models
     [JsonDerivedType(typeof(ChangeOwner), nameof(ChangeOwner))]
     [JsonDerivedType(typeof(CreateColumn), nameof(CreateColumn))]
     [JsonDerivedType(typeof(CreateIndex), nameof(CreateIndex))]
-    [JsonDerivedType(typeof(CreateNamespace), nameof(CreateNamespace))]
+    [JsonDerivedType(typeof(CreateSchema), nameof(CreateSchema))]
     [JsonDerivedType(typeof(CreateTable), nameof(CreateTable))]
     [JsonDerivedType(typeof(DropColumn), nameof(DropColumn))]
     [JsonDerivedType(typeof(DropIndex), nameof(DropIndex))]
