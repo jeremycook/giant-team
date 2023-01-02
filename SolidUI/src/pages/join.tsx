@@ -1,15 +1,15 @@
-import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postRegister } from '../api/GiantTeam.Authentication.Api';
-import { title, setTitle } from '../utils/page';
 import { createId } from '../helpers/htmlHelpers';
-import { createUrl } from '../helpers/urlHelpers';
+import { getState, go, PageInfo } from '../partials/Nav';
+import { isAuthenticated } from '../utils/session';
+
+export const pageInfo: PageInfo = {
+  name: 'Join',
+  showInNav: () => !isAuthenticated(),
+}
 
 export default function JoinPage() {
-  setTitle('Join');
-
-  const navigate = useNavigate();
-
   // Input
   const [name, nameSetter] = createSignal('');
   const [email, emailSetter] = createSignal('');
@@ -46,9 +46,10 @@ export default function JoinPage() {
     okSetter(output.ok);
 
     if (output.ok) {
+      const state = getState<{ returnUrl: string }>();
       messageSetter('Success! Redirecting to the login page…');
       // TODO: Redirect to page that triggered login flow
-      navigate(createUrl('/login', { username: username() }));
+      go('/login', { username: username(), returnUrl: state?.returnUrl });
     } else {
       messageSetter(output.message);
     }
@@ -57,7 +58,7 @@ export default function JoinPage() {
   return (
     <section class='card md:w-md md:mx-auto'>
 
-      <h1>{title()}</h1>
+      <h1>Join</h1>
 
       <p>
         Register a new user account.
@@ -140,8 +141,8 @@ export default function JoinPage() {
 
         <div />
         <div>
-          <button class='button'>
-            Register
+          <button class='button button-primary'>
+            Join Now
           </button>
         </div>
 

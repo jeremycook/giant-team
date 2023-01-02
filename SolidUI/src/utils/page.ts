@@ -15,6 +15,7 @@ export const [page, setPage] = createStore({
 export const title = () => page.title.join(' • ');
 
 export const setTitle = (title: string) => {
+    // document.title = title;
     // setPage('title', [title]);
 }
 

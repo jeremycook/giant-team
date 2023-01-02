@@ -1,14 +1,17 @@
-import { session } from "../utils/session";
-import { setTitle, title } from "../utils/page";
+import { PageInfo } from "../partials/Nav";
+import { isAuthenticated, session } from "../utils/session";
+
+export const pageInfo: PageInfo = {
+    name: 'Profile',
+    showInNav: () => isAuthenticated(),
+}
 
 export default function ProfilePage() {
-    setTitle('Welcome ' + session.username + '!');
-
     return (
         <section class='card md:w-md md:mx-auto'>
-            <h1>{title()}</h1>
+            <h1>My Profile</h1>
             <p>
-                TOOD: More coming soon…
+                Welcome {session.username}!
             </p>
         </section>
     )

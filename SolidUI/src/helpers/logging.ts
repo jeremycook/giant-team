@@ -1,19 +1,14 @@
-export function debug<T>(data: T, label?: string) {
-    if (label) {
-        console.debug(label, data);
-    }
-    else {
-        console.debug(data);
-    }
-    return data;
+function warn(message: string, data?: Record<string, any>) {
+    console.warn(message, data);
+    // TODO: Log
 }
 
-export function log<T>(data: T, label?: string) {
-    if (label) {
-        console.log(label, data);
-    }
-    else {
-        console.log(data);
-    }
-    return data;
+function error(message: string, data?: Record<string, any>) {
+    console.error(message, data);
+    // TODO: Log
+}
+
+export const log = {
+    error,
+    warn,
 }

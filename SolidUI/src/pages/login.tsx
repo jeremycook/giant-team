@@ -1,23 +1,25 @@
-import { A, useLocation, useNavigate } from '@solidjs/router';
-import { createSignal, onCleanup, Show } from 'solid-js';
-import { postLogin, SessionStatus } from '../api/GiantTeam.Authentication.Api';
+import { createSignal, Show } from 'solid-js';
+import { postLogin } from '../api/GiantTeam.Authentication.Api';
 import { isAuthenticated, refreshSession, session } from '../utils/session';
-import { setTitle } from '../utils/page';
 import { InfoIcon, WarningIcon } from '../helpers/icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
+import { A, getState, go, PageInfo } from '../partials/Nav';
+import { isLocalUrl } from '../helpers/urlHelpers';
 
 const dataOptions: FieldSetOptions = {
   username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
   password: { type: 'password', label: 'Password', autocomplete: 'current-password' },
-  remainLoggedIn: { type: 'boolean', label: 'Keep me logged in' },
+  remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
 
-export default function LoginPage() {
-  setTitle('Login');
+export const pageInfo: PageInfo = {
+  name: 'Login',
+  showInNav: () => !isAuthenticated(),
+}
 
-  const location = useLocation<{ returnUrl: string | undefined }>();
-  const navigate = useNavigate();
+export default function LoginPage() {
+  const state = getState<{ returnUrl?: string } | undefined>();
 
   const data = createMutable({
     username: '',
@@ -28,10 +30,16 @@ export default function LoginPage() {
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal('');
 
-  const returnUrl = () =>
-    location.state?.returnUrl?.startsWith('/') && !location.state?.returnUrl?.endsWith('/login') ?
-      location.state?.returnUrl :
-      null;
+  const returnUrl = () => {
+    if (state?.returnUrl) {
+      const url = new URL(state.returnUrl, location.href);
+      if (isLocalUrl(url) && !url.pathname.endsWith('/login'))
+        return url.toString();
+    }
+
+    // Fallback
+    return '/profile';
+  };
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -51,34 +59,21 @@ export default function LoginPage() {
       // Refresh the session
       await refreshSession()
 
-      if (typeof returnUrl() === 'string') {
-        // Redirect to page that triggered login flow
-        console.debug(`Redirecting from ${window.location.href} to ${returnUrl}.`)
-        navigate(returnUrl()!, { replace: true });
-      }
-      else {
-        // Fallback to home page
-        console.debug(`Redirecting from ${window.location.href} to /.`)
-        navigate('/');
-      }
+      const url = returnUrl();
+      console.debug(`Redirecting from ${window.location.href} to ${returnUrl}.`)
+      go(url, { replace: true });
       return;
     } else {
       messageSetter(output.message);
     }
   };
 
-  if (!isAuthenticated()) {
-    // TODO: Only do this in development env
-    const refresher = setInterval(() => isAuthenticated() ? clearInterval(refresher) : refreshSession(), 5 * 1000);
-    onCleanup(() => clearTimeout(refresher));
-  }
-
   return (
     <section class='card md:w-md md:mx-auto'>
 
       <h1>Login</h1>
 
-      <Show when={session.status === SessionStatus.Authenticated}>
+      <Show when={isAuthenticated()}>
         <p class='text-info' role='alert'>
           <InfoIcon class='animate-bounce-in' />{' '}
           FYI: You are currently logged in as <A href='/profile'>{session.username}</A>.

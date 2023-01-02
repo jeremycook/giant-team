@@ -1,7 +1,7 @@
 import { lazy } from 'solid-js';
 import { Route, Routes } from '@solidjs/router';
 
-import HomePage from './pages/home';
+import HomePage from './pages';
 import Protected from './widgets/Protected';
 import { WorkspacesPageData } from './pages/workspaces/workspaces';
 import JoinPage from './pages/join';

@@ -99,6 +99,7 @@ export function createConfig(): VitePluginConfig {
         'badge': 'inline-block rounded text-.8em px-.5em py-.1em font-thin',
 
         'button': 'p-button border paint-secondary-400 rounded-1 shadow active:shadow-inset',
+        'button-primary': 'button paint-primary p-2',
 
         'card': 'pxy bg-white border rounded-b shadow',
 

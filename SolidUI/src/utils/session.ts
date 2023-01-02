@@ -1,29 +1,51 @@
-import { useLocation, useNavigate } from '@solidjs/router';
 import { createStore } from 'solid-js/store';
-import { postLogout, postSession, SessionOutput, SessionStatus } from '../api/GiantTeam.Authentication.Api';
+import { postLogout, postSession } from '../api/GiantTeam.Authentication.Api';
+import { go } from '../partials/Nav';
+
+const KEY = 'SESSION388';
 
 /** Keep the session alive */
 setInterval(() => isAuthenticated() && refreshSession(), 30 * 60 * 1000);
 
-export interface Session extends SessionOutput {
-  status: SessionStatus | -1;
+export interface Session {
+  userId: string | null;
+  username: string | null;
 }
 
-export const [session, setSession] = createStore<Session>({
-  status: -1,
-  userId: null,
-  username: null,
-});
+const [_session, _setSession] = (() => {
+  const json = sessionStorage.getItem(KEY);
 
-export const isAuthenticated = () => session.status === SessionStatus.Authenticated;
+  console.log(KEY, json);
+
+  if (typeof json === 'string')
+    return createStore<Session>(JSON.parse(json));
+  else {
+    return createStore<Session>({
+      userId: null,
+      username: null,
+    });
+  }
+})()
+
+export const session = _session;
+
+export const setSession = (session: Session) => {
+  sessionStorage.setItem(KEY, JSON.stringify(session));
+  _setSession(session);
+}
+
+export const isAuthenticated = () => session.userId ? true : false;
 
 /** Logout from the server and refresh the session */
 export const logout = async () => {
   console.debug('Logging out.');
 
-  setSession({ status: -1 });
-
   await postLogout();
+
+  setSession({
+    userId: null,
+    username: null
+  });
 }
 
 /** Refresh the session from the server */
@@ -33,7 +55,7 @@ export const refreshSession = async () => {
   var response = await postSession();
 
   if (response.ok) {
-    setSession(response.data);
+    setSession(response.data as Session);
   }
 }
 
@@ -41,12 +63,10 @@ export const refreshSession = async () => {
 export const authorize = () => {
   // Redirect for now, popup login in the future
   if (!isAuthenticated()) {
-    const location = useLocation();
-    const navigate = useNavigate();
-
     const url = location.pathname + location.search + location.hash;
 
     console.debug(`Redirecting from ${url} to /login.`);
-    navigate('/login', { replace: false, state: { returnUrl: url } });
+
+    go('/login', { returnUrl: url });
   }
 }

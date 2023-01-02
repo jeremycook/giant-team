@@ -3,8 +3,7 @@ export const combinePaths = (basePath: string, ...paths: string[]) => {
 }
 
 export const createUrl = (url: string, params?: Record<string, string>) => {
-    const isRelative = !/^([\sA-Z]*:|\s*\/\/)/i.test(url);
-    if (isRelative) {
+    if (isLocalUrl(url)) {
         const search = params ? new URLSearchParams(params).toString() : '';
         if (search.length > 0) {
             return encodeURI(url) + '?' + search;
@@ -15,5 +14,17 @@ export const createUrl = (url: string, params?: Record<string, string>) => {
     }
     else {
         throw `The url "${url}" must be relative.`;
+    }
+}
+
+export function isLocalUrl(url?: string | URL) {
+    if (typeof url === 'string') {
+        url = new URL(url, location.hostname);
+    }
+    if (typeof url === 'undefined') {
+        return null;
+    }
+    else {
+        return url.hostname === location.hostname;
     }
 }
