@@ -1,4 +1,5 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.Home.Data;
+using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,7 @@ public class GiantTeamServiceBuilder : IServiceBuilder
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
             var connectionOptions = giantTeamOptions.MgmtConnection;
 
-            options.UseNpgsql(connectionOptions);
+            options.UseNpgsql(connectionOptions).UseSnakeCaseNamingConvention();
         });
     }
 }

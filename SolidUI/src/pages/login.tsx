@@ -4,7 +4,7 @@ import { isAuthenticated, refreshSession, session } from '../utils/session';
 import { InfoIcon, WarningIcon } from '../helpers/icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
-import { A, getState, go, PageInfo } from '../partials/Nav';
+import { A, go, here, PageSettings } from '../partials/Nav';
 import { isLocalUrl } from '../helpers/urlHelpers';
 
 const dataOptions: FieldSetOptions = {
@@ -13,13 +13,13 @@ const dataOptions: FieldSetOptions = {
   remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
 
-export const pageInfo: PageInfo = {
+export const pageSettings: PageSettings = {
   name: 'Login',
   showInNav: () => !isAuthenticated(),
 }
 
 export default function LoginPage() {
-  const state = getState<{ returnUrl?: string } | undefined>();
+  const state = here.state as { returnUrl?: string };
 
   const data = createMutable({
     username: '',
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
       const url = returnUrl();
       console.debug(`Redirecting from ${window.location.href} to ${returnUrl}.`)
-      go(url, { replace: true });
+      go(url);
       return;
     } else {
       messageSetter(output.message);

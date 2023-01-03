@@ -1,6 +1,6 @@
-import { PageInfo } from "../partials/Nav";
+import { PageSettings } from "../partials/Nav";
 
-export const pageInfo: PageInfo = {
+export const pageSettings: PageSettings = {
     name: 'Home',
 }
 

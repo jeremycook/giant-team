@@ -3,7 +3,7 @@ import { Route, Routes } from '@solidjs/router';
 
 import HomePage from './pages';
 import Protected from './widgets/Protected';
-import { WorkspacesPageData } from './pages/workspaces/workspaces';
+// import { WorkspacesPageData } from './pages/organizations';
 import JoinPage from './pages/join';
 import LoginPage from './pages/login';
 import LogoutPage from './pages/logout';
@@ -24,11 +24,11 @@ export default function AppRoutes() {
       <Route path="/logout" component={LogoutPage} />
 
       <Route path='' component={Protected}>
-        <Route path="/profile" component={lazy(() => import('./pages/profile'))} />
+        <Route path="/profile" component={lazy(() => import('./pages/my'))} />
 
         <Route path="/workspaces">
-          <Route path='/' component={lazy(() => import('./pages/workspaces/workspaces'))} data={WorkspacesPageData} />
-          <Route path='/new-workspace' component={lazy(() => import('./pages/workspaces/new-workspace'))} />
+          {/* <Route path='/' component={lazy(() => import('./pages/organizations'))} data={WorkspacesPageData} /> */}
+          <Route path='/new-organization' component={lazy(() => import('./pages/organizations/new-organization'))} />
         </Route>
 
         <Route path="/workspace/:workspace" component={lazy(() => import('./pages/workspace/workspace-layout'))} data={WorkspaceLayoutData}>

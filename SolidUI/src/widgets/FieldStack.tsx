@@ -21,7 +21,9 @@ export function FieldStack({ data, options: fieldSetOptions }: { data: Record<st
     return (<>
         {Object.entries(fieldSetOptions).map(([name, options]) => (<>
             <label for={createId(name)}>{options.label ?? name}</label>
-            <Dynamic component={lookup[options.type]} {...{ name, options: options as any, data }} />
+            <div>
+                <Dynamic component={lookup[options.type]} {...{ name, options: options as any, data }} />
+            </div>
         </>))}
     </>)
 }

@@ -4,7 +4,14 @@ function warn(message: string, data?: Record<string, any>) {
 }
 
 function error(message: string, data?: Record<string, any>) {
-    console.error(message, data);
+    if (data) {
+        const pattern = new RegExp('(' + Object.keys(data).map(o => '{' + data + '}').join('|') + ")");
+        const replacedMessage = message.replaceAll(pattern, (m) => data[m]);
+        console.error(replacedMessage, data);
+    }
+    else {
+        console.error(message);
+    }
     // TODO: Log
 }
 

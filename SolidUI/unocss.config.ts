@@ -101,7 +101,7 @@ export function createConfig(): VitePluginConfig {
         'button': 'p-button border paint-secondary-400 rounded-1 shadow active:shadow-inset',
         'button-primary': 'button paint-primary p-2',
 
-        'card': 'pxy bg-white border rounded-b shadow',
+        'card': 'pxy bg-white border rounded shadow',
 
         // 'dropdown-anchor': 'z-1 relative overflow-hidden opacity-0 top-15px transition-opacity transition-top',
         // 'dropdown-content': 'absolute',

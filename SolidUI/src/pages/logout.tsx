@@ -1,8 +1,8 @@
 import { Show } from 'solid-js';
-import { A, PageInfo } from '../partials/Nav';
+import { A, PageSettings } from '../partials/Nav';
 import { logout, isAuthenticated } from '../utils/session';
 
-export const pageInfo: PageInfo = {
+export const pageSettings: PageSettings = {
   name: 'Logout',
   showInNav: () => isAuthenticated(),
 }

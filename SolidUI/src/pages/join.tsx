@@ -1,10 +1,10 @@
 import { createEffect, createSignal, Show } from 'solid-js';
 import { postRegister } from '../api/GiantTeam.Authentication.Api';
 import { createId } from '../helpers/htmlHelpers';
-import { getState, go, PageInfo } from '../partials/Nav';
+import { go, here, PageSettings } from '../partials/Nav';
 import { isAuthenticated } from '../utils/session';
 
-export const pageInfo: PageInfo = {
+export const pageSettings: PageSettings = {
   name: 'Join',
   showInNav: () => !isAuthenticated(),
 }
@@ -46,10 +46,10 @@ export default function JoinPage() {
     okSetter(output.ok);
 
     if (output.ok) {
-      const state = getState<{ returnUrl: string }>();
+      const state = here.state as { returnUrl?: string };
       messageSetter('Success! Redirecting to the login page…');
       // TODO: Redirect to page that triggered login flow
-      go('/login', { username: username(), returnUrl: state?.returnUrl });
+      go('/login', { username: username(), returnUrl: state.returnUrl });
     } else {
       messageSetter(output.message);
     }
