@@ -38,7 +38,7 @@ export default function LoginPage() {
     }
 
     // Fallback
-    return '/profile';
+    return '/my';
   };
 
   const formSubmit = async (e: SubmitEvent) => {

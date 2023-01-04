@@ -4,6 +4,8 @@ import {
     AlterTableInput,
     ChangeDatabaseInput,
     ChangeDatabaseOutput,
+    CreateOrganizationProps,
+    CreateOrganizationResult,
     CreateTableInput,
     CreateTableOutput,
     CreateWorkspaceInput,
@@ -26,6 +28,9 @@ export const postAlterTable = async (input: AlterTableInput) =>
 
 export const postChangeDatabase = async (input: ChangeDatabaseInput) =>
     await postJson('/api/change-database', input) as DataResponse<ChangeDatabaseOutput>;
+
+export const postCreateOrganization = async (props: CreateOrganizationProps) =>
+    await postJson('/api/create-organization', props) as DataResponse<CreateOrganizationResult>;
 
 export const postCreateTable = async (input: CreateTableInput) =>
     await postJson('/api/create-table', input) as DataResponse<CreateTableOutput>;

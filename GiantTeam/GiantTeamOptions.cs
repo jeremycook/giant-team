@@ -6,8 +6,8 @@ namespace GiantTeam
     {
         public ConnectionOptions HomeConnection { get; } = new();
         public ConnectionOptions MgmtConnection { get; } = new();
-        public ConnectionOptions SecConnection { get; } = new();
-        public ConnectionOptions UserConnection { get; } = new();
+        public ConnectionOptions SecurityConnection { get; } = new();
+        public ConnectionOptions DirectoryConnection { get; } = new();
         public string InfoDatabaseName { get; set; } = null!;
     }
 }

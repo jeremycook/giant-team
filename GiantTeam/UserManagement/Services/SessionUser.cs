@@ -36,6 +36,7 @@ namespace GiantTeam.UserManagement.Services
             Sub = sub ?? throw new ArgumentNullException(nameof(sub));
             Username = username ?? throw new ArgumentNullException(nameof(username));
             DbRole = dbRole ?? throw new ArgumentNullException(nameof(dbRole));
+            DbAdmin = dbRole + ":admin";
             DbLogin = dbLogin ?? throw new ArgumentNullException(nameof(dbLogin));
             DbPassword = dbPassword ?? throw new ArgumentNullException(nameof(dbPassword));
 
@@ -76,6 +77,7 @@ namespace GiantTeam.UserManagement.Services
         // Database
 
         public string DbRole { get; }
+        public string DbAdmin { get; }
         public string DbLogin { get; }
         public string DbPassword { get; }
     }

@@ -7,11 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="**\*.pgsql" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Workspaces\Resources\ws.sql" />
+    <EmbeddedResource Include="**\*.sql" />
   </ItemGroup>
 
   <ItemGroup>

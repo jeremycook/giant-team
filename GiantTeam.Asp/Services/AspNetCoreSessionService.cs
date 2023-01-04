@@ -1,9 +1,11 @@
-﻿using GiantTeam.UserManagement.Services;
+﻿using GiantTeam.Startup;
+using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
 namespace GiantTeam.Asp.Services
 {
+    [Service(ServiceType = typeof(SessionService))]
     public class AspNetCoreSessionService : SessionService
     {
         private readonly IHttpContextAccessor? httpContextAccessor;

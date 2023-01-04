@@ -24,6 +24,14 @@ public class GiantTeamServiceBuilder : IServiceBuilder
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
             var connectionOptions = giantTeamOptions.MgmtConnection;
 
+            options.UseNpgsql(connectionOptions);
+        });
+
+        services.AddDbContext<HomeDbContext>((services, options) =>
+        {
+            var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
+            var connectionOptions = giantTeamOptions.HomeConnection;
+
             options.UseNpgsql(connectionOptions).UseSnakeCaseNamingConvention();
         });
     }

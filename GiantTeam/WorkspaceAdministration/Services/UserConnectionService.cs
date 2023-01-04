@@ -112,7 +112,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public NpgsqlConnection CreateConnection(string databaseName)
         {
             SessionUser user = sessionService.User;
-            var workspaceConnection = options.Value.UserConnection;
+            var workspaceConnection = options.Value.DirectoryConnection;
 
             NpgsqlConnectionStringBuilder connectionStringBuilder = workspaceConnection.ToConnectionStringBuilder();
             connectionStringBuilder.Database = databaseName;

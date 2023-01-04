@@ -8,26 +8,29 @@ namespace GiantTeam.Startup
     {
         public static IServiceCollection AddScopedFromAssembly(this IServiceCollection services, Assembly assembly)
         {
-            Type objectType = typeof(object);
-            foreach (Type type in
-                from t in assembly.ExportedTypes
-                where
-                    t.Name.EndsWith("Service") &&
-                    !t.IsAbstract &&
-                    t.Namespace!.EndsWith(".Services")
-                select t)
+            var types = from t in assembly.ExportedTypes
+                        where
+                            t.Name.EndsWith("Service") &&
+                            !t.IsAbstract &&
+                            t.Namespace!.EndsWith(".Services")
+                        select t;
+
+            foreach (Type type in types)
             {
-                // Last wins
-                if (type.BaseType is not null && type.BaseType != objectType)
+                Type serviceType;
+                if (type.GetCustomAttribute<ServiceAttribute>() is ServiceAttribute serviceAttribute &&
+                    serviceAttribute.ServiceType is not null)
                 {
-                    // Assume replacement
-                    services.RemoveAll(type.BaseType);
-                    services.AddScoped(type.BaseType, type);
+                    serviceType = serviceAttribute.ServiceType;
                 }
                 else
                 {
-                    services.AddScoped(type);
+                    serviceType = type;
                 }
+
+                // Last wins
+                services.RemoveAll(serviceType);
+                services.AddScoped(serviceType, type);
             }
 
             return services;

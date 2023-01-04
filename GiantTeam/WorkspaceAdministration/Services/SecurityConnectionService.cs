@@ -4,7 +4,7 @@ using Npgsql;
 namespace GiantTeam.WorkspaceAdministration.Services
 {
     /// <summary>
-    /// Create connections based on <see cref="GiantTeamOptions.SecConnection"/>.
+    /// Create connections based on <see cref="GiantTeamOptions.SecurityConnection"/>.
     /// </summary>
     public class SecurityConnectionService
     {
@@ -16,23 +16,23 @@ namespace GiantTeam.WorkspaceAdministration.Services
         }
 
         /// <summary>
-        /// Returns a new and open connection based on <see cref="GiantTeamOptions.SecConnection"/>.
+        /// Returns a new and open connection based on <see cref="GiantTeamOptions.SecurityConnection"/>.
         /// </summary>
         /// <returns></returns>
         public NpgsqlConnection OpenConnection()
         {
-            var adminConnectionOptions = options.Value.SecConnection;
+            var adminConnectionOptions = options.Value.SecurityConnection;
             var connection = adminConnectionOptions.CreateOpenConnection();
             return connection;
         }
 
         /// <summary>
-        /// Returns a new and open connection based on <see cref="GiantTeamOptions.SecConnection"/>.
+        /// Returns a new and open connection based on <see cref="GiantTeamOptions.SecurityConnection"/>.
         /// </summary>
         /// <returns></returns>
         public async Task<NpgsqlConnection> OpenConnectionAsync()
         {
-            var adminConnectionOptions = options.Value.SecConnection;
+            var adminConnectionOptions = options.Value.SecurityConnection;
             var connection = await adminConnectionOptions.CreateOpenConnectionAsync();
             return connection;
         }

@@ -4,7 +4,6 @@ using GiantTeam.Asp.Routing;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -12,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Net;
-using System.Text.Json.Serialization;
 
 namespace WebApp
 {
@@ -21,7 +19,8 @@ namespace WebApp
         public WebAppServiceBuilder(
             IServiceCollection services,
             IConfiguration configuration,
-            GiantTeamAspServiceBuilder giantTeamServiceBuilder)
+            GiantTeamAspServiceBuilder giantTeamServiceBuilder,
+            GiantTeamDataApiServiceBuilder giantTeamDataApiServiceBuilder)
         {
             if (configuration.GetSection("ForwardedHeaders") is var forwardedHeaders &&
                 forwardedHeaders.Exists())
@@ -52,8 +51,6 @@ namespace WebApp
                     }
                 });
             }
-
-            services.AddHttpContextAccessor();
 
             services.AddCookiePolicy(options =>
             {

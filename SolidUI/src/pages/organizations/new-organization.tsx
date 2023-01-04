@@ -1,4 +1,4 @@
-import { postCreateWorkspace } from '../../api/GiantTeam.Data.Api';
+import { postCreateOrganization } from '../../api/GiantTeam.Data.Api';
 import { go, PageSettings } from '../../partials/Nav';
 import { toast } from '../../partials/Notifications';
 import { isAuthenticated } from '../../utils/session';
@@ -24,14 +24,14 @@ export default function NewOrganizationPage() {
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
 
-    const response = await postCreateWorkspace({
-      workspaceName: data.name,
+    const response = await postCreateOrganization({
+      name: data.name,
       isPublic: data.isPublic,
     });
 
     if (response.ok) {
       toast.info('Organization created!');
-      go('/org/' + data.name);
+      go('/organization/' + data.name);
     }
     else {
       toast.error(response.message);

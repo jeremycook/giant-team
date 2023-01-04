@@ -91,7 +91,7 @@ namespace GiantTeam.UserManagement.Services
             // Create database user
             try
             {
-                await security.CreateUserAsync(user.DbRoleId);
+                await security.CreateUserRolesAsync(user.DbRoleId, user.DbRoleId + ":admin");
             }
             catch (PostgresException ex) when (ex.SqlState == "42710")
             {

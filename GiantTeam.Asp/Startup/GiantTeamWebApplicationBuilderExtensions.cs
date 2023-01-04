@@ -1,4 +1,5 @@
-﻿using GiantTeam.Logging;
+﻿using GiantTeam.Linq;
+using GiantTeam.Logging;
 using GiantTeam.Startup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -41,17 +42,20 @@ namespace GiantTeam.Asp.Startup
                 rootServiceBuilder,
             };
             GetDependentTypes(rootServiceBuilder, serviceBuilderTypes);
-
             if (serviceBuilderTypes.Count != serviceBuilderTypes.Distinct().Count())
             {
                 throw new InvalidOperationException("Duplicate service builder dependencies.");
             }
 
             // Resolve service builders in the correct order
-            serviceBuilderTypes.RemoveAll(t => !typeof(IServiceBuilder).IsAssignableFrom(t));
-            serviceBuilderTypes.Reverse();
+            var edges = GetEdges(serviceBuilderTypes);
+            var sortedServiceBuilderTypes = serviceBuilderTypes
+                .TopologicalSort(edges)
+                .ToList();
+            sortedServiceBuilderTypes.Reverse();
+
             Log.Info(typeof(GiantTeamWebApplicationBuilderExtensions), "Applying Service Builders: {ServiceBuilders}", serviceBuilderTypes);
-            foreach (var type in serviceBuilderTypes)
+            foreach (var type in sortedServiceBuilderTypes)
             {
                 var ctor = type.GetConstructors().Single();
                 var args = ctor.GetParameters()
@@ -67,17 +71,32 @@ namespace GiantTeam.Asp.Startup
             }
         }
 
-        private static void GetDependentTypes(Type type, ICollection<Type> serviceBuilderTypes)
+        private static IEnumerable<(Type, Type)> GetEdges(IEnumerable<Type> types)
         {
-            var candidates = type.GetConstructors()
-                .SelectMany(ctor => ctor.GetParameters())
-                .Select(p => p.ParameterType);
+            return types.SelectMany(t => t
+                .GetConstructors()
+                .Single()
+                .GetParameters()
+                .Select(p => p.ParameterType)
+                .Where(t => t.IsAssignableTo(typeof(IServiceBuilder)))
+                .Select(p => (t, p))
+            );
+        }
+
+        private static void GetDependentTypes(Type type, IList<Type> serviceBuilderTypes)
+        {
+            var candidates = type
+                .GetConstructors()
+                .Single()
+                .GetParameters()
+                .Select(p => p.ParameterType)
+                .Where(t => t.IsAssignableTo(typeof(IServiceBuilder)));
 
             foreach (var candidate in candidates)
             {
                 if (serviceBuilderTypes.Contains(candidate))
                 {
-                    continue; // Skip circular dependencies
+                    // Skip infinite loop
                 }
                 else
                 {

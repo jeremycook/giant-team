@@ -11,6 +11,7 @@ namespace GiantTeam.Asp
             GiantTeamServiceBuilder giantTeamServiceBuilder,
             DataProtectionServiceBuilder dataProtectionServiceBuilder)
         {
+            services.AddHttpContextAccessor();
             services.AddScopedFromAssembly(typeof(GiantTeamAspServiceBuilder).Assembly);
         }
     }

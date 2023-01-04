@@ -238,6 +238,36 @@ export enum TableIndexType {
     PrimaryKey = 2,
 }
 
+export interface Database {
+    schemas: Schema[];
+}
+
+export interface Organization {
+    id: string;
+    database: Database;
+}
+
+export interface FetchOrganizationProps {
+    organizationId: string;
+}
+
+export interface OrganizationInfo {
+    databaseName: string | null;
+}
+
+export interface SpaceInfo {
+    schemaName: string | null;
+}
+
+export interface CreateOrganizationProps {
+    name: string;
+    isPublic: boolean;
+}
+
+export interface CreateOrganizationResult {
+    id: string;
+}
+
 export interface DbRole {
     roleId: string;
     created: Date;
@@ -279,6 +309,7 @@ export interface SessionUser {
     sub: string;
     username: string;
     dbRole: string;
+    dbAdmin: string;
     dbLogin: string;
     dbPassword: string;
 }
