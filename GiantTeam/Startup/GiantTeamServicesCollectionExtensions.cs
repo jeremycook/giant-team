@@ -6,13 +6,25 @@ namespace GiantTeam.Startup
 {
     public static class GiantTeamServicesCollectionExtensions
     {
-        public static IServiceCollection AddScopedFromAssembly(this IServiceCollection services, Assembly assembly)
+        /// <summary>
+        /// Add or replaces services from provided the <paramref name="assembly"/>.
+        /// Types must either have the <see cref="ServiceAttribute"/>,
+        /// or follow the convention that they are not abstract,
+        /// end with "Service" and are in a namespace that ends with ".Services".
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="assembly"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddOrReplaceScopedFromAssembly(this IServiceCollection services, Assembly assembly)
         {
             var types = from t in assembly.ExportedTypes
                         where
-                            t.Name.EndsWith("Service") &&
-                            !t.IsAbstract &&
-                            t.Namespace!.EndsWith(".Services")
+                            t.GetCustomAttribute<ServiceAttribute>() is not null ||
+                            (
+                                t.Name.EndsWith("Service") &&
+                                !t.IsAbstract &&
+                                t.Namespace!.EndsWith(".Services")
+                            )
                         select t;
 
             foreach (Type type in types)

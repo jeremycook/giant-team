@@ -12,7 +12,7 @@ namespace GiantTeam.Asp
             DataProtectionServiceBuilder dataProtectionServiceBuilder)
         {
             services.AddHttpContextAccessor();
-            services.AddScopedFromAssembly(typeof(GiantTeamAspServiceBuilder).Assembly);
+            services.AddOrReplaceScopedFromAssembly(typeof(GiantTeamAspServiceBuilder).Assembly);
         }
     }
 }

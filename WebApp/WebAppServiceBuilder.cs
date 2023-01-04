@@ -163,7 +163,7 @@ namespace WebApp
                 });
             });
 
-            services.AddScopedFromAssembly(typeof(WebAppServiceBuilder).Assembly);
+            services.AddOrReplaceScopedFromAssembly(typeof(WebAppServiceBuilder).Assembly);
 
             services.AddHostedService<StartupWorker>();
         }

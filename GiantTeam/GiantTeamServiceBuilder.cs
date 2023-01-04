@@ -17,7 +17,7 @@ public class GiantTeamServiceBuilder : IServiceBuilder
     {
         services.Configure<GiantTeamOptions>(configuration);
 
-        services.AddScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
+        services.AddOrReplaceScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
         services.AddDbContextPool<RecordsManagementDbContext>((services, options) =>
         {
