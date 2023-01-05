@@ -6,11 +6,11 @@ using static GiantTeam.UserManagement.Services.JoinService;
 
 namespace IntegrationTests;
 
-public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.Program>>
+public class RegisterLoginLogout : IClassFixture<WebApplicationFactory<WebApp.Program>>
 {
     private readonly WebApplicationFactory<WebApp.Program> _factory;
 
-    public Register_login_logout(WebApplicationFactory<WebApp.Program> factory)
+    public RegisterLoginLogout(WebApplicationFactory<WebApp.Program> factory)
     {
         _factory = factory;
     }

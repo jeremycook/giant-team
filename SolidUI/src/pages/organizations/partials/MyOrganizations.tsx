@@ -1,6 +1,6 @@
 import { createResource, For, JSX } from "solid-js";
 import { postQueryDatabase } from "../../../bindings/GiantTeam.Data.Api.Controllers";
-import { convertTabularDataToObjects } from "../../../helpers/objectHelpers";
+import { objectifyTabularData } from "../../../helpers/objectHelpers";
 import { sql } from "../../../helpers/sqlHelpers";
 import { OrganizationCard, OrganizationModel } from "./OrganizationCard";
 
@@ -22,7 +22,7 @@ export default function MyOrganizations(props: { children?: (model: Organization
     const records = () => {
         const response = resource();
         if (response?.ok) {
-            return convertTabularDataToObjects<OrganizationModel>(response.data);
+            return objectifyTabularData<OrganizationModel>(response.data);
         }
         else {
             return []

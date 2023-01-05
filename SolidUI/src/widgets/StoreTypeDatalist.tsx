@@ -1,8 +1,8 @@
 import { onCleanup } from "solid-js";
 import { Portal } from "solid-js/web";
-import { StoreType } from "../../../../bindings/GiantTeam.DatabaseDefinition.Models";
-import { createId } from "../../../../helpers/htmlHelpers";
-import { Do } from "../../../../widgets/Do";
+import { StoreType } from "../bindings/GiantTeam.DatabaseDefinition.Models";
+import { createId } from "../helpers/htmlHelpers";
+import { Do } from "./Do";
 
 const storeTypeList = [
     { value: StoreType.boolean, name: 'bool' },

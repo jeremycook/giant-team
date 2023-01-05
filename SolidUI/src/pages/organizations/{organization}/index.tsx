@@ -1,10 +1,9 @@
-import { createResource, For, Show } from "solid-js";
-import { postFetchWorkspace } from "../../../bindings/GiantTeam.Data.Api.Controllers";
-import { Workspace } from "../../../bindings/GiantTeam.Workspaces.Models";
+import { createResource, Show } from "solid-js";
+import { postFetchOrganization } from "../../../bindings/GiantTeam.Data.Api.Controllers";
+import { Organization } from "../../../bindings/GiantTeam.Organizations.Directory.Models";
 import { OkDataResponse } from "../../../helpers/httpHelpers";
 import { here, PageSettings } from "../../../partials/Nav"
 import { isAuthenticated } from "../../../utils/session"
-import SpaceCard from "./partials/SpaceCard";
 
 export const pageSettings: PageSettings = {
     name: () => {
@@ -17,8 +16,8 @@ export const pageSettings: PageSettings = {
 export function createOrganizationResource() {
     const [resource, { refetch }] = createResource(
         () => ({ organization: here.routeValues.organization as string }),
-        async (props) => await postFetchWorkspace({
-            workspaceName: props.organization
+        async (props) => await postFetchOrganization({
+            organizationId: props.organization
         })
     );
 
@@ -33,12 +32,12 @@ export default function OrganizationPage() {
             Loading...
         </Show>
         <Show when={resource()?.ok}>{() => {
-            const data = (resource() as OkDataResponse<Workspace>).data;
+            const data = (resource() as OkDataResponse<Organization>).data;
             return <>
                 <h1>{data.name}</h1>
 
                 <h2>Spaces</h2>
-                <For each={data.zones}>{schema => <SpaceCard data={{ id: schema.name, name: schema.name, schema: schema }} />}</For>
+                {/* TODO: <For each={data.spaces}>{schema => <SpaceCard data={{ id: schema.name, name: schema.name, schema: schema }} />}</For> */}
             </>
         }}</Show>
     </>

@@ -1,8 +1,10 @@
 ﻿using GiantTeam.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiantTeam.Organizations.Directory.Models
 {
+    [Table("organizations")]
     public class Organization
     {
         [Key]

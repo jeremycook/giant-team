@@ -3,6 +3,7 @@ using Npgsql;
 using System.Collections.Immutable;
 using System.Data.Common;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using static GiantTeam.Postgres.Sql;
 
 namespace GiantTeam.Postgres
@@ -192,12 +193,17 @@ namespace GiantTeam.Postgres
             if (sql is null)
             {
                 var type = typeof(T);
-                sql ??= Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
+            }
+            else if (Regex.IsMatch(sql.Unsanitized, @"\s*WHERE\s", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            {
+                // WHERE clause
+                var type = typeof(T);
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql} LIMIT 2");
             }
             else
             {
-                var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM ({sql}) query LIMIT 2");
+                sql = Format($"SELECT * FROM ({sql}) query LIMIT 2");
             }
 
             try
@@ -287,8 +293,12 @@ namespace GiantTeam.Postgres
             await using NpgsqlDataReader reader = await batch.ExecuteReaderAsync();
 
             Type type = typeof(T);
-            var columnProperties = (await reader.GetColumnSchemaAsync())
-                .Select(o => type.GetProperty(o.ColumnName.Replace("_", ""), BindingFlags.IgnoreCase) ?? throw new InvalidOperationException($"Failed to match a property of {type} to a column named {o.ColumnName}."))
+            var columnSchema = await reader.GetColumnSchemaAsync();
+            var columnProperties = columnSchema
+                .Select(o =>
+                    type.GetProperty(o.ColumnName.Replace("_", ""), BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase) ??
+                    throw new InvalidOperationException($"Failed to match a property of {type} to a column named {o.ColumnName}.")
+                )
                 .ToImmutableArray();
 
             while (await reader.ReadAsync())
@@ -332,15 +342,27 @@ namespace GiantTeam.Postgres
             T item = new();
 
             int i = -1;
-            foreach (var columnProperty in columnProperties)
+            foreach (var property in columnProperties)
             {
                 i++;
-                var value = reader.GetValue(i);
-                if (value == DBNull.Value)
+                var fieldType = reader.GetFieldType(i);
+
+                object? value;
+                if (property.PropertyType == typeof(DateTimeOffset) &&
+                    fieldType == typeof(DateTime))
                 {
-                    value = null;
+                    value = reader.GetFieldValue<DateTimeOffset>(i);
                 }
-                columnProperty.SetValue(item, value);
+                else
+                {
+                    value = reader.GetValue(i);
+                    if (value == DBNull.Value)
+                    {
+                        value = null;
+                    }
+                }
+
+                property.SetValue(item, value);
             }
 
             return item;

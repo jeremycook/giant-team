@@ -28,7 +28,7 @@ namespace GiantTeam.Organizations.Directory.Services
 
             try
             {
-                var output = await directoryDataService.SingleAsync<Models.Organization>(Sql.Format($"SELECT {Sql.GetColumnIdentifiers<Models.Organization>()} FROM {Sql.GetTableIdentifier<Models.Organization>()}"));
+                var output = await directoryDataService.SingleAsync<Models.Organization>(Sql.Format($"WHERE organization_id = {input.OrganizationId}"));
                 return output;
             }
             catch (Exception ex)

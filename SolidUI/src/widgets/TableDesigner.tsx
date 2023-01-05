@@ -3,7 +3,7 @@ import { Table, TableIndexType } from "../bindings/GiantTeam.DatabaseDefinition.
 import { removeItem } from "../helpers/arrayHelpers";
 import { createId } from "../helpers/htmlHelpers";
 import { DeleteOutlineIcon } from "../helpers/icons";
-import { StoreTypeDatalist, storeTypeDatalistId } from "../pages/workspace/zone/partials/StoreTypeDatalist";
+import { StoreTypeDatalist, storeTypeDatalistId } from "./StoreTypeDatalist";
 
 interface TableDesignerWidgetProps {
     table: Table;
@@ -14,8 +14,6 @@ export function TableDesignerWidget({ table, lockedColumnNames }: TableDesignerW
 
     return (
         <>
-            <StoreTypeDatalist />
-            <StoreTypeDatalist />
             <StoreTypeDatalist />
 
             <div class='form-grid'>

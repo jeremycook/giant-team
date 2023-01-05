@@ -1,5 +1,7 @@
 ﻿using GiantTeam.Text;
 using Npgsql;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 
 namespace GiantTeam.Postgres
 {
@@ -30,12 +32,14 @@ namespace GiantTeam.Postgres
             this.arguments = arguments;
         }
 
+        public string Unsanitized => format;
+
         public override string ToString()
         {
             return ToParameterizedSql(out _);
         }
 
-        public string ToParameterizedSql(out List<object> parameterValues)
+        public string ToParameterizedSql(out IEnumerable<NpgsqlParameter> parameterValues)
         {
             var tempValues = new List<object>();
             var formatArgs = new List<string>(arguments.Length);
@@ -49,13 +53,13 @@ namespace GiantTeam.Postgres
                         break;
 
                     default:
-                        formatArgs.Add($"${tempValues.Count}");
+                        formatArgs.Add($"${tempValues.Count + 1}");
                         tempValues.Add(arg ?? DBNull.Value);
                         break;
                 }
             }
 
-            parameterValues = tempValues;
+            parameterValues = tempValues.Select((val, i) => new NpgsqlParameter() { Value = val }).ToArray();
             return string.Format(format, args: formatArgs.ToArray());
         }
 
@@ -72,7 +76,7 @@ namespace GiantTeam.Postgres
                         break;
 
                     default:
-                        formatArgs.Add($"${parameterValues.Count}");
+                        formatArgs.Add($"${parameterValues.Count + 1}");
                         parameterValues.Add(arg ?? DBNull.Value);
                         break;
                 }
@@ -94,6 +98,17 @@ namespace GiantTeam.Postgres
         public static Sql Identifier(string text)
         {
             return Raw(PgQuote.Identifier(text));
+        }
+
+        /// <summary>
+        /// Returns "<paramref name="prefix"/>"."<paramref name="text"/>".
+        /// </summary>
+        /// <param name="prefix"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static Sql Identifier(string prefix, string text)
+        {
+            return Raw(PgQuote.Identifier(prefix, text));
         }
 
         /// <summary>
@@ -133,17 +148,31 @@ namespace GiantTeam.Postgres
 
         public static Sql GetTableIdentifier(Type type)
         {
-            return Identifier(TextTransformers.Snakify(type.Name));
+            if (type.GetCustomAttribute<TableAttribute>() is TableAttribute table)
+            {
+                if (table.Schema is not null)
+                {
+                    return Identifier(table.Schema, table.Name);
+                }
+                else
+                {
+                    return Identifier(table.Name);
+                }
+            }
+            else
+            {
+                return Identifier(TextTransformers.Snakify(type.Name));
+            }
         }
 
-        public static IEnumerable<Sql> GetColumnIdentifiers<T>()
+        public static Sql GetColumnIdentifiers<T>()
         {
             return GetColumnIdentifiers(typeof(T));
         }
 
-        public static IEnumerable<Sql> GetColumnIdentifiers(Type type)
+        public static Sql GetColumnIdentifiers(Type type)
         {
-            return type.GetProperties().Select(p => p.Name).Select(TextTransformers.Snakify).Select(Identifier);
+            return Raw(PgQuote.IdentifierList(type.GetProperties().Select(p => p.Name).Select(TextTransformers.Snakify)));
         }
     }
 }

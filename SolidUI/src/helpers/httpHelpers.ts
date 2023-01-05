@@ -1,6 +1,7 @@
 import { useNavigate } from '@solidjs/router';
 import { ObjectStatus } from '../bindings/GiantTeam.ComponentModel.Models';
 import { authorize, refreshSession } from '../utils/session';
+import { parseJson } from './objectHelpers';
 
 export enum HttpStatusCode {
     ConnectionFailure = -1,
@@ -25,6 +26,14 @@ export type OkDataResponse<TData> = {
 
 export type DataResponse<TData> = OkDataResponse<TData> | ObjectStatusResponse
 
+/** Parse {@param response} content using {@link parseJson}. */
+export const parseJsonResponse = async (response: Response) => {
+    const blob = await response.blob();
+    const json = await blob.text();
+    const result = parseJson(json);
+    return result;
+}
+
 export const postJson = async <TInput, TData>(url: string, input?: TInput): Promise<DataResponse<TData>> => {
     try {
 
@@ -39,7 +48,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
 
         if (response.ok) {
             if (isJsonResponse) {
-                const data = await response.json();
+                const data = await parseJsonResponse(response);
                 const result: DataResponse<TData> = {
                     ok: true,
                     status: response.status,
@@ -92,7 +101,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                 return result;
             }
             else if (isJsonResponse) {
-                const data = await response.json();
+                const data = await parseJsonResponse(response);
                 const result: ObjectStatusResponse = {
                     status: response.status,
                     statusText: response.statusText,
