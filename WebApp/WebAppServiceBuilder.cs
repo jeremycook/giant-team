@@ -19,8 +19,7 @@ namespace WebApp
         public WebAppServiceBuilder(
             IServiceCollection services,
             IConfiguration configuration,
-            GiantTeamAspServiceBuilder giantTeamServiceBuilder,
-            GiantTeamDataApiServiceBuilder giantTeamDataApiServiceBuilder)
+            GiantTeamAspServiceBuilder giantTeamServiceBuilder)
         {
             if (configuration.GetSection("ForwardedHeaders") is var forwardedHeaders &&
                 forwardedHeaders.Exists())

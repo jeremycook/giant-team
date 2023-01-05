@@ -1,4 +1,5 @@
-﻿using GiantTeam.Text;
+﻿using GiantTeam.Startup;
+using GiantTeam.Text;
 using Microsoft.AspNetCore.Mvc;
 using Namotion.Reflection;
 using System.Reflection;
@@ -94,7 +95,8 @@ namespace GiantTeam.Tools
                 var dataTypes = group.Value
                     .Where(t =>
                         include.Any(pattern => Regex.IsMatch(t.FullName, pattern)) &&
-                        !exclude.Any(pattern => Regex.IsMatch(t.FullName, pattern))
+                        !exclude.Any(pattern => Regex.IsMatch(t.FullName, pattern)) &&
+                        t.GetCustomAttribute<ServiceAttribute>() is null
                     )
                     .OrderBy(o => o.FullName);
 

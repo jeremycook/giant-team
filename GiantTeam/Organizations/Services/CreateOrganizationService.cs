@@ -2,6 +2,7 @@
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Organizations.Directory.Data;
 using GiantTeam.Organizations.Organization.Resources;
+using GiantTeam.Organizations.Organization.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserManagement.Services;
 using Npgsql;
@@ -30,6 +31,7 @@ namespace GiantTeam.Organizations.Services
         private readonly SecurityDataService securityDataService;
         private readonly DirectoryDataService directoryDataService;
         private readonly DirectoryManagerDbContext directoryManagerDb;
+        private readonly UserDataServiceFactory userDataServiceFactory;
         private readonly SessionService sessionService;
 
         public CreateOrganizationService(
@@ -38,6 +40,7 @@ namespace GiantTeam.Organizations.Services
             SecurityDataService securityDataService,
             DirectoryDataService directoryUserService,
             DirectoryManagerDbContext directoryManagerDb,
+            UserDataServiceFactory userDataServiceFactory,
             SessionService sessionService)
         {
             this.logger = logger;
@@ -45,6 +48,7 @@ namespace GiantTeam.Organizations.Services
             this.securityDataService = securityDataService;
             this.directoryDataService = directoryUserService;
             this.directoryManagerDb = directoryManagerDb;
+            this.userDataServiceFactory = userDataServiceFactory;
             this.sessionService = sessionService;
         }
 
@@ -129,9 +133,9 @@ namespace GiantTeam.Organizations.Services
                         Sql.Format($"GRANT CONNECT ON DATABASE {Sql.Identifier(databaseName)} TO {Sql.Identifier(sessionService.User.DbUser)}"),
                     }
                 };
-                var databaseDataService = directoryDataService.CloneDataService(databaseName);
-                await databaseDataService.ExecuteAsync(batch);
-                await databaseDataService.ExecuteUnsanitizedAsync(OrganizationResources.SpacesSql);
+                var userDataService = userDataServiceFactory.CreateDataService(databaseName);
+                await userDataService.ExecuteAsync(batch);
+                await userDataService.ExecuteUnsanitizedAsync(OrganizationResources.SpacesSql);
             }
             catch (Exception ex)
             {

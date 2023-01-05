@@ -4,11 +4,3 @@
 export interface FetchOrganizationInput {
     organizationId: string;
 }
-
-export interface OrganizationInfo {
-    databaseName: string | null;
-}
-
-export interface SpaceInfo {
-    schemaName: string | null;
-}

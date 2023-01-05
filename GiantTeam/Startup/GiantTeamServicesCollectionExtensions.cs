@@ -12,7 +12,7 @@ public static class GiantTeamServicesCollectionExtensions
     /// or follow the convention that they are not abstract,
     /// their type name ends with "Service", 
     /// are in a namespace that ends with ".Services",
-    /// and do not have the <see cref="NotAServiceAttribute"/>.
+    /// and do not have the <see cref="IgnoreServiceAttribute"/>.
     /// </summary>
     /// <param name="services"></param>
     /// <param name="assembly"></param>
@@ -26,7 +26,7 @@ public static class GiantTeamServicesCollectionExtensions
                             !t.IsAbstract &&
                             t.Name.EndsWith("Service") &&
                             t.Namespace!.EndsWith(".Services") &&
-                            t.GetCustomAttribute<NotAServiceAttribute>() is null
+                            t.GetCustomAttribute<IgnoreServiceAttribute>() is null
                         )
                     select t;
 

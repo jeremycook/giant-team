@@ -8,12 +8,12 @@ namespace GiantTeam.Organizations.Organization.Services
     {
         private readonly ILogger<FetchOrganizationService> logger;
         private readonly ValidationService validationService;
-        private readonly OrganizationDataService dataService;
+        private readonly UserDataService dataService;
 
         public FetchOrganizationService(
             ILogger<FetchOrganizationService> logger,
             ValidationService validationService,
-            OrganizationDataService dataService)
+            UserDataService dataService)
         {
             this.logger = logger;
             this.validationService = validationService;

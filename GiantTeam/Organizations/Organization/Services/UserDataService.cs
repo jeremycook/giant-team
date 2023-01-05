@@ -1,16 +1,18 @@
 ﻿using GiantTeam.Postgres;
+using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace GiantTeam.Organizations.Organization.Services
 {
-    public class OrganizationDataService : PgDataServiceBase
+    [IgnoreService]
+    public class UserDataService : PgDataServiceBase
     {
         private readonly IOptions<GiantTeamOptions> options;
         private readonly SessionService sessionService;
-        private readonly OrganizationInfo organization;
-        private readonly SpaceInfo space;
+        private readonly string databaseName;
+        private readonly string defaultSchema;
         private string? _connectionString;
 
         protected override ILogger Logger { get; }
@@ -25,8 +27,8 @@ namespace GiantTeam.Organizations.Organization.Services
                     var user = sessionService.User;
 
                     NpgsqlConnectionStringBuilder connectionStringBuilder = connectionOptions.ToConnectionStringBuilder();
-                    connectionStringBuilder.Database = organization.DatabaseName ?? throw new NullReferenceException("The OrganizationAccessor.DatabaseName property is null.");
-                    connectionStringBuilder.SearchPath = space.SchemaName ?? "spaces";
+                    connectionStringBuilder.Database = databaseName;
+                    connectionStringBuilder.SearchPath = defaultSchema;
                     connectionStringBuilder.Username = user.DbLogin;
                     connectionStringBuilder.Password = user.DbPassword;
 
@@ -37,18 +39,18 @@ namespace GiantTeam.Organizations.Organization.Services
             }
         }
 
-        public OrganizationDataService(
-            ILogger<OrganizationDataService> logger,
+        public UserDataService(
+            ILogger<UserDataService> logger,
             IOptions<GiantTeamOptions> options,
             SessionService sessionService,
-            OrganizationInfo organization,
-            SpaceInfo space)
+            string databaseName,
+            string defaultSchema)
         {
             Logger = logger;
             this.options = options;
             this.sessionService = sessionService;
-            this.organization = organization;
-            this.space = space;
+            this.databaseName = databaseName;
+            this.defaultSchema = defaultSchema;
         }
     }
 }
