@@ -1,5 +1,4 @@
 ﻿using Npgsql;
-using System.Net.Http.Headers;
 
 namespace GiantTeam.Postgres
 {
