@@ -1,17 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GiantTeam.Organizations.Directory.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace GiantTeam.Organizations.Directory.Data;
 
 public abstract class DirectoryDbContext<T> : DbContext where T : DirectoryDbContext<T>
 {
-    public const string DefaultSchema = "directory";
-
     public DirectoryDbContext(DbContextOptions<T> options)
         : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(DefaultSchema);
+        modelBuilder.HasDefaultSchema(DirectoryHelpers.Schema);
 
         var userPasswords = modelBuilder.Entity<UserPassword>();
         userPasswords.HasOne(o => o.User).WithMany().HasForeignKey(o => o.UserId).OnDelete(DeleteBehavior.Cascade);

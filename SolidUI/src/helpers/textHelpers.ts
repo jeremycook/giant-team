@@ -4,6 +4,6 @@ export function snakeCase(text: string) {
 
 export function camelCase(text: string) {
     return text
-        .replace(/^[A-Z]/, ch => ch.toLowerCase())
-        .replaceAll(/_([a-z])/g, (_, ch) => ch.toUpperCase());
+        .replace(/^./, ch => ch.toLowerCase())
+        .replaceAll(/_(.)/g, (_, ch) => ch.toUpperCase());
 }

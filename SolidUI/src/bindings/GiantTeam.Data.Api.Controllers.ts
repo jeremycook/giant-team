@@ -1,9 +1,8 @@
 import { postJson, DataResponse } from "../helpers/httpHelpers";
-import { QueryDatabaseProps } from "./GiantTeam.Databases.Database.Services";
-import { CreateOrganizationProps, CreateOrganizationResult } from "./GiantTeam.Organizations.Services";
+import { QueryDatabaseInput } from "./GiantTeam.Databases.Database.Services";
+import { CreateOrganizationInput, CreateOrganizationResult } from "./GiantTeam.Organizations.Services";
 import { QueryTable } from "./GiantTeam.Postgres.Models";
 import { CreateWorkspaceRoleInput, CreateWorkspaceRoleOutput } from "./GiantTeam.UserManagement.Services";
-import { CreateWorkspaceInput, CreateWorkspaceOutput } from "./GiantTeam.WorkspaceAdministration.Services";
 import { Workspace } from "./GiantTeam.Workspaces.Models";
 import { AlterTableInput, AlterTable, ChangeDatabaseInput, ChangeDatabaseOutput, CreateTableInput, CreateTableOutput, FetchRecordsInput, FetchRecords, FetchWorkspaceInput, ImportDataInput, ImportDataOutput } from "./GiantTeam.Workspaces.Services";
 
@@ -21,9 +20,6 @@ export const postCreateOrganization = async (input: CreateOrganizationInput) =>
 
 export const postCreateTable = async (input: CreateTableInput) =>
     await postJson('/api/create-table', input) as DataResponse<CreateTableOutput>;
-
-export const postCreateWorkspace = async (input: CreateWorkspaceInput) =>
-    await postJson('/api/create-workspace', input) as DataResponse<CreateWorkspaceOutput>;
 
 export const postCreateWorkspaceRole = async (input: CreateWorkspaceRoleInput) =>
     await postJson('/api/create-workspace-role', input) as DataResponse<CreateWorkspaceRoleOutput>;

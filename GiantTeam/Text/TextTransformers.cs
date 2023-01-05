@@ -33,6 +33,11 @@ namespace GiantTeam.Text
             return string.Concat(sb);
         }
 
+        /// <summary>
+        /// Converts camelCase and PascalCase to snake_case.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public static string Snakify(string text)
         {
             var sb = new List<Rune>();

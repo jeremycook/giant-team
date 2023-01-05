@@ -38,7 +38,7 @@ namespace GiantTeam.UserManagement.Services
             await security.ExecuteAsync(
                 $"CREATE ROLE {Sql.Identifier(dbNormal)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION",
                 $"CREATE ROLE {Sql.Identifier(dbElevated)} WITH NOINHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION",
-                $"CREATE ROLE {Sql.Identifier(dbUser)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION IN ROLE {Sql.IdentifierList(dbNormal, dbElevated, DirectoryHelpers.User)}");
+                $"CREATE ROLE {Sql.Identifier(dbUser)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION IN ROLE {Sql.IdentifierList(dbNormal, dbElevated, DirectoryHelpers.Anyuser)}");
 
             logger.LogInformation("Created database user roles {DbUser}, {DbNormal}, {DbElevated}.", dbUser, dbNormal, dbElevated);
         }

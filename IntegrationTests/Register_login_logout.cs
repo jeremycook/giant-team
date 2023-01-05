@@ -21,7 +21,7 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
         // Arrange
         var client = _factory.CreateClient();
         DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-        string username = $"Test {GetType().Name} {DateTime.Now:ddHHmmss}";
+        string username = $"test_{utcNow:yyMMdd}_{utcNow:HHmmssfff}";
         string password = PasswordHelper.GeneratePassword();
         Guid userId = Guid.Empty;
 
@@ -31,12 +31,13 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
             {
                 using var registerResponse = await client.PostAsJsonAsync("/api/register", new JoinInput()
                 {
-                    Name = $"Test User {utcNow:yy-MM-dd HHmmss}",
-                    Email = $"test.user+{utcNow:yyMMddHHmmss}@example.com",
+                    Name = $"Test {utcNow:yyMMdd} {utcNow:HHmmssfff}",
+                    Email = username + "@example.com",
                     Username = username,
                     Password = password,
                 });
-                registerResponse.EnsureSuccessStatusCode();
+                if (!registerResponse.IsSuccessStatusCode) throw new Exception(registerResponse.StatusCode + ": " + await registerResponse.Content.ReadAsStringAsync());
+
                 var registerOutput = await registerResponse.Content.ReadFromJsonAsync<JoinOutput>();
                 Assert.NotNull(registerOutput);
                 Assert.NotEqual(Guid.Empty, registerOutput.UserId);
@@ -52,7 +53,7 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
                     Username = username,
                     Password = password,
                 });
-                loginResponse.EnsureSuccessStatusCode();
+                if (!loginResponse.IsSuccessStatusCode) throw new Exception(loginResponse.StatusCode + ": " + await loginResponse.Content.ReadAsStringAsync());
                 Assert.True(
                     loginResponse.Headers.TryGetValues("Set-Cookie", out var cookies) &&
                     cookies.Any(c => c.StartsWith(".AspNetCore.Cookies=") && c.EndsWith("; path=/; secure; samesite=lax; httponly")),
@@ -66,7 +67,7 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
             // Check session
             {
                 using var sessionResponse = await client.PostAsJsonAsync("/api/session", new { });
-                sessionResponse.EnsureSuccessStatusCode();
+                if (!sessionResponse.IsSuccessStatusCode) throw new Exception(sessionResponse.StatusCode + ": " + await sessionResponse.Content.ReadAsStringAsync());
                 var sessionOutput = await sessionResponse.Content.ReadFromJsonAsync<SessionOutput>();
                 Assert.NotNull(sessionOutput);
                 Assert.Equal(SessionStatus.Authenticated, sessionOutput.Status);
@@ -77,7 +78,7 @@ public class Register_login_logout : IClassFixture<WebApplicationFactory<WebApp.
             // Logout
             {
                 using var logoutResponse = await client.PostAsJsonAsync("/api/logout", new { });
-                logoutResponse.EnsureSuccessStatusCode();
+                if (!logoutResponse.IsSuccessStatusCode) throw new Exception(logoutResponse.StatusCode + ": " + await logoutResponse.Content.ReadAsStringAsync());
                 Assert.True(
                     logoutResponse.Headers.TryGetValues("Set-Cookie", out var logoutSetCookies) &&
                     logoutSetCookies.Any(c => c == ".AspNetCore.Cookies=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax; httponly"),

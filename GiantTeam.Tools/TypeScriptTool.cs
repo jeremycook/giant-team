@@ -17,14 +17,12 @@ namespace GiantTeam.Tools
             "GiantTeam.*.Controllers.*",
             "GiantTeam.*.Models.*",
             "GiantTeam.*.Services.*",
-            "GiantTeam.Organizations.Directory.Data.*",
         }.Select(o => "^" + Regex.Escape(o).Replace("\\*", ".+") + "$").ToArray();
 
         static readonly string[] exclude = new[]
         {
             "*Controller",
             "*Service",
-            "*DbContext**",
         }.Select(o => "^" + Regex.Escape(o).Replace("\\*\\*", ".*").Replace("\\*", ".+") + "$").ToArray();
 
         static readonly Dictionary<Type, string> types = new()

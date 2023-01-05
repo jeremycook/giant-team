@@ -1,8 +1,9 @@
 ﻿using GiantTeam.Postgres.Models;
-using GiantTeam.Text;
 using Npgsql;
 using System.Collections.Immutable;
 using System.Data.Common;
+using System.Reflection;
+using static GiantTeam.Postgres.Sql;
 
 namespace GiantTeam.Postgres
 {
@@ -16,16 +17,28 @@ namespace GiantTeam.Postgres
             return NpgsqlDataSource.Create(ConnectionString);
         }
 
+        /// <summary>
+        /// Returns the number of rows affected.
+        /// </summary>
+        /// <param name="commands"></param>
+        /// <returns></returns>
+        /// <exception cref="DbException"></exception>
         public async Task<int> ExecuteAsync(params FormattableString[] commands)
         {
             await using var batch = new NpgsqlBatch();
-            foreach (var command in commands.Select(Sql.Format))
+            foreach (var command in commands.Select(Format))
             {
                 batch.BatchCommands.Add(command);
             }
             return await ExecuteAsync(batch);
         }
 
+        /// <summary>
+        /// Returns the number of rows affected.
+        /// </summary>
+        /// <param name="batch"></param>
+        /// <returns></returns>
+        /// <exception cref="DbException"></exception>
         public async Task<int> ExecuteAsync(NpgsqlBatch batch)
         {
             await using var dataSource = CreateDataSource();
@@ -37,11 +50,17 @@ namespace GiantTeam.Postgres
             }
             catch (DbException ex)
             {
-                Logger.LogError(ex, "Error executing batch {BatchCommandsText}", batch.BatchCommands.OfType<NpgsqlBatchCommand>().Select(cmd => cmd.CommandText));
+                Logger.LogError(ex, "Error executing batch commands {CommandTextList}", batch.BatchCommands.OfType<NpgsqlBatchCommand>().Select(cmd => cmd.CommandText));
                 throw;
             }
         }
 
+        /// <summary>
+        /// Returns the number of rows affected.
+        /// </summary>
+        /// <param name="unsanitizedSql"></param>
+        /// <returns></returns>
+        /// <exception cref="DbException"></exception>
         public async Task<int> ExecuteUnsanitizedAsync(string unsanitizedSql)
         {
             await using var dataSource = CreateDataSource();
@@ -54,11 +73,18 @@ namespace GiantTeam.Postgres
             }
             catch (DbException ex)
             {
-                Logger.LogError(ex, "Error executing command {CommandText}", cmd.CommandText);
+                Logger.LogError(ex, "Error executing unsanitized command {CommandText}", cmd.CommandText);
                 throw;
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="QueryTable"/>.
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="DbException"></exception>
         public async Task<QueryTable> QueryTableAsync(Sql sql)
         {
             await using var dataSource = CreateDataSource();
@@ -97,79 +123,157 @@ namespace GiantTeam.Postgres
             }
             catch (DbException ex)
             {
-                Logger.LogError(ex, "Error executing query {BatchCommandText}", batch.BatchCommands[0]);
+                Logger.LogError(ex, "Error executing query {QueryText}", batch.BatchCommands[0]);
                 throw;
             }
         }
 
-        public async Task<T?> SingleOrDefaultAsync<T>(Func<NpgsqlDataReader, T>? factory = null)
+        /// <summary>
+        /// Returns one <typeparamref name="T"/> or <c>null</c>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="factory"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="DbException"></exception>
+        public async Task<T?> SingleOrDefaultAsync<T>(Sql? sql = null)
+            where T : new()
         {
-            int count = 0;
-            T? lastItem = default;
-            await foreach (var item in QueryAsync(Sql.Format($"SELECT {GetColumnIdentifiers<T>()} FROM {GetTableIdentifier<T>()} LIMIT 2"), factory))
+            if (sql is null)
             {
-                lastItem = item;
-                count++;
-            }
-
-            if (count <= 1)
-            {
-                return lastItem;
+                var type = typeof(T);
+                sql ??= Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
             }
             else
             {
-                throw new InvalidOperationException("More than one element.");
-            }
-        }
-
-        public async Task<T> SingleAsync<T>(Func<NpgsqlDataReader, T>? factory = null)
-        {
-            int count = 0;
-            T? lastItem = default;
-            await foreach (var item in QueryAsync(Sql.Format($"SELECT {GetColumnIdentifiers<T>()} FROM {GetTableIdentifier<T>()} LIMIT 2"), factory))
-            {
-                lastItem = item;
-                count++;
+                var type = typeof(T);
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM ({sql}) query LIMIT 2");
             }
 
-            if (count == 1)
+            try
             {
-                return lastItem!;
-            }
-            else if (count == 0)
-            {
-                throw new InvalidOperationException("No elements.");
-            }
-            else
-            {
-                throw new InvalidOperationException("More than one element.");
-            }
-        }
+                int count = 0;
+                T? lastItem = default;
+                await foreach (var item in QueryAsync<T>(sql))
+                {
+                    lastItem = item;
+                    count++;
+                }
 
-        public async Task<List<T>> ListAsync<T>(Sql? sql = null, Func<NpgsqlDataReader, T>? itemFactory = null)
-        {
-            var list = new List<T>();
-            await foreach (var item in QueryAsync<T>(sql, itemFactory))
-            {
-                list.Add(item);
+                if (count <= 1)
+                {
+                    return lastItem;
+                }
+                else
+                {
+                    throw new InvalidOperationException("More than one element.");
+                }
             }
-            return list;
+            catch (DbException ex)
+            {
+                Logger.LogError(ex, "Error executing query {QueryText}", sql.ToString());
+                throw;
+            }
         }
 
         /// <summary>
-        /// 
+        /// Returns one <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="factory"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="DbException"></exception>
+        public async Task<T> SingleAsync<T>(Sql? sql = null)
+            where T : new()
+        {
+            if (sql is null)
+            {
+                var type = typeof(T);
+                sql ??= Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
+            }
+            else
+            {
+                var type = typeof(T);
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM ({sql}) query LIMIT 2");
+            }
+
+            try
+            {
+                int count = 0;
+                T? lastItem = default;
+                await foreach (var item in QueryAsync<T>(sql))
+                {
+                    lastItem = item;
+                    count++;
+                }
+
+                if (count == 1)
+                {
+                    return lastItem!;
+                }
+                else if (count == 0)
+                {
+                    throw new InvalidOperationException("No elements.");
+                }
+                else
+                {
+                    throw new InvalidOperationException("More than one element.");
+                }
+            }
+            catch (DbException ex)
+            {
+                Logger.LogError(ex, "Error executing query {QueryText}", sql.ToString());
+                throw;
+            }
+
+        }
+
+        /// <summary>
+        /// Returns a list of <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="sql"></param>
         /// <param name="itemFactory"></param>
         /// <returns></returns>
-        public async IAsyncEnumerable<T> QueryAsync<T>(Sql? sql = null, Func<NpgsqlDataReader, T>? itemFactory = null)
+        /// <exception cref="DbException"></exception>
+        public async Task<List<T>> ListAsync<T>(Sql? sql = null)
+            where T : new()
         {
-            // TODO: LRU cache generated stuff
-
             Type type = typeof(T);
+            sql ??= Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)}");
 
-            sql ??= Sql.Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)}");
+            var list = new List<T>();
+            try
+            {
+                await foreach (var item in QueryAsync<T>(sql))
+                {
+                    list.Add(item);
+                }
+            }
+            catch (DbException ex)
+            {
+                Logger.LogError(ex, "Error executing query {QueryText}", sql.ToString());
+                throw;
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Asynchronously query and iterate through the rows converted to <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="itemFactory"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async IAsyncEnumerable<T> QueryAsync<T>(Sql sql)
+            where T : new()
+        {
+            // TODO: LRU cache stuff like the column schema
 
             await using var dataSource = CreateDataSource();
             await using var batch = dataSource.CreateBatch();
@@ -180,31 +284,40 @@ namespace GiantTeam.Postgres
                 throw new ArgumentException($"The {nameof(sql)} argument must be a SELECT statement.", nameof(sql));
             }
 
-            await using var reader = await batch.ExecuteReaderAsync();
+            await using NpgsqlDataReader reader = await batch.ExecuteReaderAsync();
 
-            if (itemFactory is null)
+            Type type = typeof(T);
+            var columnProperties = (await reader.GetColumnSchemaAsync())
+                .Select(o => type.GetProperty(o.ColumnName.Replace("_", ""), BindingFlags.IgnoreCase) ?? throw new InvalidOperationException($"Failed to match a property of {type} to a column named {o.ColumnName}."))
+                .ToImmutableArray();
+
+            while (await reader.ReadAsync())
             {
-
-                var columns = (await reader.GetColumnSchemaAsync())
-                    .OrderBy(o => o.ColumnOrdinal)
-                    .Select(o => type.GetProperty(o.ColumnName)!)
-                    .ToImmutableArray();
-
-                itemFactory = (NpgsqlDataReader reader) =>
-                {
-                    T item = Activator.CreateInstance<T>();
-                    for (int i = 0; i < columns.Length; i++)
-                    {
-                        var value = reader.GetValue(i);
-                        if (value == DBNull.Value)
-                        {
-                            value = null;
-                        }
-                        columns[i].SetValue(item, value);
-                    }
-                    return item;
-                };
+                var item = ItemFactory<T>(columnProperties, reader);
+                yield return item;
             }
+        }
+
+        /// <summary>
+        /// Asynchronously query and iterate through the rows converted to <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="itemFactory"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async IAsyncEnumerable<T> QueryAsync<T>(Sql sql, Func<NpgsqlDataReader, T> itemFactory)
+        {
+            await using var dataSource = CreateDataSource();
+            await using var batch = dataSource.CreateBatch();
+            batch.BatchCommands.Add(sql);
+
+            if (batch.BatchCommands[0].StatementType == StatementType.Select)
+            {
+                throw new ArgumentException($"The {nameof(sql)} argument must be a SELECT statement.", nameof(sql));
+            }
+
+            await using NpgsqlDataReader reader = await batch.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
@@ -213,24 +326,24 @@ namespace GiantTeam.Postgres
             }
         }
 
-        public static Sql GetTableIdentifier<T>()
+        private static T ItemFactory<T>(IEnumerable<PropertyInfo> columnProperties, NpgsqlDataReader reader)
+            where T : new()
         {
-            return GetTableIdentifier(typeof(T));
-        }
+            T item = new();
 
-        public static Sql GetTableIdentifier(Type type)
-        {
-            return Sql.Identifier(TextTransformers.Snakify(type.Name));
-        }
+            int i = -1;
+            foreach (var columnProperty in columnProperties)
+            {
+                i++;
+                var value = reader.GetValue(i);
+                if (value == DBNull.Value)
+                {
+                    value = null;
+                }
+                columnProperty.SetValue(item, value);
+            }
 
-        public static IEnumerable<Sql> GetColumnIdentifiers<T>()
-        {
-            return GetColumnIdentifiers(typeof(T));
-        }
-
-        public static IEnumerable<Sql> GetColumnIdentifiers(Type type)
-        {
-            return type.GetProperties().Select(p => p.Name).Select(TextTransformers.Snakify).Select(Sql.Identifier);
+            return item;
         }
     }
 }

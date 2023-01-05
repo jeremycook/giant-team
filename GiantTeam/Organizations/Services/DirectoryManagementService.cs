@@ -1,5 +1,7 @@
-﻿using GiantTeam.Postgres;
+﻿using GiantTeam.Organizations.Directory.Helpers;
+using GiantTeam.Postgres;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace GiantTeam.Organizations.Services
 {
@@ -16,6 +18,14 @@ namespace GiantTeam.Organizations.Services
                 {
                     var connectionOptions = options.Value.DirectoryManagerConnection;
                     var connectionStringBuilder = connectionOptions.ToConnectionStringBuilder();
+
+                    if (!string.IsNullOrEmpty(connectionStringBuilder.SearchPath))
+                    {
+                        throw new NotSupportedException($"Setting the {nameof(NpgsqlConnectionStringBuilder.SearchPath)} of the {nameof(GiantTeamOptions.DirectoryConnection)}.{nameof(ConnectionOptions.ConnectionString)} is not supported.");
+                    }
+
+                    connectionStringBuilder.SearchPath = DirectoryHelpers.Schema;
+
                     _connectionString = connectionStringBuilder.ToString();
                 }
 

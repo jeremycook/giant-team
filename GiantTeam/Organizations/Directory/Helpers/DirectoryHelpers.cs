@@ -2,11 +2,13 @@
 
 namespace GiantTeam.Organizations.Directory.Helpers
 {
-    public class DirectoryHelpers
+    public static class DirectoryHelpers
     {
-        public const string Everyone = "everyone";
-        public const string Visitor = "visitor";
-        public const string User = "user";
+        public const string Schema = "directory";
+
+        public const string Anyone = "anyone";
+        public const string Anyvisitor = "anyvisitor";
+        public const string Anyuser = "anyuser";
 
         public static string NormalUserRole(string dbUser)
         {

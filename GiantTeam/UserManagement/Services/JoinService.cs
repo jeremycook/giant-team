@@ -31,13 +31,13 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private readonly ILogger<JoinService> logger;
-        private readonly DirectoryManagerDbContext directoryManagerDb;
+        private readonly ManagerDirectoryDbContext directoryManagerDb;
         private readonly DatabaseSecurityService security;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
-            DirectoryManagerDbContext directoryManagerDb,
+            ManagerDirectoryDbContext directoryManagerDb,
             DatabaseSecurityService databaseSecurityService,
             ValidationService validationService)
         {
@@ -79,7 +79,9 @@ namespace GiantTeam.UserManagement.Services
             }
             catch (DbUpdateException ex)
             {
-                logger.LogWarning(ex, "Suppressed exception creating application user named \"{Username}\" {ExceptionType}: {ExceptionMessage}", user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                logger.LogWarning(ex,
+                    "Suppressed exception creating application user named \"{Username}\" {ExceptionType}: {ExceptionMessage}",
+                    user.Username, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
             }
 
@@ -92,6 +94,10 @@ namespace GiantTeam.UserManagement.Services
             {
                 logger.LogWarning(ex, "Suppressed exception creating database user roles \"{DbUser}\" {ExceptionType}: {ExceptionMessage}", user.DbUser, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
+            }
+            catch
+            {
+                throw;
             }
 
             await dmtx.CommitAsync();

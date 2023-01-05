@@ -22,11 +22,11 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private readonly ILogger<VerifyPasswordService> logger;
-        private readonly DirectoryManagerDbContext db;
+        private readonly ManagerDirectoryDbContext db;
 
         public VerifyPasswordService(
             ILogger<VerifyPasswordService> logger,
-            DirectoryManagerDbContext db)
+            ManagerDirectoryDbContext db)
         {
             this.logger = logger;
             this.db = db;

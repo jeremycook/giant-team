@@ -1,7 +1,6 @@
 ﻿using GiantTeam.Home.Data;
 using GiantTeam.Organizations.Directory.Data;
 using GiantTeam.Postgres;
-using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,20 +19,12 @@ public class GiantTeamServiceBuilder : IServiceBuilder
 
         services.AddOrReplaceScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
-        services.AddDbContextPool<DirectoryManagerDbContext>((services, options) =>
+        services.AddDbContextPool<ManagerDirectoryDbContext>((services, options) =>
         {
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
             var connectionOptions = giantTeamOptions.DirectoryManagerConnection;
 
             options.UseSnakeCaseNamingConvention().UseNpgsql(connectionOptions);
-        });
-
-        services.AddDbContextPool<RecordsManagementDbContext>((services, options) =>
-        {
-            var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
-            var connectionOptions = giantTeamOptions.MgmtConnection;
-
-            options.UseNpgsql(connectionOptions);
         });
 
         services.AddDbContext<HomeDbContext>((services, options) =>

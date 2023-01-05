@@ -1,9 +1,15 @@
-﻿using Npgsql;
+﻿using GiantTeam.Text;
+using Npgsql;
 
 namespace GiantTeam.Postgres
 {
     public class Sql
     {
+        public static implicit operator Sql(FormattableString sql)
+        {
+            return Format(sql);
+        }
+
         public static implicit operator NpgsqlBatchCommand(Sql sql)
         {
             NpgsqlBatchCommand batchCommand = new(sql.ToParameterizedSql(out var parameterValues));
@@ -118,6 +124,26 @@ namespace GiantTeam.Postgres
         public static Sql Literal(DateTimeOffset moment)
         {
             return Raw(PgQuote.Literal(moment));
+        }
+
+        public static Sql GetTableIdentifier<T>()
+        {
+            return GetTableIdentifier(typeof(T));
+        }
+
+        public static Sql GetTableIdentifier(Type type)
+        {
+            return Identifier(TextTransformers.Snakify(type.Name));
+        }
+
+        public static IEnumerable<Sql> GetColumnIdentifiers<T>()
+        {
+            return GetColumnIdentifiers(typeof(T));
+        }
+
+        public static IEnumerable<Sql> GetColumnIdentifiers(Type type)
+        {
+            return type.GetProperties().Select(p => p.Name).Select(TextTransformers.Snakify).Select(Identifier);
         }
     }
 }

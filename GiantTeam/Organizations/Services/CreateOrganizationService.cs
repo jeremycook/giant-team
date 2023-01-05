@@ -30,7 +30,7 @@ namespace GiantTeam.Organizations.Services
         private readonly ValidationService validationService;
         private readonly SecurityDataService securityDataService;
         private readonly DirectoryDataService directoryDataService;
-        private readonly DirectoryManagerDbContext directoryManagerDb;
+        private readonly ManagerDirectoryDbContext directoryManagerDb;
         private readonly UserDataServiceFactory userDataServiceFactory;
         private readonly SessionService sessionService;
 
@@ -39,7 +39,7 @@ namespace GiantTeam.Organizations.Services
             ValidationService validationService,
             SecurityDataService securityDataService,
             DirectoryDataService directoryUserService,
-            DirectoryManagerDbContext directoryManagerDb,
+            ManagerDirectoryDbContext directoryManagerDb,
             UserDataServiceFactory userDataServiceFactory,
             SessionService sessionService)
         {

@@ -6,11 +6,11 @@ namespace GiantTeam.UserManagement.Services
 {
     public class BuildSessionUserService
     {
-        private readonly DirectoryManagerDbContext directoryManagerDb;
+        private readonly ManagerDirectoryDbContext directoryManagerDb;
         private readonly DatabaseSecurityService wa;
 
         public BuildSessionUserService(
-            DirectoryManagerDbContext directoryManagerDb,
+            ManagerDirectoryDbContext directoryManagerDb,
             DatabaseSecurityService wa)
         {
             this.directoryManagerDb = directoryManagerDb;

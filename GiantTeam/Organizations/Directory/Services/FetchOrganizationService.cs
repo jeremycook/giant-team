@@ -1,23 +1,25 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organizations.Services;
+using GiantTeam.Postgres;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Organizations.Organization.Services
+namespace GiantTeam.Organizations.Directory.Services
 {
     public class FetchOrganizationService
     {
         private readonly ILogger<FetchOrganizationService> logger;
         private readonly ValidationService validationService;
-        private readonly UserDataService dataService;
+        private readonly DirectoryDataService directoryDataService;
 
         public FetchOrganizationService(
             ILogger<FetchOrganizationService> logger,
             ValidationService validationService,
-            UserDataService dataService)
+            DirectoryDataService directoryDataService)
         {
             this.logger = logger;
             this.validationService = validationService;
-            this.dataService = dataService;
+            this.directoryDataService = directoryDataService;
         }
 
         public async Task<Models.Organization> FetchOrganizationAsync(FetchOrganizationInput input)
@@ -26,7 +28,7 @@ namespace GiantTeam.Organizations.Organization.Services
 
             try
             {
-                var output = await dataService.SingleAsync<Models.Organization>();
+                var output = await directoryDataService.SingleAsync<Models.Organization>(Sql.Format($"SELECT {Sql.GetColumnIdentifiers<Models.Organization>()} FROM {Sql.GetTableIdentifier<Models.Organization>()}"));
                 return output;
             }
             catch (Exception ex)
