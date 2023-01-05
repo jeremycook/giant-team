@@ -13,7 +13,9 @@ namespace GiantTeam.Organizations.Organization.Services
         private readonly SpaceInfo space;
         private string? _connectionString;
 
-        public override string ConnectionString
+        protected override ILogger Logger { get; }
+
+        protected override string ConnectionString
         {
             get
             {
@@ -35,8 +37,14 @@ namespace GiantTeam.Organizations.Organization.Services
             }
         }
 
-        public OrganizationDataService(IOptions<GiantTeamOptions> options, SessionService sessionService, OrganizationInfo organization, SpaceInfo space)
+        public OrganizationDataService(
+            ILogger<OrganizationDataService> logger,
+            IOptions<GiantTeamOptions> options,
+            SessionService sessionService,
+            OrganizationInfo organization,
+            SpaceInfo space)
         {
+            Logger = logger;
             this.options = options;
             this.sessionService = sessionService;
             this.organization = organization;

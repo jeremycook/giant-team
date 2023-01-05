@@ -1,7 +1,8 @@
 ﻿using GiantTeam.ComponentModel.Services;
 using GiantTeam.Linq;
+using GiantTeam.Organizations.Services;
 using GiantTeam.Postgres;
-using GiantTeam.WorkspaceAdministration.Services;
+using GiantTeam.UserManagement.Services;
 using Npgsql;
 using Npgsql.Schema;
 using System.Collections.Immutable;
@@ -13,23 +14,27 @@ namespace GiantTeam.Workspaces.Services
     {
         private readonly ILogger<FetchRecordsService> logger;
         private readonly ValidationService validationService;
-        private readonly UserConnectionService connectionService;
+        private readonly DirectoryDataService connectionService;
+        private readonly SessionService sessionService;
 
         public FetchRecordsService(
             ILogger<FetchRecordsService> logger,
             ValidationService validationService,
-            UserConnectionService connectionService)
+            DirectoryDataService connectionService,
+            SessionService sessionService)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.connectionService = connectionService;
+            this.sessionService = sessionService;
         }
 
         public async Task<FetchRecords> FetchRecordsAsync(FetchRecordsInput input)
         {
             validationService.Validate(input);
 
-            using var connection = await connectionService.OpenConnectionAsync(input.Database);
+            await using var dataSource = connectionService.CreateDataSource();
+            await using var connection = await dataSource.OpenConnectionAsync();
 
             var (columnSchema, selectedColumns) = await GetColumnSchemaAsync(input, connection);
 
@@ -37,9 +42,9 @@ namespace GiantTeam.Workspaces.Services
             command.CommandText = BuildSql(input, columnSchema, command.Parameters);
 
             logger.LogDebug("Fetching records as ({UserId},{UserRole},{LoginRole}) from {Database} with SQL: {Dql}",
-                connectionService.User.UserId,
-                connectionService.User.DbRole,
-                connectionService.User.DbLogin,
+                sessionService.User.UserId,
+                sessionService.User.DbUser,
+                sessionService.User.DbLogin,
                 input.Database,
                 command.CommandText);
 

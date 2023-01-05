@@ -1,6 +1,6 @@
 import { For } from 'solid-js';
 import { produce, SetStoreFunction, Store } from 'solid-js/store';
-import { FetchRecordsInputRangeFilter, Sort } from '../api/GiantTeam';
+import { Sort, FetchRecordsInputRangeFilter } from '../api/GiantTeam.Workspaces.Services';
 import { EyeIcon, EyeOffIcon, FilterAddIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../helpers/icons';
 import { Meta, MetaColumn } from './SmartTable';
 

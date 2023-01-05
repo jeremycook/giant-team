@@ -1,40 +1,35 @@
 import { createResource, For, JSX } from "solid-js";
-import { postFetchRecords } from "../../../api/GiantTeam.Data.Api";
-import OrganizationCard, { OrganizationData } from "./OrganizationCard";
+import { postQueryDatabase } from "../../../api/GiantTeam.Data.Api.Controllers";
+import { convertTabularDataToObjects } from "../../../helpers/objectHelpers";
+import { sql } from "../../../helpers/sqlHelpers";
+import { OrganizationCard, OrganizationModel } from "./OrganizationCard";
 
 export function createMyOrganizationsResource() {
-    const [resource, { refetch }] = createResource(() => postFetchRecords({
-        database: 'Home',
-        schema: 'my',
-        table: 'organizations',
-        columns: null,
-        filters: null,
-        skip: null,
-        take: null,
-        verbose: null,
+    const [resource, { refetch }] = createResource(() => postQueryDatabase({
+        databaseName: 'directory',
+        sql: sql`
+            SELECT *
+            FROM directory.organizations
+            ORDER BY name
+        `.text
     }));
     return { resource, refetch };
 }
 
-export default function MyOrganizations(props: { children?: (data: OrganizationData) => JSX.Element }) {
+export default function MyOrganizations(props: { children?: (model: OrganizationModel) => JSX.Element }) {
     const { resource } = createMyOrganizationsResource();
 
     const records = () => {
         const response = resource();
         if (response?.ok) {
-            return response.data.records.map(rec =>
-                response.data.columns.reduce((obj, col, i) => ({
-                    ...obj,
-                    [col.name]: rec[i],
-                }), {}) as OrganizationData
-            );
+            return convertTabularDataToObjects<OrganizationModel>(response.data);
         }
         else {
             return []
         }
     }
 
-    const itemRenderer = props.children ?? (data => <OrganizationCard data={data} />)
+    const itemRenderer = props.children ?? (data => <OrganizationCard model={data} />)
 
     return () => <For each={records()}>{itemRenderer}</For>
 }

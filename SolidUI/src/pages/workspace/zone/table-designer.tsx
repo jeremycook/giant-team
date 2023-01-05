@@ -1,8 +1,9 @@
 import { A, useParams, useSearchParams } from "@solidjs/router";
 import { createEffect, createResource } from "solid-js";
 import { createMutable, unwrap } from "solid-js/store";
-import { AlterTableInput, Table } from "../../../api/GiantTeam";
-import { postAlterTable, postFetchWorkspace } from "../../../api/GiantTeam.Data.Api";
+import { postFetchWorkspace, postAlterTable } from "../../../api/GiantTeam.Data.Api.Controllers";
+import { Table } from "../../../api/GiantTeam.DatabaseDefinition.Models";
+import { AlterTableInput } from "../../../api/GiantTeam.Workspaces.Services";
 import { SaveEditFilledIcon } from "../../../helpers/icons";
 import { createUrl } from "../../../helpers/urlHelpers";
 import { setTitle } from "../../../utils/page"

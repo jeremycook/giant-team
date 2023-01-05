@@ -19,17 +19,17 @@ namespace GiantTeam.Postgres
             var db = scope.ServiceProvider.GetRequiredService<TDbContext>();
             Database database = new();
             EntityFrameworkDatabaseContributor.Singleton.Contribute(database, db.Model);
-            if (dbContextConnectionOptions.SetRole is string dbContextRole)
+            if (!string.IsNullOrEmpty(dbContextConnectionOptions.SetRole))
             {
                 new DatabaseVisitor(item =>
                 {
                     switch (item)
                     {
                         case Schema schema:
-                            schema.Privileges.Add(new(dbContextRole, "USAGE"));
-                            schema.DefaultPrivileges.Add(new(dbContextRole, DefaultPrivilegesEnum.Tables, "SELECT, INSERT, UPDATE, DELETE"));
-                            schema.DefaultPrivileges.Add(new(dbContextRole, DefaultPrivilegesEnum.Sequences, "SELECT, USAGE"));
-                            schema.DefaultPrivileges.Add(new(dbContextRole, DefaultPrivilegesEnum.Functions, "EXECUTE"));
+                            schema.Privileges.Add(new(dbContextConnectionOptions.SetRole, "USAGE"));
+                            schema.DefaultPrivileges.Add(new(dbContextConnectionOptions.SetRole, DefaultPrivilegesEnum.Tables, "SELECT, INSERT, UPDATE, DELETE"));
+                            schema.DefaultPrivileges.Add(new(dbContextConnectionOptions.SetRole, DefaultPrivilegesEnum.Sequences, "SELECT, USAGE"));
+                            schema.DefaultPrivileges.Add(new(dbContextConnectionOptions.SetRole, DefaultPrivilegesEnum.Functions, "EXECUTE"));
                             break;
                     }
                 }).Visit(database);

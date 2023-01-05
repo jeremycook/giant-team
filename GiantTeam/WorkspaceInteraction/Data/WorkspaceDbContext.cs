@@ -31,7 +31,7 @@ namespace GiantTeam.WorkspaceInteraction.Data
             NpgsqlConnection connection = databaseConnectionService.CreateConnection(databaseName);
 
             optionsBuilder
-                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(sessionUser.DbRole)};"))
+                .AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(sessionUser.DbUser)};"))
                 .UseNpgsql(connection);
         }
 

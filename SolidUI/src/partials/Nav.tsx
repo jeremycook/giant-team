@@ -105,6 +105,7 @@ export function findPage(pathname: string) {
 
 /** Blends route and routeValues to create a URL. */
 export function pageUrl(route: string, routeValues: HereRouteValues) {
+
     const missingRouteValues: string[] = [];
     const url = route.replaceAll(_routeKeyPattern, (_, name) => {
         if (name in routeValues)
@@ -114,7 +115,7 @@ export function pageUrl(route: string, routeValues: HereRouteValues) {
             return '';
         }
     });
-    console.log(route, routeValues, url);
+
     if (missingRouteValues.length > 0) {
         log.error('Failed to generate a URL for {route}. These route values were missing: {missingRouteValues}', { route, missingRouteValues });
         return '';

@@ -1,6 +1,6 @@
 import { createResource, For, Show } from "solid-js";
-import { Workspace } from "../../../api/GiantTeam";
-import { postFetchWorkspace } from "../../../api/GiantTeam.Data.Api";
+import { postFetchWorkspace } from "../../../api/GiantTeam.Data.Api.Controllers";
+import { Workspace } from "../../../api/GiantTeam.Workspaces.Models";
 import { OkDataResponse } from "../../../helpers/httpHelpers";
 import { here, PageSettings } from "../../../partials/Nav"
 import { isAuthenticated } from "../../../utils/session"

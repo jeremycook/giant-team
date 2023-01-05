@@ -1,4 +1,6 @@
 ﻿using GiantTeam.Crypto;
+using GiantTeam.Organizations.Directory.Data;
+using GiantTeam.Organizations.Directory.Helpers;
 using GiantTeam.Organizations.Services;
 using GiantTeam.Postgres;
 
@@ -18,17 +20,27 @@ namespace GiantTeam.UserManagement.Services
         }
 
         /// <summary>
-        /// Create a user role that inherits but has no other privileges, and an admin role that has no privileges.
+        /// Create database user roles based on <paramref name="dbUser"/>.
         /// </summary>
-        /// <param name="userName"></param>
+        /// <param name="dbUser"></param>
         /// <returns></returns>
-        public async Task CreateUserRolesAsync(string userRole, string adminRole)
+        /// <exception cref="ArgumentException"></exception>
+        public async Task CreateUserRolesAsync(string dbUser)
         {
-            await security.ExecuteAsync(
-                $"CREATE ROLE {Sql.Identifier(userRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION",
-                $"CREATE ROLE {Sql.Identifier(adminRole)} WITH NOINHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION");
+            if (!dbUser.StartsWith("u:"))
+            {
+                throw new ArgumentException($"The {nameof(dbUser)} argument must start with \"u:\".", nameof(dbUser));
+            }
 
-            logger.LogInformation("Created database user role {UserRole} and admin role {AdminRole}.", userRole, adminRole);
+            var dbNormal = DirectoryHelpers.NormalUserRole(dbUser);
+            var dbElevated = DirectoryHelpers.ElevatedUserRole(dbUser);
+
+            await security.ExecuteAsync(
+                $"CREATE ROLE {Sql.Identifier(dbNormal)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION",
+                $"CREATE ROLE {Sql.Identifier(dbElevated)} WITH NOINHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION",
+                $"CREATE ROLE {Sql.Identifier(dbUser)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION IN ROLE {Sql.IdentifierList(dbNormal, dbElevated, DirectoryHelpers.User)}");
+
+            logger.LogInformation("Created database user roles {DbUser}, {DbNormal}, {DbElevated}.", dbUser, dbNormal, dbElevated);
         }
 
         /// <summary>
@@ -37,18 +49,16 @@ namespace GiantTeam.UserManagement.Services
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public async Task CreateLoginAsync(SessionUser user, DateTimeOffset validUntil)
+        public async Task CreateLoginAsync(User user, string loginRole, string loginPassword, DateTimeOffset validUntil)
         {
-            string loginRole = user.DbLogin;
-            string userRole = user.DbRole;
-            string adminRole = user.DbAdmin;
-            var encryptedPassword = SCRAMSHA256.EncryptPassword(user.DbPassword);
+            string userRole = user.DbUser;
+            var encryptedPassword = SCRAMSHA256.EncryptPassword(loginPassword);
 
             await security.ExecuteAsync(
-// Create a login for the user's database user and admin roles
+// Create a login for the user's database user
 $"""
 CREATE ROLE {Sql.Identifier(loginRole)} WITH LOGIN NOINHERIT NOCREATEDB NOSUPERUSER NOCREATEROLE NOREPLICATION
-    IN ROLE {Sql.Identifier(userRole)}, {Sql.Identifier(adminRole)}
+    IN ROLE {Sql.Identifier(userRole)}
     ENCRYPTED PASSWORD {Sql.Literal(encryptedPassword)}
     VALID UNTIL {Sql.Literal(validUntil)}
 """,

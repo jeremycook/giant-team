@@ -1,8 +1,10 @@
-import { createEffect, createSignal, Show } from 'solid-js';
-import { postRegister } from '../api/GiantTeam.Authentication.Api';
-import { createId } from '../helpers/htmlHelpers';
-import { go, here, PageSettings } from '../partials/Nav';
+import { createEffect } from 'solid-js';
+import { createMutable } from 'solid-js/store';
+import { A, go, here, PageSettings } from '../partials/Nav';
+import { toast } from '../partials/Alerts';
 import { isAuthenticated } from '../utils/session';
+import { FieldSetOptions, FieldStack } from '../widgets/FieldStack';
+import { postRegister } from '../api/GiantTeam.Authentication.Api.Controllers';
 
 export const pageSettings: PageSettings = {
   name: 'Join',
@@ -10,48 +12,51 @@ export const pageSettings: PageSettings = {
 }
 
 export default function JoinPage() {
-  // Input
-  const [name, nameSetter] = createSignal('');
-  const [email, emailSetter] = createSignal('');
-  const [username, usernameSetter] = createSignal('');
-  const [password, passwordSetter] = createSignal('');
-  const [passwordConfirmation, passwordConfirmationSetter] = createSignal('');
 
-  // Output
-  const [ok, okSetter] = createSignal(true);
-  const [message, messageSetter] = createSignal('');
+  const data = createMutable({
+    name: '',
+    username: '',
+    taintedUsername: false,
+    password: '',
+    passwordConfirmation: '',
+    email: '',
+  });
+
+  const dataOptions: FieldSetOptions = {
+    name: { type: 'text', label: 'Name', required: true },
+    username: { type: 'text', label: 'Username', required: true, autocomplete: 'new-username', onfocus: () => data.taintedUsername = true },
+    password: { type: 'password', label: 'Password', autocomplete: 'new-password' },
+    passwordConfirmation: { type: 'password', label: 'Password Confirmation', autocomplete: 'new-password' },
+    email: { type: 'text', label: 'Email', required: true },
+  };
 
   createEffect(() => {
-    if (!username() && name())
-      usernameSetter(name().toLowerCase().replace(/[^a-z0-9]+/, '-'))
+    if (!data.taintedUsername)
+      data.username = data.name.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
   });
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
 
     // Client-side validation
-    if (password() !== passwordConfirmation()) {
-      okSetter(false);
-      messageSetter('The password and password confirmation fields must match.');
+    if (data.password !== data.passwordConfirmation) {
+      toast.error('The password and password confirmation fields must match.');
       return;
     }
 
     const output = await postRegister({
-      name: name(),
-      email: email(),
-      username: username(),
-      password: password(),
+      name: data.name,
+      email: data.email,
+      username: data.username,
+      password: data.password,
     });
-
-    okSetter(output.ok);
 
     if (output.ok) {
       const state = here.state as { returnUrl?: string };
-      messageSetter('Success! Redirecting to the login page…');
-      // TODO: Redirect to page that triggered login flow
-      go('/login', { username: username(), returnUrl: state.returnUrl });
+      toast.info('Success! Redirecting to the login page…');
+      go('/login', { username: data.username, returnUrl: state.returnUrl });
     } else {
-      messageSetter(output.message);
+      toast.error(output.message);
     }
   };
 
@@ -64,86 +69,16 @@ export default function JoinPage() {
         Register a new user account.
       </p>
 
-      <Show when={message()}>
-        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
-          {message()}
-        </p>
-      </Show>
-
       <form onSubmit={formSubmit} class='form-grid'>
 
-        <label for={createId('name')}>
-          Name
-        </label>
-        <div>
-          <input
-            id={createId('name')}
-            value={name()}
-            onChange={e => nameSetter(e.currentTarget.value)}
-            required
-            autofocus
-          />
-        </div>
-
-        <label for={createId('email')}>
-          Email
-        </label>
-        <div>
-          <input
-            id={createId('email')}
-            value={email()}
-            onChange={e => emailSetter(e.currentTarget.value)}
-            required
-            type='email'
-          />
-        </div>
-
-        <label for={createId('username')}>
-          Username
-        </label>
-        <div>
-          <input
-            id={createId('username')}
-            value={username()}
-            onChange={e => usernameSetter(e.currentTarget.value)}
-            required
-            autocomplete='username'
-          />
-        </div>
-
-        <label for={createId('password')}>
-          Password
-        </label>
-        <div>
-          <input
-            id={createId('password')}
-            value={password()}
-            onChange={e => passwordSetter(e.currentTarget.value)}
-            required
-            type='password'
-            autocomplete='new-password'
-          />
-        </div>
-
-        <label for={createId('passwordConfirmation')}>
-          Password Confirmation
-        </label>
-        <div>
-          <input
-            id={createId('passwordConfirmation')}
-            value={passwordConfirmation()}
-            onChange={e => passwordConfirmationSetter(e.currentTarget.value)}
-            required
-            type='password'
-            autocomplete='new-password'
-          />
-        </div>
+        <FieldStack data={data} options={dataOptions} />
 
         <div />
         <div>
-          <button class='button button-primary'>
+          <button type='submit' class='button paint-primary'>
             Join Now
           </button>
+          <A href='/login' class='p-button'>Login</A>
         </div>
 
       </form>

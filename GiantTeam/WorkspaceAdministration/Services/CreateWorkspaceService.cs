@@ -73,7 +73,7 @@ namespace GiantTeam.WorkspaceAdministration.Services
                 // The workspace owner must be created before connecting to the info database.
                 // CREATEDB will be allowed until the workspace database is created.
                 using (var securityDb = await securityConnectionService.OpenConnectionAsync())
-                    await securityDb.ExecuteAsync($"CREATE ROLE {PgQuote.Identifier(workspaceOwner)} WITH CREATEDB INHERIT NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {PgQuote.Identifier(connectionService.User.DbRole)};");
+                    await securityDb.ExecuteAsync($"CREATE ROLE {PgQuote.Identifier(workspaceOwner)} WITH CREATEDB INHERIT NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {PgQuote.Identifier(connectionService.User.DbUser)};");
 
                 // Create the database
                 using (var infoDb = await connectionService.OpenInfoConnectionAsync(workspaceOwner))

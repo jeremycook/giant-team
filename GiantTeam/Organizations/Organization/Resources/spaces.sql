@@ -1,3 +1,5 @@
+SET ROLE pg_database_owner;
+
 -- SCHEMA: spaces
 -- DROP SCHEMA IF EXISTS spaces CASCADE;
 CREATE SCHEMA IF NOT EXISTS spaces

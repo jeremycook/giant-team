@@ -1,6 +1,6 @@
 import { onCleanup } from "solid-js";
 import { Portal } from "solid-js/web";
-import { StoreType } from "../../../../api/GiantTeam";
+import { StoreType } from "../../../../api/GiantTeam.DatabaseDefinition.Models";
 import { createId } from "../../../../helpers/htmlHelpers";
 import { Do } from "../../../../widgets/Do";
 

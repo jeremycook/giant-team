@@ -17,7 +17,7 @@ namespace GiantTeam.Postgres
                 connection.ConfigureCaCertificateValidation(connectionOptions.CaCertificate);
             }
 
-            if (connectionOptions.SetRole is not null)
+            if (!string.IsNullOrEmpty(connectionOptions.SetRole))
             {
                 options.AddInterceptors(new OpenedDbConnectionInterceptor($"SET ROLE {PgQuote.Identifier(connectionOptions.SetRole)};"));
             }

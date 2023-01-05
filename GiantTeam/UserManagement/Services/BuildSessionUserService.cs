@@ -1,18 +1,19 @@
 ﻿using GiantTeam.Crypto;
-using GiantTeam.RecordsManagement.Data;
+using GiantTeam.Organizations.Directory.Data;
+using System.Security.Cryptography;
 
 namespace GiantTeam.UserManagement.Services
 {
     public class BuildSessionUserService
     {
-        private readonly RecordsManagementDbContext rm;
+        private readonly DirectoryManagerDbContext directoryManagerDb;
         private readonly DatabaseSecurityService wa;
 
         public BuildSessionUserService(
-            RecordsManagementDbContext rm,
+            DirectoryManagerDbContext directoryManagerDb,
             DatabaseSecurityService wa)
         {
-            this.rm = rm;
+            this.directoryManagerDb = directoryManagerDb;
             this.wa = wa;
         }
 
@@ -27,21 +28,21 @@ namespace GiantTeam.UserManagement.Services
         {
             // Find the user
             User user =
-                await rm.Users.FindAsync(userId) ??
+                await directoryManagerDb.Users.FindAsync(userId) ??
                 throw new ArgumentException($"The provided {nameof(userId)} did not match a user.");
 
             // Build a session user
             SessionUser sessionUser = new(
                 sub: user.UserId.ToString(),
                 username: user.Username,
-                dbRole: user.DbRoleId,
-                dbLogin: $"{user.DbRoleId}:l:{DateTime.UtcNow:yymmddHHmmss}",
+                dbUser: user.DbUser,
+                dbLogin: $"l:{DateTime.UtcNow:yymmddHH}-{Random.Shared.Next()}",
                 dbPassword: PasswordHelper.GeneratePassword()
             );
 
             // Create a new database login with a random password and a lifespan
             // that matches the cookie authentication ticket's lifespan
-            await wa.CreateLoginAsync(sessionUser, validUntil);
+            await wa.CreateLoginAsync(user, sessionUser.DbLogin, sessionUser.DbPassword, validUntil);
 
             return sessionUser;
         }

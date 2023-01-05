@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GiantTeam.Tools": {
+      "commandName": "Project",
+      "commandLineArgs": "typescript --preview"
+    }
+  }
+}

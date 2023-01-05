@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using GiantTeam.Organizations.Directory.Helpers;
+using System.Security.Claims;
 
 namespace GiantTeam.UserManagement.Services
 {
@@ -9,17 +10,14 @@ namespace GiantTeam.UserManagement.Services
             if (identity is null)
                 throw new ArgumentNullException(nameof(identity));
 
-            string dbLogin = identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.DbLogin);
-            string dbRole = dbLogin[..dbLogin.IndexOf(':')];
-
             SessionUser sessionUser = new(
                 // Common claims
                 sub: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Sub),
                 username: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Username),
 
                 // Database access claims
-                dbRole: dbRole,
-                dbLogin: dbLogin,
+                dbUser: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.DbUser),
+                dbLogin: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.DbLogin),
                 dbPassword: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.DbPassword)
             );
 
@@ -29,21 +27,15 @@ namespace GiantTeam.UserManagement.Services
         public SessionUser(
             string sub,
             string username,
-            string dbRole,
+            string dbUser,
             string dbLogin,
             string dbPassword)
         {
             Sub = sub ?? throw new ArgumentNullException(nameof(sub));
             Username = username ?? throw new ArgumentNullException(nameof(username));
-            DbRole = dbRole ?? throw new ArgumentNullException(nameof(dbRole));
-            DbAdmin = dbRole + ":admin";
+            DbUser = dbUser ?? throw new ArgumentNullException(nameof(dbUser));
             DbLogin = dbLogin ?? throw new ArgumentNullException(nameof(dbLogin));
             DbPassword = dbPassword ?? throw new ArgumentNullException(nameof(dbPassword));
-
-            if (!DbLogin.StartsWith(DbRole + ':'))
-            {
-                throw new ArgumentException($"The {nameof(DbLogin)} must start with {DbRole + ':'}.");
-            }
         }
 
         public ClaimsIdentity CreateIdentity(string authenticationType)
@@ -59,6 +51,7 @@ namespace GiantTeam.UserManagement.Services
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Username, Username));
 
             // Database claims
+            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbUser, DbUser));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbLogin, DbLogin));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbPassword, DbPassword));
 
@@ -66,6 +59,8 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private Guid? _userId;
+        private string? _dbRegular;
+        private string? _dbElevated;
 
         public Guid UserId => _userId ??= Guid.Parse(Sub);
 
@@ -76,9 +71,11 @@ namespace GiantTeam.UserManagement.Services
 
         // Database
 
-        public string DbRole { get; }
-        public string DbAdmin { get; }
+        public string DbUser { get; }
         public string DbLogin { get; }
         public string DbPassword { get; }
+
+        public string DbRegular => _dbRegular ??= DirectoryHelpers.NormalUserRole(DbUser);
+        public string DbElevated => _dbElevated ??= DirectoryHelpers.ElevatedUserRole(DbUser);
     }
 }

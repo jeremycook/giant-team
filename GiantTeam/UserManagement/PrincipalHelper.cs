@@ -20,6 +20,7 @@ namespace GiantTeam.UserManagement
 
             public const string DbLogin = "dbl";
             public const string DbPassword = "dbp";
+            public const string DbUser = "dbu";
         }
 
         public static string FindRequiredValue(this IEnumerable<Claim> claims, string type)

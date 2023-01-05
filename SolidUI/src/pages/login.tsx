@@ -1,11 +1,16 @@
 import { createSignal, Show } from 'solid-js';
-import { postLogin } from '../api/GiantTeam.Authentication.Api';
 import { isAuthenticated, refreshSession, session } from '../utils/session';
 import { InfoIcon, WarningIcon } from '../helpers/icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
 import { A, go, here, PageSettings } from '../partials/Nav';
 import { isLocalUrl } from '../helpers/urlHelpers';
+import { postLogin } from '../api/GiantTeam.Authentication.Api.Controllers';
+
+export const pageSettings: PageSettings = {
+  name: 'Login',
+  showInNav: () => !isAuthenticated(),
+}
 
 const dataOptions: FieldSetOptions = {
   username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
@@ -13,16 +18,9 @@ const dataOptions: FieldSetOptions = {
   remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
 
-export const pageSettings: PageSettings = {
-  name: 'Login',
-  showInNav: () => !isAuthenticated(),
-}
-
 export default function LoginPage() {
-  const state = here.state as { returnUrl?: string };
-
   const data = createMutable({
-    username: '',
+    username: here.state.username ?? '',
     password: '',
     remainLoggedIn: false,
   });
@@ -31,6 +29,7 @@ export default function LoginPage() {
   const [message, messageSetter] = createSignal('');
 
   const returnUrl = () => {
+    const state = here.state as { returnUrl?: string };
     if (state?.returnUrl) {
       const url = new URL(state.returnUrl, location.href);
       if (isLocalUrl(url) && !url.pathname.endsWith('/login'))

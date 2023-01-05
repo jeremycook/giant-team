@@ -13,9 +13,12 @@ import { log } from './helpers/logging';
 import NotFoundPage from './pages/not-found';
 import { reveal } from "./helpers/objectHelpers";
 import Breadcrumb from './partials/Breadcrumb';
+import { Alerts } from './partials/Alerts';
 
 function Main() {
     return (<>
+        <Alerts />
+
         <Breadcrumb />
 
         <hr />

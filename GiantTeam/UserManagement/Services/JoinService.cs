@@ -1,7 +1,7 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Crypto;
-using GiantTeam.RecordsManagement.Data;
+using GiantTeam.Organizations.Directory.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
@@ -18,7 +18,7 @@ namespace GiantTeam.UserManagement.Services
             [Required, StringLength(200), EmailAddress]
             public string Email { get; set; } = default!;
 
-            [Required, StringLength(50), PgIdentifier]
+            [Required, StringLength(50), Username]
             public string Username { get; set; } = default!;
 
             [Required, StringLength(100, MinimumLength = 10), DataType(DataType.Password)]
@@ -31,18 +31,18 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private readonly ILogger<JoinService> logger;
-        private readonly RecordsManagementDbContext recordsManagementDbContext;
+        private readonly DirectoryManagerDbContext directoryManagerDb;
         private readonly DatabaseSecurityService security;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
-            RecordsManagementDbContext recordsManagementDbContext,
+            DirectoryManagerDbContext directoryManagerDb,
             DatabaseSecurityService databaseSecurityService,
             ValidationService validationService)
         {
             this.logger = logger;
-            this.recordsManagementDbContext = recordsManagementDbContext;
+            this.directoryManagerDb = directoryManagerDb;
             this.security = databaseSecurityService;
             this.validationService = validationService;
         }
@@ -51,19 +51,15 @@ namespace GiantTeam.UserManagement.Services
         {
             validationService.Validate(input);
 
-            DbRole dbRole = new()
-            {
-                RoleId = input.Username,
-                Created = DateTimeOffset.UtcNow,
-            };
             User user = new()
             {
                 UserId = Guid.NewGuid(),
                 Name = input.Name,
-                Email = input.Email,
                 Username = input.Username,
+                DbUser = "u:" + input.Username,
+                Email = input.Email,
+                EmailVerified = false,
                 Created = DateTimeOffset.UtcNow,
-                DbRoleId = dbRole.RoleId,
             };
             UserPassword userPassword = new()
             {
@@ -71,16 +67,15 @@ namespace GiantTeam.UserManagement.Services
                 PasswordDigest = PasswordHelper.HashPlaintext(input.Password),
             };
 
-            validationService.ValidateAll(dbRole, user, userPassword);
-            recordsManagementDbContext.DbRoles.Add(dbRole);
-            recordsManagementDbContext.Users.Add(user);
-            recordsManagementDbContext.UserPasswords.Add(userPassword);
+            validationService.ValidateAll(user, userPassword);
+            directoryManagerDb.Users.Add(user);
+            directoryManagerDb.UserPasswords.Add(userPassword);
 
             // Create user record
-            using var recordsManagementTx = await recordsManagementDbContext.Database.BeginTransactionAsync();
+            using var dmtx = await directoryManagerDb.Database.BeginTransactionAsync();
             try
             {
-                await recordsManagementDbContext.SaveChangesAsync();
+                await directoryManagerDb.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
             {
@@ -91,15 +86,15 @@ namespace GiantTeam.UserManagement.Services
             // Create database user
             try
             {
-                await security.CreateUserRolesAsync(user.DbRoleId, user.DbRoleId + ":admin");
+                await security.CreateUserRolesAsync(user.DbUser);
             }
             catch (PostgresException ex) when (ex.SqlState == "42710")
             {
-                logger.LogWarning(ex, "Suppressed exception creating database user named \"{DbRole}\" {ExceptionType}: {ExceptionMessage}", user.DbRoleId, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                logger.LogWarning(ex, "Suppressed exception creating database user roles \"{DbUser}\" {ExceptionType}: {ExceptionMessage}", user.DbUser, ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"The username \"{user.Username}\" already exists.", ex);
             }
 
-            await recordsManagementTx.CommitAsync();
+            await dmtx.CommitAsync();
 
             logger.LogInformation("Registered {Username} with {UserId}.", input.Username, user.UserId);
 

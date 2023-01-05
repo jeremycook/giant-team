@@ -1,13 +1,18 @@
-﻿using GiantTeam.Linq;
+﻿using System.Linq;
+using GiantTeam.Linq;
 using GiantTeam.Text;
 using Npgsql;
 using System.Collections.Immutable;
+using System.Data.Common;
+using GiantTeam.Postgres.Models;
+using GiantTeam.ComponentModel;
 
 namespace GiantTeam.Postgres
 {
     public abstract class PgDataService
     {
-        public abstract string ConnectionString { get; }
+        protected abstract ILogger Logger { get; }
+        protected abstract string ConnectionString { get; }
 
         public virtual NpgsqlDataSource CreateDataSource()
         {
@@ -16,13 +21,12 @@ namespace GiantTeam.Postgres
 
         public async Task<int> ExecuteAsync(params FormattableString[] commands)
         {
-            await using var dataSource = CreateDataSource();
-            await using var batch = dataSource.CreateBatch();
+            await using var batch = new NpgsqlBatch();
             foreach (var command in commands.Select(Sql.Format))
             {
                 batch.BatchCommands.Add(command);
             }
-            return await batch.ExecuteNonQueryAsync();
+            return await ExecuteAsync(batch);
         }
 
         public async Task<int> ExecuteAsync(NpgsqlBatch batch)
@@ -30,7 +34,75 @@ namespace GiantTeam.Postgres
             await using var dataSource = CreateDataSource();
             await using var connection = await dataSource.OpenConnectionAsync();
             batch.Connection = connection;
-            return await batch.ExecuteNonQueryAsync();
+            try
+            {
+                return await batch.ExecuteNonQueryAsync();
+            }
+            catch (DbException ex)
+            {
+                Logger.LogError(ex, "Error executing batch {BatchCommandsText}", batch.BatchCommands.OfType<NpgsqlBatchCommand>().Select(cmd => cmd.CommandText));
+                throw;
+            }
+        }
+
+        public async Task<int> ExecuteRawAsync(string sql)
+        {
+            await using var dataSource = CreateDataSource();
+            await using var connection = await dataSource.OpenConnectionAsync();
+            await using var cmd = connection.CreateCommand();
+            cmd.CommandText = sql;
+            try
+            {
+                return await cmd.ExecuteNonQueryAsync();
+            }
+            catch (DbException ex)
+            {
+                Logger.LogError(ex, "Error executing command {CommandText}", cmd.CommandText);
+                throw;
+            }
+        }
+
+        public async Task<QueryTable> QueryTableAsync(Sql sql)
+        {
+            await using var dataSource = CreateDataSource();
+            await using var batch = dataSource.CreateBatch();
+            batch.BatchCommands.Add(sql);
+
+            if (batch.BatchCommands[0].StatementType == StatementType.Select)
+            {
+                throw new ArgumentException($"The {nameof(sql)} argument must be a SELECT statement.", nameof(sql));
+            }
+
+            try
+            {
+                await using var reader = await batch.ExecuteReaderAsync();
+                var columns = await reader.GetColumnSchemaAsync();
+
+                var cols = columns.Select(o => o.ColumnName).ToArray();
+                var rows = new List<object?[]>();
+                while (await reader.ReadAsync())
+                {
+                    var row = new object?[cols.Length];
+                    reader.GetValues(row!);
+                    for (int i = 0; i < cols.Length; i++)
+                    {
+                        if (row[i] == DBNull.Value)
+                            row[i] = null;
+                    }
+                    rows.Add(row);
+                }
+
+                return new()
+                {
+                    Columns = cols,
+                    Rows = rows,
+                };
+            }
+            catch (DbException ex)
+            {
+                Logger.LogError(ex, "Error executing query {BatchCommandText}", batch.BatchCommands[0]);
+                throw;
+            }
         }
 
         public async Task<T?> SingleOrDefaultAsync<T>(Func<NpgsqlDataReader, T>? factory = null)

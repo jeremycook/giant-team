@@ -1,6 +1,6 @@
 import { Outlet, RouteDataFuncArgs, useParams, useRouteData } from '@solidjs/router';
 import { createResource, Show } from 'solid-js';
-import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api';
+import { postFetchWorkspace } from '../../api/GiantTeam.Data.Api.Controllers';
 import { ObjectStatusResponse } from '../../helpers/httpHelpers';
 import { combinePaths } from '../../helpers/urlHelpers';
 import { Breadcrumb } from '../../utils/nav';

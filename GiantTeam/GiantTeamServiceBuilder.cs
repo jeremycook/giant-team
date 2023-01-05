@@ -1,4 +1,5 @@
 ﻿using GiantTeam.Home.Data;
+using GiantTeam.Organizations.Directory.Data;
 using GiantTeam.Postgres;
 using GiantTeam.RecordsManagement.Data;
 using GiantTeam.Startup;
@@ -18,6 +19,14 @@ public class GiantTeamServiceBuilder : IServiceBuilder
         services.Configure<GiantTeamOptions>(configuration);
 
         services.AddOrReplaceScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
+
+        services.AddDbContextPool<DirectoryManagerDbContext>((services, options) =>
+        {
+            var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
+            var connectionOptions = giantTeamOptions.DirectoryManagerConnection;
+
+            options.UseSnakeCaseNamingConvention().UseNpgsql(connectionOptions);
+        });
 
         services.AddDbContextPool<RecordsManagementDbContext>((services, options) =>
         {

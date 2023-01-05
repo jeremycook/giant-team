@@ -16,15 +16,15 @@ namespace GiantTeam.Tools
             "GiantTeam.*.Controllers.*",
             "GiantTeam.*.Models.*",
             "GiantTeam.*.Services.*",
-            "GiantTeam.RecordsManagement.Data.*",
+            "GiantTeam.Organizations.Directory.Data.*",
         }.Select(o => "^" + Regex.Escape(o).Replace("\\*", ".+") + "$").ToArray();
 
         static readonly string[] exclude = new[]
         {
             "*Controller",
             "*Service",
-            "*DbContext",
-        }.Select(o => "^" + Regex.Escape(o).Replace("\\*", ".+") + "$").ToArray();
+            "*DbContext**",
+        }.Select(o => "^" + Regex.Escape(o).Replace("\\*\\*", ".*").Replace("\\*", ".+") + "$").ToArray();
 
         static readonly Dictionary<Type, string> types = new()
         {
@@ -84,19 +84,21 @@ namespace GiantTeam.Tools
 
             const string tab = "    ";
 
-            foreach (var assembly in appAssemblies)
+            foreach (var group in appAssemblies
+                .SelectMany(a => a.ExportedTypes)
+                .GroupBy(t => t.Namespace ?? string.Empty)
+                .ToDictionary(t => t.Key, t => t.ToArray()))
             {
                 var sb = new StringBuilder();
 
-                var types = assembly
-                    .ExportedTypes
+                var dataTypes = group.Value
                     .Where(t =>
                         include.Any(pattern => Regex.IsMatch(t.FullName, pattern)) &&
                         !exclude.Any(pattern => Regex.IsMatch(t.FullName, pattern))
                     )
                     .OrderBy(o => o.FullName);
 
-                foreach (var type in types)
+                foreach (var type in dataTypes)
                 {
                     if (type.IsEnum)
                     {
@@ -186,8 +188,7 @@ namespace GiantTeam.Tools
                     }
                 }
 
-                var controllers = assembly
-                    .ExportedTypes
+                var controllers = group.Value
                     .Where(t =>
                         t.Name.EndsWith("Controller")
                     )
@@ -260,7 +261,7 @@ namespace GiantTeam.Tools
                 }
 
 
-                string outFile = Path.Combine(outFolder, assembly.GetName().Name + ".ts");
+                string outFile = Path.Combine(outFolder, group.Key + ".ts");
                 if (sb.Length <= 0)
                 {
                     if (File.Exists(outFile))

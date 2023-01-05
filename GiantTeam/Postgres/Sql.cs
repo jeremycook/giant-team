@@ -6,9 +6,7 @@ namespace GiantTeam.Postgres
     {
         public static implicit operator NpgsqlBatchCommand(Sql sql)
         {
-            var parameterValues = new List<object>();
-
-            NpgsqlBatchCommand batchCommand = new(sql.ToParameterizedSql(ref parameterValues));
+            NpgsqlBatchCommand batchCommand = new(sql.ToParameterizedSql(out var parameterValues));
             foreach (var value in parameterValues)
             {
                 batchCommand.Parameters.Add(value);
@@ -26,7 +24,31 @@ namespace GiantTeam.Postgres
             this.arguments = arguments;
         }
 
-        public string ToParameterizedSql(ref List<object> parameterValues)
+        public string ToParameterizedSql(out List<object> parameterValues)
+        {
+            var tempValues = new List<object>();
+            var formatArgs = new List<string>(arguments.Length);
+
+            foreach (var arg in arguments)
+            {
+                switch (arg)
+                {
+                    case Sql sql:
+                        formatArgs.Add(sql.GetParameterizedSql(ref tempValues));
+                        break;
+
+                    default:
+                        formatArgs.Add($"${tempValues.Count}");
+                        tempValues.Add(arg ?? DBNull.Value);
+                        break;
+                }
+            }
+
+            parameterValues = tempValues;
+            return string.Format(format, args: formatArgs.ToArray());
+        }
+
+        private string GetParameterizedSql(ref List<object> parameterValues)
         {
             var formatArgs = new List<string>(arguments.Length);
 
@@ -35,7 +57,7 @@ namespace GiantTeam.Postgres
                 switch (arg)
                 {
                     case Sql sql:
-                        formatArgs.Add(sql.ToParameterizedSql(ref parameterValues));
+                        formatArgs.Add(sql.GetParameterizedSql(ref parameterValues));
                         break;
 
                     default:
@@ -45,14 +67,7 @@ namespace GiantTeam.Postgres
                 }
             }
 
-            try
-            {
-                return string.Format(format, args: formatArgs.ToArray());
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return string.Format(format, args: formatArgs.ToArray());
         }
 
         public static Sql Format(FormattableString formattableString)
@@ -70,12 +85,22 @@ namespace GiantTeam.Postgres
             return Raw(PgQuote.Identifier(text));
         }
 
-        internal static Sql Literal(string text)
+        /// <summary>
+        /// Comma separated list of sanitized identifiers.
+        /// </summary>
+        /// <param name="texts"></param>
+        /// <returns></returns>
+        public static Sql IdentifierList(params string[] texts)
+        {
+            return Raw(PgQuote.IdentifierList(texts));
+        }
+
+        public static Sql Literal(string text)
         {
             return Raw(PgQuote.Literal(text));
         }
 
-        internal static Sql Literal(DateTimeOffset moment)
+        public static Sql Literal(DateTimeOffset moment)
         {
             return Raw(PgQuote.Literal(moment));
         }

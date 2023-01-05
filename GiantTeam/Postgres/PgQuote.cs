@@ -1,4 +1,6 @@
-﻿namespace GiantTeam.Postgres;
+﻿using GiantTeam.Linq;
+
+namespace GiantTeam.Postgres;
 
 public static class PgQuote
 {
@@ -18,6 +20,15 @@ public static class PgQuote
     public static string Identifier(string identifier1, string identifier2)
     {
         return Identifier(identifier1) + "." + Identifier(identifier2);
+    }
+    /// <summary>
+    /// Comma separated list of sanitized identifiers.
+    /// </summary>
+    /// <param name="identifiers"></param>
+    /// <returns></returns>
+    public static string IdentifierList(params string[] identifiers)
+    {
+        return identifiers.Select(Identifier).Join(',');
     }
     public static string Literal(string literal)
     {

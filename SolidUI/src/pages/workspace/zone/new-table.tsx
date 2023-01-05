@@ -1,7 +1,8 @@
 import { useParams, useSearchParams } from "@solidjs/router";
 import { createMutable, unwrap } from "solid-js/store";
-import { CreateTableInput, StoreType, Table, TableIndexType } from "../../../api/GiantTeam";
-import { postCreateTable } from "../../../api/GiantTeam.Data.Api";
+import { postCreateTable } from "../../../api/GiantTeam.Data.Api.Controllers";
+import { Table, StoreType, TableIndexType } from "../../../api/GiantTeam.DatabaseDefinition.Models";
+import { CreateTableInput } from "../../../api/GiantTeam.Workspaces.Services";
 import { SaveEditFilledIcon } from "../../../helpers/icons";
 import { Breadcrumb } from "../../../utils/nav";
 import { TableDesignerWidget } from "../../../widgets/TableDesigner";

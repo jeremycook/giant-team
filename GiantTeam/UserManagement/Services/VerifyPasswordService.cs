@@ -1,5 +1,5 @@
 ﻿using GiantTeam.Crypto;
-using GiantTeam.RecordsManagement.Data;
+using GiantTeam.Organizations.Directory.Data;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
@@ -22,11 +22,11 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private readonly ILogger<VerifyPasswordService> logger;
-        private readonly RecordsManagementDbContext db;
+        private readonly DirectoryManagerDbContext db;
 
         public VerifyPasswordService(
             ILogger<VerifyPasswordService> logger,
-            RecordsManagementDbContext db)
+            DirectoryManagerDbContext db)
         {
             this.logger = logger;
             this.db = db;
@@ -44,7 +44,7 @@ namespace GiantTeam.UserManagement.Services
             var userPassword = await (
                 from u in db.Users
                 join up in db.UserPasswords on u.UserId equals up.UserId
-                where u.InvariantUsername == input.Username.ToLowerInvariant()
+                where u.Username == input.Username.ToLowerInvariant()
                 select up
             ).SingleOrDefaultAsync();
 

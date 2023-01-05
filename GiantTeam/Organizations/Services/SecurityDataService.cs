@@ -9,12 +9,17 @@ namespace GiantTeam.Organizations.Services
         private readonly IOptions<GiantTeamOptions> options;
         private string? _connectionString;
 
-        public SecurityDataService(IOptions<GiantTeamOptions> options)
+        public SecurityDataService(
+            ILogger<SecurityDataService> logger,
+            IOptions<GiantTeamOptions> options)
         {
+            Logger = logger;
             this.options = options;
         }
 
-        public override string ConnectionString
+        protected override ILogger Logger { get; }
+
+        protected override string ConnectionString
         {
             get
             {

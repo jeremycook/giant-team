@@ -116,6 +116,7 @@ export function createConfig(): VitePluginConfig {
         'text-ok': 'text-green-500',
         'text-danger': 'text-red-500',
         'text-error': 'text-red-500',
+        'text-warn': 'text-orange-500',
         'text-info': 'text-cyan-500',
       }],
   }

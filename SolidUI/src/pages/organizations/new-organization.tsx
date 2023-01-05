@@ -1,14 +1,10 @@
-import { postCreateOrganization } from '../../api/GiantTeam.Data.Api';
 import { go, PageSettings } from '../../partials/Nav';
-import { toast } from '../../partials/Notifications';
+import { toast } from '../../partials/Alerts';
 import { isAuthenticated } from '../../utils/session';
 import { FieldSetOptions, FieldStack } from '../../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
-
-const dataOptions: FieldSetOptions = {
-  name: { type: 'text', label: 'Organization Name', required: true },
-  isPublic: { type: 'boolean', label: 'Public' },
-};
+import { createEffect } from 'solid-js';
+import { postCreateOrganization } from '../../api/GiantTeam.Data.Api.Controllers';
 
 export const pageSettings: PageSettings = {
   name: 'New Organization',
@@ -18,7 +14,22 @@ export const pageSettings: PageSettings = {
 export default function NewOrganizationPage() {
   const data = createMutable({
     name: '',
-    isPublic: false,
+    databaseName: '',
+    taintedDatabaseName: false,
+  });
+
+  const dataOptions: FieldSetOptions = {
+    name: { type: 'text', label: 'Organization Name', required: true },
+    databaseName: {
+      type: 'text', label: 'Database Name', required: true, maxLength: 50, pattern: '^[a-z][a-z0-9_]*$',
+      title: 'This must start with a lowercase letter, and may be followed by lowercase letters, numbers or the underscore',
+      onfocus: () => data.taintedDatabaseName = true
+    },
+  };
+
+  createEffect(() => {
+    if (!data.taintedDatabaseName)
+      data.databaseName = data.name.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
   });
 
   const formSubmit = async (e: SubmitEvent) => {
@@ -26,12 +37,12 @@ export default function NewOrganizationPage() {
 
     const response = await postCreateOrganization({
       name: data.name,
-      isPublic: data.isPublic,
+      databaseName: data.databaseName,
     });
 
     if (response.ok) {
       toast.info('Organization created!');
-      go('/organization/' + data.name);
+      go('/organizations/' + response.data.organizationId);
     }
     else {
       toast.error(response.message);
