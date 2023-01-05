@@ -5,7 +5,7 @@ using Npgsql;
 
 namespace GiantTeam.Organizations.Services
 {
-    public class DirectoryDataService : PgDataService
+    public class DirectoryDataService : PgDataServiceBase
     {
         private readonly IOptions<GiantTeamOptions> options;
         private readonly SessionService sessionService;

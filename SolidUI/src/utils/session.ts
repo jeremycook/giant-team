@@ -1,5 +1,5 @@
 import { createStore } from 'solid-js/store';
-import { postLogout, postSession } from '../api/GiantTeam.Authentication.Api.Controllers';
+import { postLogout, postSession } from '../bindings/GiantTeam.Authentication.Api.Controllers';
 import { go } from '../partials/Nav';
 
 const KEY = 'SESSION388';

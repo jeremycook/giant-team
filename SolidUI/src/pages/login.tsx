@@ -5,7 +5,7 @@ import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
 import { A, go, here, PageSettings } from '../partials/Nav';
 import { isLocalUrl } from '../helpers/urlHelpers';
-import { postLogin } from '../api/GiantTeam.Authentication.Api.Controllers';
+import { postLogin } from '../bindings/GiantTeam.Authentication.Api.Controllers';
 
 export const pageSettings: PageSettings = {
   name: 'Login',

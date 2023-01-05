@@ -1,7 +1,7 @@
 import { useNavigate } from "@solidjs/router";
 import { createMutable } from "solid-js/store";
-import { postChangeDatabase } from "../../api/GiantTeam.Data.Api.Controllers";
-import { CreateSchema } from "../../api/GiantTeam.DatabaseDefinition.Changes.Models";
+import { postChangeDatabase } from "../../bindings/GiantTeam.Data.Api.Controllers";
+import { CreateSchema } from "../../bindings/GiantTeam.DatabaseDefinition.Changes.Models";
 import { SaveEditFilledIcon } from "../../helpers/icons";
 import { Breadcrumb } from "../../utils/nav";
 import { FieldStack, FieldSetOptions } from "../../widgets/FieldStack";

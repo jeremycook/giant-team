@@ -1,5 +1,5 @@
 import { createResource, For, JSX } from "solid-js";
-import { postQueryDatabase } from "../../../api/GiantTeam.Data.Api.Controllers";
+import { postQueryDatabase } from "../../../bindings/GiantTeam.Data.Api.Controllers";
 import { convertTabularDataToObjects } from "../../../helpers/objectHelpers";
 import { sql } from "../../../helpers/sqlHelpers";
 import { OrganizationCard, OrganizationModel } from "./OrganizationCard";

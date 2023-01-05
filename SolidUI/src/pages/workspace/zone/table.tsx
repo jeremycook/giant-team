@@ -5,8 +5,8 @@ import { Data, DataRecord, Meta, MetaColumn } from '../../../widgets/SmartTable'
 import SmartTable from '../../../widgets/SmartTable';
 import { Portal } from 'solid-js/web';
 import { useParams } from '@solidjs/router';
-import { FetchRecordsInput, Sort } from '../../../api/GiantTeam.Workspaces.Services';
-import { postFetchRecords } from '../../../api/GiantTeam.Data.Api.Controllers';
+import { FetchRecordsInput, Sort } from '../../../bindings/GiantTeam.Workspaces.Services';
+import { postFetchRecords } from '../../../bindings/GiantTeam.Data.Api.Controllers';
 
 export default function WorkspacePage() {
     setTitle('Table');

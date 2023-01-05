@@ -9,8 +9,8 @@ public class QueryDatabaseController : ControllerBase
     [HttpPost("/api/[Controller]")]
     public async Task<QueryTable> Post(
         [FromServices] QueryDatabaseService service,
-        QueryDatabaseProps props)
+        QueryDatabaseInput input)
     {
-        return await service.QueryDatabaseAsync(props);
+        return await service.QueryDatabaseAsync(input);
     }
 }

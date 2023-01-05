@@ -1,7 +1,7 @@
 import { Accessor, createSignal, For, Show } from 'solid-js';
 import { createMutable, SetStoreFunction, Store } from 'solid-js/store';
 import { JSX } from 'solid-js/web/types/jsx';
-import { Sort, FetchRecordsInputRangeFilter } from '../api/GiantTeam.Workspaces.Services';
+import { Sort, FetchRecordsInputRangeFilter } from '../bindings/GiantTeam.Workspaces.Services';
 import { getElementPosition } from '../helpers/htmlHelpers';
 import { FilterIcon, SortAscIcon, SortDescIcon } from '../helpers/icons';
 import { ColumnDialog } from './ColumnDialog';

@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organizations.Services
 {
-    public class CreateOrganizationProps
+    public class CreateOrganizationInput
     {
         [Required, StringLength(100)]
         public string Name { get; set; } = null!;
@@ -48,27 +48,27 @@ namespace GiantTeam.Organizations.Services
             this.sessionService = sessionService;
         }
 
-        public async Task<CreateOrganizationResult> CreateOrganizationAsync(CreateOrganizationProps props)
+        public async Task<CreateOrganizationResult> CreateOrganizationAsync(CreateOrganizationInput input)
         {
             try
             {
-                return await ProcessAsync(props);
+                return await ProcessAsync(input);
             }
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
                 logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                throw new ValidationException($"An error occurred that prevented creation of the \"{props.Name}\" organization. {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
+                throw new ValidationException($"An error occurred that prevented creation of the \"{input.Name}\" organization. {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
             }
         }
 
-        private async Task<CreateOrganizationResult> ProcessAsync(CreateOrganizationProps props)
+        private async Task<CreateOrganizationResult> ProcessAsync(CreateOrganizationInput input)
         {
-            if (props is null)
+            if (input is null)
             {
-                throw new ArgumentNullException(nameof(props));
+                throw new ArgumentNullException(nameof(input));
             }
 
-            validationService.Validate(props);
+            validationService.Validate(input);
 
             await using var dmtx = await directoryManagerDb.Database.BeginTransactionAsync();
 
@@ -77,9 +77,9 @@ namespace GiantTeam.Organizations.Services
             var guest = new OrganizationRole() { Name = "Guest" }.Init();
             var org = new Directory.Data.Organization()
             {
-                OrganizationId = props.DatabaseName,
-                Name = props.Name,
-                DatabaseName = props.DatabaseName,
+                OrganizationId = input.DatabaseName,
+                Name = input.Name,
+                DatabaseName = input.DatabaseName,
             }.Init();
             org.Roles!.AddRange(new[]
             {
@@ -131,7 +131,7 @@ namespace GiantTeam.Organizations.Services
                 };
                 var databaseDataService = directoryDataService.CloneDataService(databaseName);
                 await databaseDataService.ExecuteAsync(batch);
-                await databaseDataService.ExecuteRawAsync(OrganizationResources.SpacesSql);
+                await databaseDataService.ExecuteUnsanitizedAsync(OrganizationResources.SpacesSql);
             }
             catch (Exception ex)
             {

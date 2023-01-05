@@ -4,7 +4,7 @@ import { A, go, here, PageSettings } from '../partials/Nav';
 import { toast } from '../partials/Alerts';
 import { isAuthenticated } from '../utils/session';
 import { FieldSetOptions, FieldStack } from '../widgets/FieldStack';
-import { postRegister } from '../api/GiantTeam.Authentication.Api.Controllers';
+import { postRegister } from '../bindings/GiantTeam.Authentication.Api.Controllers';
 
 export const pageSettings: PageSettings = {
   name: 'Join',

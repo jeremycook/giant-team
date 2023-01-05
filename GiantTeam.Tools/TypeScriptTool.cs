@@ -64,7 +64,7 @@ namespace GiantTeam.Tools
                 throw new InvalidOperationException("The input directory could not be determined.")
             , solutionDirectory.FullName);
 
-            string outFolder = Path.GetFullPath("./SolidUI/src/api/", solutionDirectory.FullName);
+            string outFolder = Path.GetFullPath("./SolidUI/src/bindings/", solutionDirectory.FullName);
             Directory.CreateDirectory(outFolder);
 
             var inFiles = Directory

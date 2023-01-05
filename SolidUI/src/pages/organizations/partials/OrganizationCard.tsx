@@ -1,4 +1,4 @@
-import { Organization } from "../../../api/GiantTeam.Organizations.Directory.Data";
+import { Organization } from "../../../bindings/GiantTeam.Organizations.Directory.Data";
 import { A } from "../../../partials/Nav";
 
 export interface OrganizationModel extends Organization {

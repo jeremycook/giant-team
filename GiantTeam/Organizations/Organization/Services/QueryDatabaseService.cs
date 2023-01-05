@@ -24,14 +24,14 @@ public class QueryDatabaseService
         this.directoryDataService = directoryDataService;
     }
 
-    public async Task<QueryTable> QueryDatabaseAsync(QueryDatabaseProps props)
+    public async Task<QueryTable> QueryDatabaseAsync(QueryDatabaseInput input)
     {
-        validationService.Validate(props);
+        validationService.Validate(input);
 
         try
         {
-            var dataService = directoryDataService.CloneDataService(props.DatabaseName);
-            QueryTable output = await directoryDataService.QueryTableAsync(Sql.Raw(props.Sql));
+            var dataService = directoryDataService.CloneDataService(input.DatabaseName);
+            QueryTable output = await directoryDataService.QueryTableAsync(Sql.Raw(input.Sql));
             return output;
         }
         catch (Exception ex)
@@ -43,7 +43,7 @@ public class QueryDatabaseService
     }
 }
 
-public class QueryDatabaseProps
+public class QueryDatabaseInput
 {
     [Required, DatabaseName]
     public string DatabaseName { get; set; } = null!;

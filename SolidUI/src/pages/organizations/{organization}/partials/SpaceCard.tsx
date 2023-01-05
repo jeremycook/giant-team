@@ -1,4 +1,4 @@
-import { Schema } from "../../../../api/GiantTeam.DatabaseDefinition.Models";
+import { Schema } from "../../../../bindings/GiantTeam.DatabaseDefinition.Models";
 import { A, here, pageUrl } from "../../../../partials/Nav"
 
 interface Space {

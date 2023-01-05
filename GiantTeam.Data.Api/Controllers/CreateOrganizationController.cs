@@ -8,6 +8,6 @@ public class CreateOrganizationController : ControllerBase
     [HttpPost("/api/[Controller]")]
     public async Task<CreateOrganizationResult> Post(
         [FromServices] CreateOrganizationService createOrganizationService,
-        CreateOrganizationProps props) =>
-        await createOrganizationService.CreateOrganizationAsync(props);
+        CreateOrganizationInput input) =>
+        await createOrganizationService.CreateOrganizationAsync(input);
 }

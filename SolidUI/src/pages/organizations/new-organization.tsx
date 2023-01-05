@@ -4,7 +4,7 @@ import { isAuthenticated } from '../../utils/session';
 import { FieldSetOptions, FieldStack } from '../../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
 import { createEffect } from 'solid-js';
-import { postCreateOrganization } from '../../api/GiantTeam.Data.Api.Controllers';
+import { postCreateOrganization } from '../../bindings/GiantTeam.Data.Api.Controllers';
 
 export const pageSettings: PageSettings = {
   name: 'New Organization',

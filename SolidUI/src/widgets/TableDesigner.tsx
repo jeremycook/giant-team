@@ -1,5 +1,5 @@
 import { For } from "solid-js";
-import { Table, TableIndexType } from "../api/GiantTeam.DatabaseDefinition.Models";
+import { Table, TableIndexType } from "../bindings/GiantTeam.DatabaseDefinition.Models";
 import { removeItem } from "../helpers/arrayHelpers";
 import { createId } from "../helpers/htmlHelpers";
 import { DeleteOutlineIcon } from "../helpers/icons";

@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace GiantTeam.Organizations.Services
 {
-    public class SecurityDataService : PgDataService
+    public class SecurityDataService : PgDataServiceBase
     {
         private readonly IOptions<GiantTeamOptions> options;
         private string? _connectionString;

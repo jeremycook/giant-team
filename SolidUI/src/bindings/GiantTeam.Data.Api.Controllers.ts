@@ -16,8 +16,8 @@ export const postAlterTable = async (input: AlterTableInput) =>
 export const postChangeDatabase = async (input: ChangeDatabaseInput) =>
     await postJson('/api/change-database', input) as DataResponse<ChangeDatabaseOutput>;
 
-export const postCreateOrganization = async (props: CreateOrganizationProps) =>
-    await postJson('/api/create-organization', props) as DataResponse<CreateOrganizationResult>;
+export const postCreateOrganization = async (input: CreateOrganizationInput) =>
+    await postJson('/api/create-organization', input) as DataResponse<CreateOrganizationResult>;
 
 export const postCreateTable = async (input: CreateTableInput) =>
     await postJson('/api/create-table', input) as DataResponse<CreateTableOutput>;
@@ -37,5 +37,5 @@ export const postFetchWorkspace = async (input: FetchWorkspaceInput) =>
 export const postImportData = async (input: ImportDataInput) =>
     await postJson('/api/import-data', input) as DataResponse<ImportDataOutput>;
 
-export const postQueryDatabase = async (input: QueryDatabaseProps) =>
+export const postQueryDatabase = async (input: QueryDatabaseInput) =>
     await postJson('/api/query-database', input) as DataResponse<QueryTable>;

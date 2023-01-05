@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace GiantTeam.Organizations.Services
 {
-    public class DirectoryManagementService : PgDataService
+    public class DirectoryManagementService : PgDataServiceBase
     {
         private readonly IOptions<GiantTeamOptions> options;
         private string? _connectionString;

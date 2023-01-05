@@ -10,7 +10,9 @@ public static class GiantTeamServicesCollectionExtensions
     /// Add or replaces services from provided the <paramref name="assembly"/>.
     /// Types must either have the <see cref="ServiceAttribute"/>,
     /// or follow the convention that they are not abstract,
-    /// end with "Service" and are in a namespace that ends with ".Services".
+    /// their type name ends with "Service", 
+    /// are in a namespace that ends with ".Services",
+    /// and do not have the <see cref="NotAServiceAttribute"/>.
     /// </summary>
     /// <param name="services"></param>
     /// <param name="assembly"></param>
@@ -23,7 +25,8 @@ public static class GiantTeamServicesCollectionExtensions
                         (
                             !t.IsAbstract &&
                             t.Name.EndsWith("Service") &&
-                            t.Namespace!.EndsWith(".Services")
+                            t.Namespace!.EndsWith(".Services") &&
+                            t.GetCustomAttribute<NotAServiceAttribute>() is null
                         )
                     select t;
 

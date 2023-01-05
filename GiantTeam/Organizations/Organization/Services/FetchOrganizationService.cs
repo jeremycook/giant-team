@@ -20,9 +20,9 @@ namespace GiantTeam.Organizations.Organization.Services
             this.dataService = dataService;
         }
 
-        public async Task<Models.Organization> FetchOrganizationAsync(FetchOrganizationProps props)
+        public async Task<Models.Organization> FetchOrganizationAsync(FetchOrganizationInput input)
         {
-            validationService.Validate(props);
+            validationService.Validate(input);
 
             try
             {
@@ -38,7 +38,7 @@ namespace GiantTeam.Organizations.Organization.Services
         }
     }
 
-    public class FetchOrganizationProps
+    public class FetchOrganizationInput
     {
         [Required]
         public string OrganizationId { get; set; } = null!;

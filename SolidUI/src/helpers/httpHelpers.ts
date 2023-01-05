@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router';
-import { ObjectStatus } from '../api/GiantTeam.ComponentModel.Models';
+import { ObjectStatus } from '../bindings/GiantTeam.ComponentModel.Models';
 import { authorize, refreshSession } from '../utils/session';
 
 export enum HttpStatusCode {

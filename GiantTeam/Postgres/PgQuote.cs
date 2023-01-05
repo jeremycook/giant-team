@@ -28,6 +28,15 @@ public static class PgQuote
     /// <returns></returns>
     public static string IdentifierList(params string[] identifiers)
     {
+        return IdentifierList((IEnumerable<string>)identifiers);
+    }
+    /// <summary>
+    /// Comma separated list of sanitized identifiers.
+    /// </summary>
+    /// <param name="identifiers"></param>
+    /// <returns></returns>
+    public static string IdentifierList(IEnumerable<string> identifiers)
+    {
         return identifiers.Select(Identifier).Join(',');
     }
     public static string Literal(string literal)

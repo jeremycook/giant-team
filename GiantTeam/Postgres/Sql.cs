@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using System.Net.Http.Headers;
 
 namespace GiantTeam.Postgres
 {
@@ -22,6 +23,11 @@ namespace GiantTeam.Postgres
         {
             this.format = format;
             this.arguments = arguments;
+        }
+
+        public override string ToString()
+        {
+            return ToParameterizedSql(out _);
         }
 
         public string ToParameterizedSql(out List<object> parameterValues)
@@ -91,6 +97,16 @@ namespace GiantTeam.Postgres
         /// <param name="texts"></param>
         /// <returns></returns>
         public static Sql IdentifierList(params string[] texts)
+        {
+            return IdentifierList((IEnumerable<string>)texts);
+        }
+
+        /// <summary>
+        /// Comma separated list of sanitized identifiers.
+        /// </summary>
+        /// <param name="identifiers"></param>
+        /// <returns></returns>
+        public static Sql IdentifierList(IEnumerable<string> texts)
         {
             return Raw(PgQuote.IdentifierList(texts));
         }
