@@ -1,11 +1,11 @@
 ﻿using GiantTeam.Workspaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GiantTeam.Data.Api.Controllers;
+namespace GiantTeam.Organization.Api.Controllers;
 
 public class ImportDataController : ControllerBase
 {
-    [HttpPost("/api/[Controller]")]
+    [HttpPost("/api/organization/[Controller]")]
     public async Task<ImportDataOutput> Post(
         [FromServices] ImportDataService service,
         ImportDataInput input)

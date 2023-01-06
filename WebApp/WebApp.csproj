@@ -15,7 +15,8 @@
   <ItemGroup>
     <ProjectReference Include="..\GiantTeam.Asp\GiantTeam.Asp.csproj" />
     <ProjectReference Include="..\GiantTeam.Authentication.Api\GiantTeam.Authentication.Api.csproj" />
-    <ProjectReference Include="..\GiantTeam.Data.Api\GiantTeam.Data.Api.csproj" />
+    <ProjectReference Include="..\GiantTeam.Cluster.Api\GiantTeam.Cluster.Api.csproj" />
+    <ProjectReference Include="..\GiantTeam.Organization.Api\GiantTeam.Organization.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,11 +1,11 @@
 ﻿using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GiantTeam.Data.Api.Controllers;
+namespace GiantTeam.Cluster.Api.Controllers;
 
 public class CreateWorkspaceRoleController : ControllerBase
 {
-    [HttpPost("/api/[Controller]")]
+    [HttpPost("/api/cluster/[Controller]")]
     public async Task<CreateWorkspaceRoleOutput> Post(
         [FromServices] CreateWorkspaceRoleService service,
         CreateWorkspaceRoleInput input)

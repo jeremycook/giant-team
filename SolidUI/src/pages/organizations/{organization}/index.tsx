@@ -1,5 +1,5 @@
 import { createResource, Show } from "solid-js";
-import { postFetchOrganization } from "../../../bindings/GiantTeam.Data.Api.Controllers";
+import { postFetchOrganization } from "../../../bindings/GiantTeam.Cluster.Api.Controllers";
 import { Organization } from "../../../bindings/GiantTeam.Organizations.Directory.Models";
 import { OkDataResponse } from "../../../helpers/httpHelpers";
 import { here, PageSettings } from "../../../partials/Nav"

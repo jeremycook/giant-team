@@ -207,7 +207,7 @@ namespace GiantTeam.Tools
                     foreach (var method in postActions)
                     {
                         // TODO: Check for ActionNameAttribute
-                        string actionName = method.Name;
+                        string actionName = method.GetCustomAttribute<ActionNameAttribute>()?.Name ?? method.Name;
                         string actionSlug = TextTransformers.Dashify(method.Name);
 
                         string functionName = actionName[..1].ToLower() + actionName[1..] + controllerName;

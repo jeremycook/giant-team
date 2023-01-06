@@ -2,11 +2,11 @@
 using GiantTeam.Organizations.Directory.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GiantTeam.Data.Api.Controllers;
+namespace GiantTeam.Cluster.Api.Controllers;
 
 public class FetchOrganizationController : ControllerBase
 {
-    [HttpPost("/api/[Controller]")]
+    [HttpPost("/api/cluster/[Controller]")]
     public async Task<Organization> Post(
         [FromServices] FetchOrganizationService service,
         FetchOrganizationInput input)

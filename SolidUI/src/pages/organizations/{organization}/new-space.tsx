@@ -1,6 +1,6 @@
 import { createEffect } from "solid-js";
 import { createMutable } from "solid-js/store";
-import { postCreateSpace } from "../../../bindings/GiantTeam.Data.Api.Controllers";
+import { postCreateSpace } from "../../../bindings/GiantTeam.Organization.Api.Controllers";
 import { toast } from "../../../partials/Alerts";
 import { PageSettings, go, here } from "../../../partials/Nav";
 import { isAuthenticated } from "../../../utils/session";
