@@ -1,6 +1,7 @@
 ﻿using GiantTeam.Asp;
 using GiantTeam.Asp.Filters;
 using GiantTeam.Asp.Routing;
+using GiantTeam.ClusterManagement.Services;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -100,11 +101,11 @@ namespace WebApp
                         {
                             SessionService sessionService = context.HttpContext.RequestServices
                                 .GetRequiredService<SessionService>();
-                            ClusterSecurityService security = context.HttpContext.RequestServices
-                                .GetRequiredService<ClusterSecurityService>();
+                            IClusterSecurityService security = context.HttpContext.RequestServices
+                                .GetRequiredService<IClusterSecurityService>();
 
                             // Synchronize the lifespan of the passwords with the authentication cookie
-                            DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(context.Options.ExpireTimeSpan).AddMinutes(1);
+                            DateTime validUntil = DateTime.UtcNow.Add(context.Options.ExpireTimeSpan).AddMinutes(1);
 
                             // Extend life of db login's password
                             await security.SetLoginExpirationAsync(sessionService.User, validUntil);

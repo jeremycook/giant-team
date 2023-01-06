@@ -1,18 +1,17 @@
-﻿using Dapper;
-using GiantTeam.ComponentModel;
-using GiantTeam.ComponentModel.Models;
+﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organizations.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserManagement.Services;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.WorkspaceAdministration.Services
+namespace GiantTeam.ClusterManagement.Services
 {
     public class FetchRoleService
     {
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
-        private readonly UserConnectionService connectionService;
+        private readonly DirectoryManagementService dataService;
 
         public class FetchRoleInput
         {
@@ -40,11 +39,11 @@ namespace GiantTeam.WorkspaceAdministration.Services
         public FetchRoleService(
             ValidationService validationService,
             SessionService sessionService,
-            UserConnectionService connectionService)
+            DirectoryManagementService dataService)
         {
             this.validationService = validationService;
             this.sessionService = sessionService;
-            this.connectionService = connectionService;
+            this.dataService = dataService;
         }
 
         /// <summary>
@@ -59,38 +58,32 @@ namespace GiantTeam.WorkspaceAdministration.Services
 
             var user = sessionService.User;
 
-            using var connection = await connectionService.OpenInfoConnectionAsync(user.DbUser);
-
-            var gridReader = await connection.QueryMultipleAsync($"""
-select rolname {PgQuote.Identifier(nameof(FetchRoleOutput.RoleName))},
-    rolcanlogin {PgQuote.Identifier(nameof(FetchRoleOutput.CanLogin))},
-    rolcreatedb {PgQuote.Identifier(nameof(FetchRoleOutput.CreateDb))},
-    rolinherit {PgQuote.Identifier(nameof(FetchRoleOutput.Inherit))}
+            var output = await dataService.SingleOrDefaultAsync<FetchRoleOutput>(Sql.Format($"""
+select
+    rolname {Sql.Identifier(nameof(FetchRoleOutput.RoleName))},
+    rolcanlogin {Sql.Identifier(nameof(FetchRoleOutput.CanLogin))},
+    rolcreatedb {Sql.Identifier(nameof(FetchRoleOutput.CreateDb))},
+    rolinherit {Sql.Identifier(nameof(FetchRoleOutput.Inherit))}
 from pg_catalog.pg_roles
-where rolname = @RoleName;
-
-select r.rolname as {PgQuote.Identifier(nameof(FetchRoleMemberOutput.RoleName))},
-	admin_option as {PgQuote.Identifier(nameof(FetchRoleMemberOutput.TeamAdmin))},
-	r.rolinherit as {PgQuote.Identifier(nameof(FetchRoleMemberOutput.Inherit))}
-from pg_catalog.pg_roles team
-join pg_catalog.pg_auth_members m on m.member = team.oid
-join pg_catalog.pg_roles r on m.roleid = r.oid
-where team.rolname = @RoleName
-order by 1;
-""",
-new
-{
-    RoleName = input.RoleName,
-});
-
-            var output = gridReader.ReadSingleOrDefault<FetchRoleOutput>();
+where rolname = {input.RoleName};
+"""));
 
             if (output is null)
             {
                 throw new NotFoundException($"Role not found.");
             }
 
-            output.Members = await gridReader.ReadAsync<FetchRoleMemberOutput>();
+            output.Members = await dataService.ListAsync<FetchRoleMemberOutput>(Sql.Format($"""
+select
+    r.rolname as {Sql.Identifier(nameof(FetchRoleMemberOutput.RoleName))},
+	admin_option as {Sql.Identifier(nameof(FetchRoleMemberOutput.TeamAdmin))},
+	r.rolinherit as {Sql.Identifier(nameof(FetchRoleMemberOutput.Inherit))}
+from pg_catalog.pg_roles team
+join pg_catalog.pg_auth_members m on m.member = team.oid
+join pg_catalog.pg_roles r on m.roleid = r.oid
+where team.rolname = {input.RoleName}
+order by 1;
+"""));
 
             return output;
         }

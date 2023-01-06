@@ -1,4 +1,5 @@
-﻿using GiantTeam.Crypto;
+﻿using GiantTeam.ClusterManagement.Services;
+using GiantTeam.Crypto;
 using GiantTeam.Organizations.Directory.Data;
 
 namespace GiantTeam.UserManagement.Services
@@ -6,14 +7,14 @@ namespace GiantTeam.UserManagement.Services
     public class BuildSessionUserService
     {
         private readonly ManagerDirectoryDbContext directoryManagerDb;
-        private readonly ClusterSecurityService wa;
+        private readonly IClusterSecurityService securityService;
 
         public BuildSessionUserService(
             ManagerDirectoryDbContext directoryManagerDb,
-            ClusterSecurityService wa)
+            IClusterSecurityService securityService)
         {
             this.directoryManagerDb = directoryManagerDb;
-            this.wa = wa;
+            this.securityService = securityService;
         }
 
         /// <summary>
@@ -23,7 +24,7 @@ namespace GiantTeam.UserManagement.Services
         /// <param name="validUntil"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<SessionUser> BuildSessionUserAsync(bool elevated, Guid userId, DateTimeOffset validUntil)
+        public async Task<SessionUser> BuildSessionUserAsync(bool elevated, Guid userId, DateTime validUntil)
         {
             // Find the user
             User user =
@@ -40,23 +41,23 @@ namespace GiantTeam.UserManagement.Services
                 dbPassword: PasswordHelper.GeneratePassword()
             );
 
-            // Create database logins
-            await wa.CreateLoginAsync(
+            // Create regular database login
+            await securityService.CreateLoginAsync(
                 dbUser: user.DbUser,
                 dbLogin: sessionUser.DbLogin,
-                loginPassword: sessionUser.DbPassword,
-                validUntil: validUntil
+                dbLoginPassword: sessionUser.DbPassword,
+                passwordValidUntil: validUntil
             );
 
             if (sessionUser.DbElevatedUser is not null &&
                 sessionUser.DbElevatedLogin is not null)
             {
-                // Create elevated database logins
-                await wa.CreateLoginAsync(
+                // Create elevated database login
+                await securityService.CreateLoginAsync(
                     dbUser: sessionUser.DbElevatedUser,
                     dbLogin: sessionUser.DbElevatedLogin,
-                    loginPassword: sessionUser.DbPassword,
-                    validUntil: validUntil
+                    dbLoginPassword: sessionUser.DbPassword,
+                    passwordValidUntil: validUntil
                 );
             }
 

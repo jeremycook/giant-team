@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiantTeam.Organizations.Organization.Data.Spaces
 {
-    [Table("spaces")]
     public class Space
     {
         [Key, StringLength(50), DatabaseName]

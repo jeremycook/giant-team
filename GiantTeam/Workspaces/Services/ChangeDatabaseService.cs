@@ -1,9 +1,9 @@
-﻿using Dapper;
-using GiantTeam.ComponentModel;
+﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseDefinition.Changes.Models;
+using GiantTeam.Organizations.Organization.Services;
 using GiantTeam.Postgres;
-using GiantTeam.WorkspaceAdministration.Services;
+using GiantTeam.UserManagement.Services;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
 
@@ -11,7 +11,7 @@ namespace GiantTeam.Workspaces.Services
 {
     public class ChangeDatabaseInput
     {
-        [Required, StringLength(50), PgIdentifier]
+        [Required, StringLength(50), DatabaseName]
         public string DatabaseName { get; set; } = null!;
 
         [Required, MinLength(1)]
@@ -26,43 +26,47 @@ namespace GiantTeam.Workspaces.Services
     {
         private readonly ILogger<ChangeDatabaseService> logger;
         private readonly ValidationService validationService;
-        private readonly UserConnectionService connectionService;
+        private readonly SessionService sessionService;
+        private readonly UserDataFactory organizationDataFactory;
 
         public ChangeDatabaseService(
             ILogger<ChangeDatabaseService> logger,
             ValidationService validationService,
-            UserConnectionService connectionService)
+            SessionService sessionService,
+            UserDataFactory organizationDataFactory)
         {
             this.logger = logger;
             this.validationService = validationService;
-            this.connectionService = connectionService;
+            this.sessionService = sessionService;
+            this.organizationDataFactory = organizationDataFactory;
         }
 
         public async Task<ChangeDatabaseOutput> ChangeDatabaseAsync(ChangeDatabaseInput input)
         {
-            validationService.Validate(input);
-
             return await ProcessAsync(input);
         }
 
         private async Task<ChangeDatabaseOutput> ProcessAsync(ChangeDatabaseInput input)
         {
-            PgDatabaseScripter scripter = new();
-            string migrationScript = scripter.ScriptChanges(input.Changes);
+            validationService.Validate(input);
 
-            string dbRole = $"{input.DatabaseName}:Owner";
+            string migrationScript =
+                $"SET ROLE pg_database_owner;\n" +
+                PgDatabaseScripter.Singleton.ScriptChanges(input.Changes);
 
-            logger.LogInformation("Executing change database script as {DatabaseRole}: {CommandText}", dbRole, migrationScript);
+            logger.LogInformation("Executing change database script as {UserId}: {CommandText}",
+                sessionService.User.UserId,
+                migrationScript);
 
-            using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(input.DatabaseName, dbRole);
+            var dataService = organizationDataFactory.NewDataService(input.DatabaseName);
             try
             {
-                await designConnection.ExecuteAsync(migrationScript);
+                await dataService.ExecuteUnsanitizedAsync(migrationScript);
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex,
-                    "{ExceptionType}: {ExceptionMessage} when executing {Sql}",
+                logger.LogError(ex,
+                    "{ExceptionType}: {ExceptionMessage} when executing {CommandText}",
                     ex.GetBaseException().GetType(),
                     ex.GetBaseException().Message,
                     migrationScript);

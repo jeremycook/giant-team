@@ -1,11 +1,14 @@
-﻿using GiantTeam.Crypto;
+﻿using GiantTeam.ClusterManagement.Services;
+using GiantTeam.Crypto;
 using GiantTeam.Organizations.Directory.Helpers;
-using GiantTeam.Organizations.Services;
 using GiantTeam.Postgres;
+using GiantTeam.Startup;
+using GiantTeam.UserManagement.Services;
 
-namespace GiantTeam.UserManagement.Services
+namespace GiantTeam.ClusterManagement.Internal.Services
 {
-    public class ClusterSecurityService
+    [Service(ServiceType = typeof(IClusterSecurityService))]
+    internal class ClusterSecurityService : IClusterSecurityService
     {
         private readonly ILogger<ClusterSecurityService> logger;
         private readonly SecurityDataService security;
@@ -27,9 +30,7 @@ namespace GiantTeam.UserManagement.Services
         public async Task CreateUserRolesAsync(string dbUser)
         {
             if (!dbUser.StartsWith("u:"))
-            {
                 throw new ArgumentException($"The {nameof(dbUser)} argument must start with \"u:\".", nameof(dbUser));
-            }
 
             var dbElevated = DirectoryHelpers.ElevatedUserRole(dbUser);
 
@@ -45,33 +46,31 @@ namespace GiantTeam.UserManagement.Services
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public async Task CreateLoginAsync(string dbUser, string dbLogin, string loginPassword, DateTimeOffset validUntil)
+        public async Task CreateLoginAsync(string dbUser, string dbLogin, string dbLoginPassword, DateTime passwordValidUntil)
         {
             if (!dbUser.StartsWith("u:"))
-            {
                 throw new ArgumentException($"The {nameof(dbUser)} argument must start with \"u:\".", nameof(dbUser));
-            }
 
-            var encryptedPassword = SCRAMSHA256.EncryptPassword(loginPassword);
+            var encryptedPassword = SCRAMSHA256.EncryptPassword(dbLoginPassword);
 
             await security.ExecuteAsync(
-// Create a login for the user's database user
+// Create the login
 $"""
 CREATE ROLE {Sql.Identifier(dbLogin)} WITH LOGIN NOINHERIT NOCREATEDB NOSUPERUSER NOCREATEROLE NOREPLICATION
     IN ROLE {Sql.Identifier(dbUser)}
     ENCRYPTED PASSWORD {Sql.Literal(encryptedPassword)}
-    VALID UNTIL {Sql.Literal(validUntil)}
+    VALID UNTIL {Sql.Literal(passwordValidUntil)}
 """,
 
-// Have the login default to the user role upon login
+// Have the login default to the user role upon connection
 $"""
 ALTER ROLE {Sql.Identifier(dbLogin)} SET ROLE {Sql.Identifier(dbUser)}
 """);
 
-            logger.LogInformation("Created database login {LoginRole} for {DbUser} that is valid until {ValidUntil}.",
+            logger.LogInformation("Created database login {DbLogin} for {DbUser} that is valid until {ValidUntil}.",
                 dbUser,
                 dbLogin,
-                validUntil);
+                passwordValidUntil);
         }
 
         /// <summary>
@@ -81,17 +80,23 @@ ALTER ROLE {Sql.Identifier(dbLogin)} SET ROLE {Sql.Identifier(dbUser)}
         /// <param name="user"></param>
         /// <param name="validUntil"></param>
         /// <returns></returns>
-        public async Task SetLoginExpirationAsync(SessionUser user, DateTimeOffset validUntil)
+        public async Task SetLoginExpirationAsync(SessionUser user, DateTime validUntil)
         {
+            if (!user.DbLogin.StartsWith("l:"))
+                throw new ArgumentException($"The {nameof(user)} argument's {nameof(user.DbLogin)} must start with \"l:\".", nameof(user));
+
+            if (user.DbElevatedLogin is not null && !user.DbElevatedLogin.StartsWith("l:"))
+                throw new ArgumentException($"The {nameof(user)} argument's {nameof(user.DbElevatedLogin)} must start with \"l:\".", nameof(user));
+
             await security.ExecuteAsync($"ALTER ROLE {Sql.Identifier(user.DbLogin)} VALID UNTIL {Sql.Literal(validUntil)}");
-            logger.LogInformation("Changed the expiration of database login {LoginRole} to be valid until {ValidUntil}.",
+            logger.LogInformation("Changed the expiration of database login {DbLogin} to be valid until {ValidUntil}.",
                 user.DbLogin,
                 validUntil);
 
             if (user.DbElevatedLogin is not null)
             {
                 await security.ExecuteAsync($"ALTER ROLE {Sql.Identifier(user.DbElevatedLogin)} VALID UNTIL {Sql.Literal(validUntil)}");
-                logger.LogInformation("Changed the expiration of database elevated login {LoginRole} to be valid until {ValidUntil}.",
+                logger.LogInformation("Changed the expiration of database elevated login {DbElevatedLogin} to be valid until {ValidUntil}.",
                     user.DbElevatedLogin,
                     validUntil);
             }

@@ -1,4 +1,5 @@
-﻿using GiantTeam.ComponentModel;
+﻿using GiantTeam.ClusterManagement.Services;
+using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Organizations.Directory.Data;
 using GiantTeam.Organizations.Organization.Resources;
@@ -31,7 +32,7 @@ namespace GiantTeam.Organizations.Services
         private readonly SecurityDataService securityDataService;
         private readonly DirectoryDataService directoryDataService;
         private readonly ManagerDirectoryDbContext directoryManagerDb;
-        private readonly OrganizationDataFactory organizationDataFactory;
+        private readonly UserDataFactory organizationDataFactory;
         private readonly SessionService sessionService;
 
         public CreateOrganizationService(
@@ -40,7 +41,7 @@ namespace GiantTeam.Organizations.Services
             SecurityDataService securityDataService,
             DirectoryDataService directoryDataService,
             ManagerDirectoryDbContext directoryManagerDb,
-            OrganizationDataFactory organizationDataFactory,
+            UserDataFactory organizationDataFactory,
             SessionService sessionService)
         {
             this.logger = logger;

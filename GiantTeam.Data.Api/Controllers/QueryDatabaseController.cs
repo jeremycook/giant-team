@@ -1,4 +1,4 @@
-﻿using GiantTeam.Databases.Database.Services;
+﻿using GiantTeam.Organizations.Organization.Services;
 using GiantTeam.Postgres.Models;
 using Microsoft.AspNetCore.Mvc;
 

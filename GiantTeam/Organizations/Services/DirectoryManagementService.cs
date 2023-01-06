@@ -21,7 +21,7 @@ namespace GiantTeam.Organizations.Services
 
                     if (!string.IsNullOrEmpty(connectionStringBuilder.SearchPath))
                     {
-                        throw new NotSupportedException($"Setting the {nameof(NpgsqlConnectionStringBuilder.SearchPath)} of the {nameof(GiantTeamOptions.DirectoryConnection)}.{nameof(ConnectionOptions.ConnectionString)} is not supported.");
+                        throw new NotSupportedException($"Setting the {nameof(NpgsqlConnectionStringBuilder.SearchPath)} of the {nameof(GiantTeamOptions.UserConnectionString)}.{nameof(ConnectionOptions.ConnectionString)} is not supported.");
                     }
 
                     connectionStringBuilder.SearchPath = DirectoryHelpers.Schema;

@@ -28,6 +28,14 @@ namespace GiantTeam.Postgres
             {
                 connection.ConfigureCaCertificateValidation(caCertificate);
             }
+            else if (!string.IsNullOrEmpty(connectionStringBuilder.RootCertificate))
+            {
+                var certificateBytes = new Span<byte>();
+                if (Convert.TryFromBase64String(connectionStringBuilder.RootCertificate, certificateBytes, out _))
+                {
+                    connection.TrustUserCertificate(certificateBytes);
+                }
+            }
 
             if (!string.IsNullOrEmpty(setRole) && connectionStringBuilder.Username != setRole)
             {

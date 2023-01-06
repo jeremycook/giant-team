@@ -57,11 +57,12 @@ namespace GiantTeam.Postgres
         }
 
         /// <summary>
-        /// Returns the number of rows affected.
+        /// Use ExecuteAsync instead. Returns the number of rows affected.
         /// </summary>
         /// <param name="unsanitizedSql"></param>
         /// <returns></returns>
         /// <exception cref="DbException"></exception>
+        [Obsolete("Use ExecuteAsync instead.")]
         public async Task<int> ExecuteUnsanitizedAsync(string unsanitizedSql)
         {
             await using var dataSource = CreateDataSource();

@@ -4,6 +4,7 @@ namespace GiantTeam.Organizations.Directory.Helpers
 {
     public static class DirectoryHelpers
     {
+        public const string Database = "directory";
         public const string Schema = "directory";
 
         public const string Anyone = "anyone";

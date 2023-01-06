@@ -47,6 +47,7 @@ export default function LoginPage() {
     const output = await postLogin({
       username: form.username.value,
       password: form.password.value,
+      elevated: true, // TODO: toggle
       remainLoggedIn: form.remainLoggedIn.checked,
     });
 

@@ -43,6 +43,13 @@ public static class PgQuote
     {
         return $"'{literal.Replace(quote, escapedQuote).Replace(backslash, escapedBackslash)}'";
     }
+    public static string Literal(DateTime moment)
+    {
+        if (moment.Kind != DateTimeKind.Utc)
+            throw new ArgumentException($"The {moment} argument must be in UTC.", nameof(moment));
+
+        return Literal(moment.ToString("O") + "Z");
+    }
     public static string Literal(DateTimeOffset moment)
     {
         return Literal(moment.ToString("u"));

@@ -1,10 +1,9 @@
-﻿using Dapper;
-using GiantTeam.ComponentModel.Services;
+﻿using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseDefinition;
 using GiantTeam.DatabaseDefinition.Models;
+using GiantTeam.Organizations.Organization.Services;
 using GiantTeam.Postgres;
 using GiantTeam.Text;
-using GiantTeam.WorkspaceAdministration.Services;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -15,16 +14,16 @@ namespace GiantTeam.Workspaces.Services
     {
         private readonly ILogger<ImportDataService> logger;
         private readonly ValidationService validationService;
-        private readonly UserConnectionService connectionService;
+        private readonly UserDataFactory userDataFactory;
 
         public ImportDataService(
             ILogger<ImportDataService> logger,
             ValidationService validationService,
-            UserConnectionService connectionService)
+            UserDataFactory connectionService)
         {
             this.logger = logger;
             this.validationService = validationService;
-            this.connectionService = connectionService;
+            this.userDataFactory = connectionService;
         }
 
         public async Task<ImportDataOutput> ImportDataAsync(ImportDataInput input)
@@ -58,6 +57,8 @@ namespace GiantTeam.Workspaces.Services
             }
             else
             {
+                var organizationDataService = userDataFactory.NewDataService(databaseName);
+
                 var fieldNames = await CsvHelper.ParseRecordAsync(reader);
 
                 var records = new List<IReadOnlyList<string>>();
@@ -153,31 +154,22 @@ namespace GiantTeam.Workspaces.Services
 
                     logger.LogInformation("Executing migration script: {CommandText}", migrationScript);
 
-                    using NpgsqlConnection designConnection = await connectionService.OpenConnectionAsync(databaseName);
-                    await designConnection.ExecuteAsync(migrationScript);
+                    await organizationDataService.ExecuteUnsanitizedAsync(migrationScript);
                 }
 
                 // Get column mapping
                 Dictionary<string, (string column_name, string data_type, bool is_nullable)> columnMap;
                 {
-                    using var queryConnection = await connectionService.OpenConnectionAsync(databaseName);
-
-                    var schema = await queryConnection.QueryAsync<(string column_name, string data_type, bool is_nullable)>("""
+                    var schema = await organizationDataService.ListAsync<(string column_name, string data_type, bool is_nullable)>(Sql.Format($"""
 SELECT
     column_name,
     data_type,
     (CASE is_nullable WHEN 'YES' THEN true ELSE false END) AS is_nullable
 FROM information_schema.columns
-WHERE table_catalog = @DatabaseName
-AND table_schema = @SchemaName
-AND table_name = @TableName
-""",
-new
-{
-    DatabaseName = databaseName,
-    SchemaName = schemaName,
-    TableName = tableName,
-});
+WHERE table_catalog = {databaseName}
+AND table_schema = {schemaName}
+AND table_name = {tableName}
+"""));
 
                     if (!schema.Any())
                     {
@@ -195,7 +187,8 @@ SELECT {string.Join(",", fieldNames.Select((name, i) => "p" + i + "::" + columnM
 FROM unnest({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => "@p" + i))}) as data ({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => "p" + i))})
 """;
 
-                    using var command = new NpgsqlCommand(insertSql);
+                    var command = new NpgsqlBatchCommand();
+                    command.CommandText = insertSql;
                     for (int i = 0; i < fieldNames.Count; i++)
                     {
                         var name = fieldNames[i];
@@ -208,9 +201,7 @@ FROM unnest({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => 
                     logger.LogInformation("Inserting {Rows} rows into {Database}.{Schema}.{Table}: {CommandText}",
                         records.Count, databaseName, schemaName, tableName, insertSql);
 
-                    using var manipulateConnection = await connectionService.OpenConnectionAsync(databaseName);
-                    command.Connection = manipulateConnection;
-                    var rowsAffected = await command.ExecuteNonQueryAsync();
+                    var rowsAffected = await organizationDataService.ExecuteAsync();
 
                     logger.LogInformation("Inserted {Rows} rows into {Database}.{Schema}.{Table}",
                         rowsAffected, databaseName, schemaName, tableName);

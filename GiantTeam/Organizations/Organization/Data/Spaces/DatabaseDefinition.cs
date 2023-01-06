@@ -1,8 +1,10 @@
-﻿using System.Text.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace GiantTeam.Organizations.Organization.Data.Spaces
 {
-    public class Database
+    [Keyless]
+    public class DatabaseDefinition
     {
         public string Name { get; set; } = null!;
         public string Owner { get; set; } = null!;

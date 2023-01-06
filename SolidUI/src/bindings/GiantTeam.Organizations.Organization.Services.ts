@@ -10,3 +10,8 @@ export interface CreateSpaceInput {
 export interface CreateSpaceResult {
     spaceId: string;
 }
+
+export interface QueryDatabaseInput {
+    databaseName: string;
+    sql: string;
+}

@@ -1,5 +1,4 @@
-﻿using GiantTeam.Organizations.Organization.Services;
-using GiantTeam.Startup;
+﻿using GiantTeam.Startup;
 using Npgsql;
 
 namespace GiantTeam.Postgres
@@ -7,32 +6,25 @@ namespace GiantTeam.Postgres
     [IgnoreService]
     public class PgDataService : PgDataServiceBase
     {
+        private NpgsqlDataSourceBuilder? _builder;
+
         protected override ILogger Logger { get; }
         protected override string ConnectionString { get; }
-        protected string? UntrustedRootCertificate { get; }
-        // TODO: SetRole
-        protected string? SetRole { get; }
 
         public PgDataService(
             ILogger logger,
-            string connectionString,
-            string? untrustedRootCertificate = null,
-            string? setRole = null)
+            string connectionString)
         {
             Logger = logger;
             ConnectionString = connectionString;
-            UntrustedRootCertificate = untrustedRootCertificate;
-            SetRole = setRole;
         }
 
         public override NpgsqlDataSource CreateDataSource()
         {
-            var builder = new NpgsqlDataSourceBuilder(ConnectionString);
-            if (UntrustedRootCertificate is not null)
-            {
-                builder.UseUntrustedRootCertificateValidation(UntrustedRootCertificate);
-            }
-            return builder.Build();
+            _builder ??= new NpgsqlDataSourceBuilder(ConnectionString)
+                .UseBase64RootCertificateConvention();
+
+            return _builder.Build();
         }
     }
 }

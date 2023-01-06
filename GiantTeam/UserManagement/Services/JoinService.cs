@@ -1,4 +1,5 @@
-﻿using GiantTeam.ComponentModel;
+﻿using GiantTeam.ClusterManagement.Services;
+using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Crypto;
 using GiantTeam.Organizations.Directory.Data;
@@ -21,7 +22,7 @@ namespace GiantTeam.UserManagement.Services
             [Required, StringLength(50), Username]
             public string Username { get; set; } = default!;
 
-            [Required, StringLength(100, MinimumLength = 10), DataType(DataType.Password)]
+            [Required, StringLength(100, MinimumLength = 12), DataType(DataType.Password)]
             public string Password { get; set; } = default!;
         }
 
@@ -32,13 +33,13 @@ namespace GiantTeam.UserManagement.Services
 
         private readonly ILogger<JoinService> logger;
         private readonly ManagerDirectoryDbContext directoryManagerDb;
-        private readonly ClusterSecurityService security;
+        private readonly IClusterSecurityService security;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
             ManagerDirectoryDbContext directoryManagerDb,
-            ClusterSecurityService databaseSecurityService,
+            IClusterSecurityService databaseSecurityService,
             ValidationService validationService)
         {
             this.logger = logger;

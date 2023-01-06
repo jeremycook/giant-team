@@ -1,23 +1,22 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Organizations.Organization.Services;
 using GiantTeam.Postgres;
 using GiantTeam.Postgres.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace GiantTeam.Databases.Database.Services;
+namespace GiantTeam.Organizations.Organization.Services;
 
 public class QueryDatabaseService
 {
     private readonly ILogger<QueryDatabaseService> logger;
     private readonly ValidationService validationService;
-    private readonly OrganizationDataFactory organizationDataFactory;
+    private readonly UserDataFactory organizationDataFactory;
 
     public QueryDatabaseService(
         ILogger<QueryDatabaseService> logger,
         ValidationService validationService,
-        OrganizationDataFactory organizationDataFactory)
+        UserDataFactory organizationDataFactory)
     {
         this.logger = logger;
         this.validationService = validationService;

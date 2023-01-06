@@ -54,7 +54,7 @@ public class LoginController : ControllerBase
         }
 
         // Build a session user
-        DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
+        DateTime validUntil = DateTime.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
         SessionUser sessionUser = await buildSessionUserService.BuildSessionUserAsync(elevated: input.Elevated, output.UserId, validUntil);
 
         // Create a principal from the session user

@@ -29,12 +29,12 @@ namespace GiantTeam.Organizations.Organization.Services
     {
         private readonly ILogger<CreateSpaceService> logger;
         private readonly ValidationService validationService;
-        private readonly OrganizationDataFactory organizationDataFactory;
+        private readonly UserDataFactory organizationDataFactory;
 
         public CreateSpaceService(
             ILogger<CreateSpaceService> logger,
             ValidationService validationService,
-            OrganizationDataFactory organizationDataFactory)
+            UserDataFactory organizationDataFactory)
         {
             this.logger = logger;
             this.validationService = validationService;

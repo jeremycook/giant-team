@@ -136,6 +136,11 @@ namespace GiantTeam.Postgres
             return Raw(PgQuote.Literal(text));
         }
 
+        public static Sql Literal(DateTime moment)
+        {
+            return Raw(PgQuote.Literal(moment));
+        }
+
         public static Sql Literal(DateTimeOffset moment)
         {
             return Raw(PgQuote.Literal(moment));
