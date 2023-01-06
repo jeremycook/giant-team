@@ -35,6 +35,7 @@ namespace GiantTeam.UserManagement.Services
         /// <summary>
         /// Returns a <see cref="VerifyPasswordOutput"/> if the credentials are valid.
         /// Throws <see cref="ValidationException"/> if they are not.
+        /// Rehashes the password if the credentials are valid but require rehashing.
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -49,20 +50,31 @@ namespace GiantTeam.UserManagement.Services
             ).SingleOrDefaultAsync();
 
             if (userPassword is not null &&
-                !string.IsNullOrEmpty(userPassword.PasswordDigest) &&
-                PasswordHelper.VerifyHashedPlaintext(userPassword.PasswordDigest, input.Password))
+                !string.IsNullOrEmpty(userPassword.PasswordDigest))
             {
-                logger.LogInformation("Username and password verification succeeded for {Username}.", input.Username);
-                return new()
+                var result = PasswordHelper.VerifyHashedPlaintext(userPassword.PasswordDigest, input.Password);
+
+                if (result == VerifyPlaintextResult.SuccessRehashNeeded)
                 {
-                    UserId = userPassword.UserId,
-                };
+                    // Rehash the password
+                    userPassword.PasswordDigest = PasswordHelper.HashPlaintext(input.Password);
+                    await db.SaveChangesAsync();
+
+                    result = VerifyPlaintextResult.Success;
+                }
+
+                if (result == VerifyPlaintextResult.Success)
+                {
+                    logger.LogInformation("Username and password verification succeeded for {Username}.", input.Username);
+                    return new()
+                    {
+                        UserId = userPassword.UserId,
+                    };
+                }
             }
-            else
-            {
-                logger.LogInformation("Username and password verification failed for {Username}.", input.Username);
-                throw new ValidationException($"The username or password is incorrect.");
-            }
+
+            logger.LogInformation("Username and password verification failed for {Username}.", input.Username);
+            throw new ValidationException($"The username or password is incorrect.");
         }
     }
 }
