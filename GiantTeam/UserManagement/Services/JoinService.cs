@@ -1,8 +1,8 @@
-﻿using GiantTeam.Cluster.Security.Services;
+﻿using GiantTeam.Cluster.Directory.Data;
+using GiantTeam.Cluster.Security.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Crypto;
-using GiantTeam.Organizations.Directory.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;

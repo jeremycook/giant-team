@@ -1,6 +1,6 @@
-﻿using GiantTeam.Cluster.Security.Services;
+﻿using GiantTeam.Cluster.Directory.Helpers;
+using GiantTeam.Cluster.Security.Services;
 using GiantTeam.Crypto;
-using GiantTeam.Organizations.Directory.Helpers;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;

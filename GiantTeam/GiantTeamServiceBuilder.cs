@@ -1,4 +1,4 @@
-﻿using GiantTeam.Organizations.Directory.Data;
+﻿using GiantTeam.Cluster.Directory.Data;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using Microsoft.EntityFrameworkCore;

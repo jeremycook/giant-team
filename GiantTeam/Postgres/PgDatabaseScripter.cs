@@ -175,13 +175,13 @@ END $DDL$;
             return string.Empty;
         }
 
-        public string ScriptChanges(IEnumerable<DatabaseAlteration> changes)
+        public string ScriptAlterations(IEnumerable<DatabaseAlteration> alterations)
         {
             var script = new StringBuilder();
 
-            foreach (var change in changes)
+            foreach (var alteration in alterations)
             {
-                switch (change)
+                switch (alteration)
                 {
                     case CreateSchema createSchema:
                         script.AppendLF(ScriptCreateSchema(createSchema));
@@ -218,7 +218,7 @@ END $DDL$;
                         break;
 
                     default:
-                        throw new NotImplementedException(change.GetType().AssemblyQualifiedName);
+                        throw new NotImplementedException(alteration.GetType().AssemblyQualifiedName);
                 }
             }
 

@@ -1,4 +1,4 @@
-﻿using GiantTeam.Workspaces.Services;
+﻿using GiantTeam.Organization.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GiantTeam.Organization.Api.Controllers;

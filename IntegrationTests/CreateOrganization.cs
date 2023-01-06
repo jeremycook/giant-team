@@ -1,5 +1,4 @@
-using GiantTeam.Organizations.Directory.Services;
-using GiantTeam.Organizations.Services;
+using GiantTeam.Cluster.Directory.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.UserManagement.Services.JoinService;

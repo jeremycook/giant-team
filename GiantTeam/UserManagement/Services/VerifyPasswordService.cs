@@ -1,5 +1,5 @@
-﻿using GiantTeam.Crypto;
-using GiantTeam.Organizations.Directory.Data;
+﻿using GiantTeam.Cluster.Directory.Data;
+using GiantTeam.Crypto;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 

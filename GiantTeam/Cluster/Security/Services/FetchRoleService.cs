@@ -1,6 +1,6 @@
-﻿using GiantTeam.ComponentModel;
+﻿using GiantTeam.Cluster.Directory.Services;
+using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Organizations.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserManagement.Services;
 using System.ComponentModel.DataAnnotations;

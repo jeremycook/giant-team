@@ -1,6 +1,6 @@
-﻿using GiantTeam.Cluster.Security.Services;
+﻿using GiantTeam.Cluster.Directory.Data;
+using GiantTeam.Cluster.Security.Services;
 using GiantTeam.Crypto;
-using GiantTeam.Organizations.Directory.Data;
 
 namespace GiantTeam.UserManagement.Services
 {

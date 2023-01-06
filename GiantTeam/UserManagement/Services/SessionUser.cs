@@ -1,4 +1,4 @@
-﻿using GiantTeam.Organizations.Directory.Helpers;
+﻿using GiantTeam.Cluster.Directory.Helpers;
 using System.Security.Claims;
 
 namespace GiantTeam.UserManagement.Services

@@ -26,8 +26,19 @@ namespace GiantTeam.Postgres
         /// <exception cref="DbException"></exception>
         public async Task<int> ExecuteAsync(params FormattableString[] commands)
         {
+            return await ExecuteAsync(commands.Select(Format));
+        }
+
+        /// <summary>
+        /// Returns the number of rows affected.
+        /// </summary>
+        /// <param name="commands"></param>
+        /// <returns></returns>
+        /// <exception cref="DbException"></exception>
+        public async Task<int> ExecuteAsync(IEnumerable<Sql> commands)
+        {
             await using var batch = new NpgsqlBatch();
-            foreach (var command in commands.Select(Format))
+            foreach (var command in commands)
             {
                 batch.BatchCommands.Add(command);
             }
