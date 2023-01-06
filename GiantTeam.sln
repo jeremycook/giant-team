@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.DataProtection", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Asp", "GiantTeam.Asp\GiantTeam.Asp.csproj", "{26CB7A7E-B00F-456D-AA2A-91A84E97D625}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Asp.UI", "GiantTeam.Asp.UI\GiantTeam.Asp.UI.csproj", "{4286024E-77CB-4B20-AD53-86934E49E84C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebProxy", "WebProxy\WebProxy.csproj", "{D8B671CC-8976-4D87-A076-E301E10E84A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantTeam.Authentication.Api", "GiantTeam.Authentication.Api\GiantTeam.Authentication.Api.csproj", "{64ECAAAD-A020-4027-B47B-BF9FD2E2F5F9}"
@@ -51,10 +49,6 @@ Global
 		{26CB7A7E-B00F-456D-AA2A-91A84E97D625}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26CB7A7E-B00F-456D-AA2A-91A84E97D625}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26CB7A7E-B00F-456D-AA2A-91A84E97D625}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4286024E-77CB-4B20-AD53-86934E49E84C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4286024E-77CB-4B20-AD53-86934E49E84C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4286024E-77CB-4B20-AD53-86934E49E84C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4286024E-77CB-4B20-AD53-86934E49E84C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8B671CC-8976-4D87-A076-E301E10E84A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D8B671CC-8976-4D87-A076-E301E10E84A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8B671CC-8976-4D87-A076-E301E10E84A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
