@@ -101,8 +101,8 @@ namespace WebApp
                         {
                             SessionService sessionService = context.HttpContext.RequestServices
                                 .GetRequiredService<SessionService>();
-                            IClusterSecurityService security = context.HttpContext.RequestServices
-                                .GetRequiredService<IClusterSecurityService>();
+                            ClusterSecurityService security = context.HttpContext.RequestServices
+                                .GetRequiredService<ClusterSecurityService>();
 
                             // Synchronize the lifespan of the passwords with the authentication cookie
                             DateTime validUntil = DateTime.UtcNow.Add(context.Options.ExpireTimeSpan).AddMinutes(1);

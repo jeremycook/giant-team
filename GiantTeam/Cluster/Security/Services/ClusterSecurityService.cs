@@ -1,14 +1,11 @@
 ﻿using GiantTeam.Cluster.Directory.Helpers;
-using GiantTeam.Cluster.Security.Services;
 using GiantTeam.Crypto;
 using GiantTeam.Postgres;
-using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 
-namespace GiantTeam.Cluster.Security.Internal.Services
+namespace GiantTeam.Cluster.Security.Services
 {
-    [Service(ServiceType = typeof(IClusterSecurityService))]
-    internal class ClusterSecurityService : IClusterSecurityService
+    public class ClusterSecurityService
     {
         private readonly ILogger<ClusterSecurityService> logger;
         private readonly SecurityDataService security;
