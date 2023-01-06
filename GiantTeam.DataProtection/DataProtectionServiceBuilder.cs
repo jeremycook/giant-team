@@ -22,7 +22,9 @@ namespace GiantTeam.DataProtection
                 var giantTeamOptions = services.GetRequiredService<IOptions<DataProtectionOptions>>().Value;
                 var connectionOptions = giantTeamOptions.DataProtectionConnection;
 
-                options.UseNpgsql(connectionOptions);
+                options
+                    .UseSnakeCaseNamingConvention()
+                    .UseNpgsql(connectionOptions);
             });
 
             DataProtectionOptions dataProtectionOptions =
