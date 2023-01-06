@@ -7,66 +7,66 @@ import { createEffect } from 'solid-js';
 import { postCreateOrganization } from '../../bindings/GiantTeam.Data.Api.Controllers';
 
 export const pageSettings: PageSettings = {
-  name: 'New Organization',
-  showInNav: () => isAuthenticated(),
+    name: 'New Organization',
+    showInNav: () => isAuthenticated(),
 }
 
 export default function NewOrganizationPage() {
-  const data = createMutable({
-    name: '',
-    databaseName: '',
-    taintedDatabaseName: false,
-  });
-
-  const dataOptions: FieldSetOptions = {
-    name: { type: 'text', label: 'Organization Name', required: true },
-    databaseName: {
-      type: 'text', label: 'Database Name', required: true, maxLength: 50, pattern: '^[a-z][a-z0-9_]*$',
-      title: 'This must start with a lowercase letter, and may be followed by lowercase letters, numbers or the underscore',
-      onfocus: () => data.taintedDatabaseName = true
-    },
-  };
-
-  createEffect(() => {
-    if (!data.taintedDatabaseName)
-      data.databaseName = data.name.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
-  });
-
-  const formSubmit = async (e: SubmitEvent) => {
-    e.preventDefault();
-
-    const response = await postCreateOrganization({
-      name: data.name,
-      databaseName: data.databaseName,
+    const data = createMutable({
+        name: '',
+        databaseName: '',
+        taintedDatabaseName: false,
     });
 
-    if (response.ok) {
-      toast.info('Organization created!');
-      go('/organizations/' + response.data.organizationId);
-    }
-    else {
-      toast.error(response.message);
-    }
-  };
+    const dataOptions: FieldSetOptions = {
+        name: { type: 'text', label: 'Organization Name', required: true },
+        databaseName: {
+            type: 'text', label: 'Database Name', required: true, maxLength: 50, pattern: '^[a-z][a-z0-9_]*$',
+            title: 'This must start with a lowercase letter, and may be followed by lowercase letters, numbers or the underscore',
+            onfocus: () => data.taintedDatabaseName = true
+        },
+    };
 
-  return (
-    <section class='card md:w-md md:mx-auto'>
+    createEffect(() => {
+        if (!data.taintedDatabaseName)
+            data.databaseName = data.name.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
+    });
 
-      <h1>New Organization</h1>
+    const formSubmit = async (e: SubmitEvent) => {
+        e.preventDefault();
 
-      <form onSubmit={formSubmit} class='form-grid'>
+        const response = await postCreateOrganization({
+            name: data.name,
+            databaseName: data.databaseName,
+        });
 
-        <FieldStack data={data} options={dataOptions} />
+        if (response.ok) {
+            toast.info('Organization created!');
+            go('/organizations/' + response.data.organizationId);
+        }
+        else {
+            toast.error(response.message);
+        }
+    };
 
-        <div />
-        <div>
-          <button class='button button-primary'>
-            Create Organization
-          </button>
-        </div>
+    return (
+        <section class='card md:w-md md:mx-auto'>
 
-      </form>
+            <h1>New Organization</h1>
 
-    </section>
-  );
+            <form onSubmit={formSubmit} class='form-grid'>
+
+                <FieldStack data={data} options={dataOptions} />
+
+                <div />
+                <div>
+                    <button class='button button-primary'>
+                        Create Organization
+                    </button>
+                </div>
+
+            </form>
+
+        </section>
+    );
 }

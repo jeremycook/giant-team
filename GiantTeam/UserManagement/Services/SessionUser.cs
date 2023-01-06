@@ -14,6 +14,7 @@ namespace GiantTeam.UserManagement.Services
                 // Common claims
                 sub: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Sub),
                 username: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.Username),
+                elevated: identity.Claims.Contains(PrincipalHelper.ClaimTypes.Elevated),
 
                 // Database access claims
                 dbUser: identity.Claims.FindRequiredValue(PrincipalHelper.ClaimTypes.DbUser),
@@ -27,12 +28,14 @@ namespace GiantTeam.UserManagement.Services
         public SessionUser(
             string sub,
             string username,
+            bool elevated,
             string dbUser,
             string dbLogin,
             string dbPassword)
         {
             Sub = sub ?? throw new ArgumentNullException(nameof(sub));
             Username = username ?? throw new ArgumentNullException(nameof(username));
+            Elevated = elevated;
             DbUser = dbUser ?? throw new ArgumentNullException(nameof(dbUser));
             DbLogin = dbLogin ?? throw new ArgumentNullException(nameof(dbLogin));
             DbPassword = dbPassword ?? throw new ArgumentNullException(nameof(dbPassword));
@@ -59,8 +62,8 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private Guid? _userId;
-        private string? _dbRegular;
         private string? _dbElevated;
+        private string? _dbElevatedLogin;
 
         public Guid UserId => _userId ??= Guid.Parse(Sub);
 
@@ -68,6 +71,7 @@ namespace GiantTeam.UserManagement.Services
 
         public string Sub { get; }
         public string Username { get; }
+        public bool Elevated { get; }
 
         // Database
 
@@ -75,7 +79,7 @@ namespace GiantTeam.UserManagement.Services
         public string DbLogin { get; }
         public string DbPassword { get; }
 
-        public string DbRegular => _dbRegular ??= DirectoryHelpers.NormalUserRole(DbUser);
-        public string DbElevated => _dbElevated ??= DirectoryHelpers.ElevatedUserRole(DbUser);
+        public string? DbElevatedUser => _dbElevated ??= (Elevated ? DirectoryHelpers.ElevatedUserRole(DbUser) : null);
+        public string? DbElevatedLogin => _dbElevatedLogin ??= (Elevated ? DirectoryHelpers.ElevatedLogin(DbLogin) : null);
     }
 }

@@ -10,14 +10,14 @@ namespace GiantTeam.Organizations.Directory.Helpers
         public const string Anyvisitor = "anyvisitor";
         public const string Anyuser = "anyuser";
 
-        public static string NormalUserRole(string dbUser)
-        {
-            return dbUser + ":n";
-        }
-
         public static string ElevatedUserRole(string dbUser)
         {
             return dbUser + ":e";
+        }
+
+        public static string ElevatedLogin(string dbLogin)
+        {
+            return dbLogin + ":e";
         }
 
         public static string OrganizationRole(Guid organizationRoleId)

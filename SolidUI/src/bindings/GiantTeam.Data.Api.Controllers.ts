@@ -2,6 +2,7 @@ import { postJson, DataResponse } from "../helpers/httpHelpers";
 import { QueryDatabaseInput } from "./GiantTeam.Databases.Database.Services";
 import { Organization } from "./GiantTeam.Organizations.Directory.Models";
 import { FetchOrganizationInput } from "./GiantTeam.Organizations.Directory.Services";
+import { CreateSpaceInput, CreateSpaceResult } from "./GiantTeam.Organizations.Organization.Services";
 import { CreateOrganizationInput, CreateOrganizationResult } from "./GiantTeam.Organizations.Services";
 import { QueryTable } from "./GiantTeam.Postgres.Models";
 import { CreateWorkspaceRoleInput, CreateWorkspaceRoleOutput } from "./GiantTeam.UserManagement.Services";
@@ -18,6 +19,9 @@ export const postChangeDatabase = async (input: ChangeDatabaseInput) =>
 
 export const postCreateOrganization = async (input: CreateOrganizationInput) =>
     await postJson('/api/create-organization', input) as DataResponse<CreateOrganizationResult>;
+
+export const postCreateSpace = async (input: CreateSpaceInput) =>
+    await postJson('/api/create-space', input) as DataResponse<CreateSpaceResult>;
 
 export const postCreateTable = async (input: CreateTableInput) =>
     await postJson('/api/create-table', input) as DataResponse<CreateTableOutput>;

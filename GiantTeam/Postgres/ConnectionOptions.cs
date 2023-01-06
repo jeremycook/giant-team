@@ -2,13 +2,35 @@
 
 namespace GiantTeam.Postgres
 {
-    public class ConnectionOptions
+    public class ConnectionOptions : IConnectionOptions
     {
+        private string? _caCertificate;
+        private string? _username;
+        private string? _password;
+        private string? _setRole;
+
         public string ConnectionString { get; set; } = null!;
-        public string? CaCertificate { get; set; }
-        public string? Username { get; set; }
-        public string? Password { get; set; }
-        public string? SetRole { get; set; }
+        public string? CaCertificate { get => _caCertificate; set => _caCertificate = !string.IsNullOrEmpty(value) ? value : null; }
+        public string? Username { get => _username; set => _username = !string.IsNullOrEmpty(value) ? value : null; }
+        public string? Password { get => _password; set => _password = !string.IsNullOrEmpty(value) ? value : null; }
+        public string? SetRole { get => _setRole; set => _setRole = !string.IsNullOrEmpty(value) ? value : null; }
+
+        public ConnectionOptions Clone()
+        {
+            return new()
+            {
+                ConnectionString = ConnectionString,
+                CaCertificate = CaCertificate,
+                Username = Username,
+                Password = Password,
+                SetRole = SetRole,
+            };
+        }
+
+        public NpgsqlConnectionStringBuilder CreateConnectionStringBuilder()
+        {
+            return ToConnectionStringBuilder();
+        }
 
         public NpgsqlConnection CreateOpenConnection()
         {

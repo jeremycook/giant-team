@@ -4,6 +4,28 @@ namespace GiantTeam.ComponentModel.Models
 {
     public class ObjectStatus
     {
+        /// <summary>
+        /// The client request lacks valid authentication credentials for the requested resource.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static ObjectStatus Unauthorized(string message)
+        {
+            return new(401, "Unauthorized", message, new());
+        }
+
+        /// <summary>
+        /// Indicates that the server understands the request but refuses to authorize it.
+        /// This status is similar to 401, but for the 403 Forbidden status code, re-authenticating makes no difference.
+        /// The access is tied to the application logic, such as insufficient rights to a resource.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static ObjectStatus Forbidden(string message)
+        {
+            return new(403, "Forbidden", message, new());
+        }
+
         public static ObjectStatus NotFound(string message)
         {
             return new(404, "Not Found", message, new());

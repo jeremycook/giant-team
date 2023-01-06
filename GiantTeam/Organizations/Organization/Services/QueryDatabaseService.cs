@@ -12,16 +12,16 @@ public class QueryDatabaseService
 {
     private readonly ILogger<QueryDatabaseService> logger;
     private readonly ValidationService validationService;
-    private readonly UserDataServiceFactory userDataServiceFactory;
+    private readonly OrganizationDataFactory organizationDataFactory;
 
     public QueryDatabaseService(
         ILogger<QueryDatabaseService> logger,
         ValidationService validationService,
-        UserDataServiceFactory userDataServiceFactory)
+        OrganizationDataFactory organizationDataFactory)
     {
         this.logger = logger;
         this.validationService = validationService;
-        this.userDataServiceFactory = userDataServiceFactory;
+        this.organizationDataFactory = organizationDataFactory;
     }
 
     public async Task<QueryTable> QueryDatabaseAsync(QueryDatabaseInput input)
@@ -30,7 +30,7 @@ public class QueryDatabaseService
 
         try
         {
-            var dataService = userDataServiceFactory.CreateDataService(input.DatabaseName);
+            var dataService = organizationDataFactory.NewDataService(input.DatabaseName);
             QueryTable output = await dataService.QueryTableAsync(Sql.Raw(input.Sql));
             return output;
         }

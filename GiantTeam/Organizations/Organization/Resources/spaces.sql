@@ -7,9 +7,27 @@ CREATE SCHEMA IF NOT EXISTS spaces
 GRANT USAGE ON SCHEMA spaces TO PUBLIC;
 GRANT ALL ON SCHEMA spaces TO pg_database_owner;
 
--- VIEW: spaces.database
--- DROP VIEW spaces.database;
-CREATE OR REPLACE VIEW spaces.database
+-- TABLE: spaces.spaces
+-- DROP TABLE IF EXISTS spaces.spaces;
+
+CREATE TABLE IF NOT EXISTS spaces.spaces
+(
+    space_id character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    schema_name character varying(50) COLLATE pg_catalog."default",
+    created timestamp with time zone DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text),
+    CONSTRAINT space_pkey PRIMARY KEY (space_id),
+    CONSTRAINT space_check CHECK (schema_name::text = space_id::text)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS spaces.spaces
+    OWNER to pg_database_owner;
+
+-- VIEW: spaces.database_definition
+-- DROP VIEW spaces.database_definition;
+CREATE OR REPLACE VIEW spaces.database_definition
  AS
  WITH columns AS (
          SELECT c.table_catalog AS catalog_name,
@@ -100,8 +118,8 @@ CREATE OR REPLACE VIEW spaces.database
     databases.schemas
    FROM databases;
 
-ALTER TABLE spaces.database
+ALTER TABLE spaces.database_definition
     OWNER TO pg_database_owner;
 
-GRANT ALL ON TABLE spaces.database TO pg_database_owner;
-GRANT SELECT ON TABLE spaces.database TO PUBLIC;
+GRANT ALL ON TABLE spaces.database_definition TO pg_database_owner;
+GRANT SELECT ON TABLE spaces.database_definition TO PUBLIC;

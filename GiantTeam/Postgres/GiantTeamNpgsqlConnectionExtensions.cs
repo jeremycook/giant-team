@@ -19,6 +19,20 @@ namespace GiantTeam.Postgres
         }
 
         /// <summary>
+        /// Configures the <see cref="NpgsqlDataSourceBuilder.UseUserCertificateValidationCallback(RemoteCertificateValidationCallback)"/> of <paramref name="connection"/>
+        /// against the <paramref name="certificateText"/>.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="configuration"></param>
+        public static void UseUntrustedRootCertificateValidation(this NpgsqlDataSourceBuilder connection, string certificateText)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(certificateText);
+            X509Certificate2 caCertificate = new(bytes);
+
+            connection.UseUserCertificateValidationCallback(CreateUntrustedRootRemoteCertificateValidationCallback(caCertificate));
+        }
+
+        /// <summary>
         /// Configures the <see cref="NpgsqlConnection.UserCertificateValidationCallback"/> of <paramref name="connection"/>
         /// against the <paramref name="caCertificateText"/>.
         /// </summary>
@@ -29,21 +43,13 @@ namespace GiantTeam.Postgres
             byte[] bytes = Encoding.UTF8.GetBytes(caCertificateText);
             X509Certificate2 caCertificate = new(bytes);
 
-            connection.UserCertificateValidationCallback = CreateUserCertificateValidationCallback(caCertificate, connection.UserCertificateValidationCallback);
+            connection.UserCertificateValidationCallback = CreateUntrustedRootRemoteCertificateValidationCallback(caCertificate);
         }
 
-        private static RemoteCertificateValidationCallback CreateUserCertificateValidationCallback(X509Certificate2 caCert, RemoteCertificateValidationCallback? beforeUserCertificateValidationCallback = null)
+        private static RemoteCertificateValidationCallback CreateUntrustedRootRemoteCertificateValidationCallback(X509Certificate2 caCert)
         {
             return (sender, certificate, chain, sslPolicyErrors) =>
             {
-                if (beforeUserCertificateValidationCallback is not null)
-                {
-                    if (beforeUserCertificateValidationCallback(sender, certificate, chain, sslPolicyErrors) == false)
-                    {
-                        return false;
-                    }
-                }
-
                 if (certificate is null)
                 {
                     throw new ArgumentNullException(nameof(certificate));

@@ -100,8 +100,8 @@ namespace WebApp
                         {
                             SessionService sessionService = context.HttpContext.RequestServices
                                 .GetRequiredService<SessionService>();
-                            DatabaseSecurityService security = context.HttpContext.RequestServices
-                                .GetRequiredService<DatabaseSecurityService>();
+                            ClusterSecurityService security = context.HttpContext.RequestServices
+                                .GetRequiredService<ClusterSecurityService>();
 
                             // Synchronize the lifespan of the passwords with the authentication cookie
                             DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(context.Options.ExpireTimeSpan).AddMinutes(1);

@@ -23,6 +23,8 @@ public class LoginController : ControllerBase
         [Required]
         public string? Password { get; set; }
 
+        public bool Elevated { get; set; } = false;
+
         public bool RemainLoggedIn { get; set; } = false;
     }
 
@@ -34,15 +36,26 @@ public class LoginController : ControllerBase
         [FromServices] BuildSessionUserService buildSessionUserService,
         LoginInput input)
     {
-        var output = await verifyPasswordService.VerifyUsernameAndPasswordAsync(new VerifyPasswordInput
+        VerifyPasswordOutput output;
+        try
         {
-            Username = input.Username!,
-            Password = input.Password!,
-        });
+            output = await verifyPasswordService.VerifyUsernameAndPasswordAsync(new VerifyPasswordInput
+            {
+                Username = input.Username!,
+                Password = input.Password!,
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation(ex, "Login failed for {Username} at {UserIp}.",
+                input.Username,
+                HttpContext.Connection.RemoteIpAddress);
+            throw;
+        }
 
         // Build a session user
         DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
-        SessionUser sessionUser = await buildSessionUserService.BuildSessionUserAsync(output.UserId, validUntil);
+        SessionUser sessionUser = await buildSessionUserService.BuildSessionUserAsync(elevated: input.Elevated, output.UserId, validUntil);
 
         // Create a principal from the session user
         ClaimsPrincipal principal = new(sessionUser.CreateIdentity(PrincipalHelper.AuthenticationTypes.Password));
@@ -54,10 +67,9 @@ public class LoginController : ControllerBase
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
 
-        logger.LogInformation("Signed in {Username} at {UserIp} with {AuthenticationScheme}.",
+        logger.LogInformation("Logged in {Username} at {UserIp}.",
             input.Username,
-            HttpContext.Connection.RemoteIpAddress,
-            CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.Connection.RemoteIpAddress);
 
         return Ok();
     }

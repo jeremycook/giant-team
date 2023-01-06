@@ -13,6 +13,7 @@ namespace GiantTeam.UserManagement
         {
             public const string Sub = "sub";
             public const string Username = "user";
+            public const string Elevated = "elevated";
             public const string Name = "name";
             public const string Email = "email";
             public const string EmailVerified = "email_verified";
@@ -23,10 +24,20 @@ namespace GiantTeam.UserManagement
             public const string DbUser = "dbu";
         }
 
+        public static bool Contains(this IEnumerable<Claim> claims, string type)
+        {
+            return claims.FindValue(type) is not null;
+        }
+
+        public static string? FindValue(this IEnumerable<Claim> claims, string type)
+        {
+            return claims.FirstOrDefault(o => o.Type == type)?.Value;
+        }
+
         public static string FindRequiredValue(this IEnumerable<Claim> claims, string type)
         {
             return
-                claims.FirstOrDefault(o => o.Type == type)?.Value ??
+                claims.FindValue(type) ??
                 throw new InvalidOperationException($"Missing required value of \"{type}\" claim.");
         }
     }

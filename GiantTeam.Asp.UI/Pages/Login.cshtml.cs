@@ -40,7 +40,7 @@ namespace GiantTeam.Asp.UI.Pages
 
                 // Build a session user
                 DateTimeOffset validUntil = DateTimeOffset.UtcNow.Add(cookieAuthenticationOptions.Value.ExpireTimeSpan);
-                SessionUser sessionUser = await buildSessionUserService.BuildSessionUserAsync(output.UserId, validUntil);
+                SessionUser sessionUser = await buildSessionUserService.BuildSessionUserAsync(elevated: false, output.UserId, validUntil);
 
                 // Create a principal from the session user
                 ClaimsPrincipal principal = new(sessionUser.CreateIdentity(PrincipalHelper.AuthenticationTypes.Password));

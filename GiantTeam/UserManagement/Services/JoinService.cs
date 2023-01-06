@@ -32,13 +32,13 @@ namespace GiantTeam.UserManagement.Services
 
         private readonly ILogger<JoinService> logger;
         private readonly ManagerDirectoryDbContext directoryManagerDb;
-        private readonly DatabaseSecurityService security;
+        private readonly ClusterSecurityService security;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
             ManagerDirectoryDbContext directoryManagerDb,
-            DatabaseSecurityService databaseSecurityService,
+            ClusterSecurityService databaseSecurityService,
             ValidationService validationService)
         {
             this.logger = logger;

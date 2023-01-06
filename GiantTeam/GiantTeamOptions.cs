@@ -9,6 +9,7 @@ namespace GiantTeam
         public ConnectionOptions SecurityConnection { get; } = new();
         public ConnectionOptions DirectoryConnection { get; } = new();
         public ConnectionOptions DirectoryManagerConnection { get; } = new();
+        public ConnectionOptions OrganizationConnection { get; } = new();
         public string InfoDatabaseName { get; set; } = null!;
     }
 }

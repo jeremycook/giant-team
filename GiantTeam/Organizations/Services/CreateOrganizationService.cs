@@ -31,24 +31,24 @@ namespace GiantTeam.Organizations.Services
         private readonly SecurityDataService securityDataService;
         private readonly DirectoryDataService directoryDataService;
         private readonly ManagerDirectoryDbContext directoryManagerDb;
-        private readonly UserDataServiceFactory userDataServiceFactory;
+        private readonly OrganizationDataFactory organizationDataFactory;
         private readonly SessionService sessionService;
 
         public CreateOrganizationService(
             ILogger<CreateOrganizationService> logger,
             ValidationService validationService,
             SecurityDataService securityDataService,
-            DirectoryDataService directoryUserService,
+            DirectoryDataService directoryDataService,
             ManagerDirectoryDbContext directoryManagerDb,
-            UserDataServiceFactory userDataServiceFactory,
+            OrganizationDataFactory organizationDataFactory,
             SessionService sessionService)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.securityDataService = securityDataService;
-            this.directoryDataService = directoryUserService;
+            this.directoryDataService = directoryDataService;
             this.directoryManagerDb = directoryManagerDb;
-            this.userDataServiceFactory = userDataServiceFactory;
+            this.organizationDataFactory = organizationDataFactory;
             this.sessionService = sessionService;
         }
 
@@ -67,6 +67,11 @@ namespace GiantTeam.Organizations.Services
 
         private async Task<CreateOrganizationResult> ProcessAsync(CreateOrganizationInput input)
         {
+            if (sessionService.User.DbElevatedUser is null)
+            {
+                throw new UnauthorizedException("Elevated rights are required to create an organization. Please login with elevated rights.");
+            }
+
             if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
@@ -103,9 +108,10 @@ namespace GiantTeam.Organizations.Services
                 // Create the organization's initial roles.
                 // CREATEDB will be allowed until the organization database is created.
                 await securityDataService.ExecuteAsync(
-                    $"CREATE ROLE {Sql.Identifier(owner.DbRole)} WITH INHERIT CREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbElevated)}",
-                    $"CREATE ROLE {Sql.Identifier(member.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbRegular)}",
-                    $"CREATE ROLE {Sql.Identifier(guest.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION");
+                    $"CREATE ROLE {Sql.Identifier(owner.DbRole)} WITH INHERIT CREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbElevatedUser)}",
+                    $"CREATE ROLE {Sql.Identifier(member.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbUser)}",
+                    $"CREATE ROLE {Sql.Identifier(guest.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION"
+                );
 
                 // Create the database as the new owner.
                 await directoryDataService.ExecuteAsync(
@@ -133,7 +139,7 @@ namespace GiantTeam.Organizations.Services
                         Sql.Format($"GRANT CONNECT ON DATABASE {Sql.Identifier(databaseName)} TO {Sql.Identifier(sessionService.User.DbUser)}"),
                     }
                 };
-                var userDataService = userDataServiceFactory.CreateDataService(databaseName);
+                var userDataService = organizationDataFactory.NewDataService(databaseName);
                 await userDataService.ExecuteAsync(batch);
                 await userDataService.ExecuteUnsanitizedAsync(OrganizationResources.SpacesSql);
             }

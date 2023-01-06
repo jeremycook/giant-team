@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
+﻿using GiantTeam.Organizations.Organization.Data.Spaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GiantTeam.Organizations.Organization.Data
 {
@@ -12,26 +13,22 @@ namespace GiantTeam.Organizations.Organization.Data
             this.dbContext = dbContext;
         }
 
+        public DbSet<Space> Spaces => dbContext.Set<Space>();
+
         public async Task<Database> DatabaseAsync() => await dbContext.Set<Database>().SingleAsync();
 
         public void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var entities = new[]
+            var entities = new EntityTypeBuilder[]
             {
+                modelBuilder.Entity<Space>(),
                 modelBuilder.Entity<Database>().HasNoKey(),
             };
 
             foreach (var entity in entities)
             {
-                entity.Metadata.SetSchema("spaces");
+                entity.Metadata.SetSchema(OrganizationHelper.SpacesSchema);
             }
-        }
-
-        public class Database
-        {
-            public string Name { get; set; } = null!;
-            public string Owner { get; set; } = null!;
-            public JsonDocument Schemas { get; set; } = null!;
         }
     }
 }

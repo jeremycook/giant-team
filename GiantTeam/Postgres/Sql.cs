@@ -39,7 +39,7 @@ namespace GiantTeam.Postgres
             return ToParameterizedSql(out _);
         }
 
-        public string ToParameterizedSql(out IEnumerable<NpgsqlParameter> parameterValues)
+        public string ToParameterizedSql(out NpgsqlParameter[] parameterValues)
         {
             var tempValues = new List<object>();
             var formatArgs = new List<string>(arguments.Length);

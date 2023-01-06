@@ -7,6 +7,7 @@ import { JoinInput, JoinOutput } from "./GiantTeam.UserManagement.Services";
 export interface LoginInput {
     username: string | null;
     password: string | null;
+    elevated: boolean;
     remainLoggedIn: boolean;
 }
 

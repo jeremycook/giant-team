@@ -24,11 +24,12 @@ export interface SessionUser {
     userId: string;
     sub: string;
     username: string;
+    elevated: boolean;
     dbUser: string;
     dbLogin: string;
     dbPassword: string;
-    dbRegular: string;
-    dbElevated: string;
+    dbElevatedUser: string | null;
+    dbElevatedLogin: string | null;
 }
 
 export interface VerifyPasswordInput {
