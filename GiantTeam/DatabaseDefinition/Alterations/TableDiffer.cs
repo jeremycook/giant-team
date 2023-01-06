@@ -1,15 +1,15 @@
-﻿using GiantTeam.DatabaseDefinition.Changes.Models;
+﻿using GiantTeam.DatabaseDefinition.Alterations.Models;
 using GiantTeam.DatabaseDefinition.Models;
 
-namespace GiantTeam.DatabaseDefinition.Changes
+namespace GiantTeam.DatabaseDefinition.Alterations
 {
-    public static class DatabaseChangeCalculator
+    public static class TableDiffer
     {
-        public static List<DatabaseChange> CalculateTableChanges(string schemaName, Table current, Table target)
+        public static List<DatabaseAlteration> DiffTables(string schemaName, Table current, Table target)
         {
             string tableName = target.Name;
 
-            var changes = new List<DatabaseChange>();
+            var changes = new List<DatabaseAlteration>();
 
             // Table changes
 

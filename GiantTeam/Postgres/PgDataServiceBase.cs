@@ -8,7 +8,7 @@ using static GiantTeam.Postgres.Sql;
 
 namespace GiantTeam.Postgres
 {
-    public abstract class PgDataServiceBase
+    public abstract partial class PgDataServiceBase
     {
         protected abstract ILogger Logger { get; }
         protected abstract string ConnectionString { get; }
@@ -145,12 +145,23 @@ namespace GiantTeam.Postgres
             if (sql is null)
             {
                 var type = typeof(T);
-                sql ??= Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
+            }
+            else if (WhereRegex().IsMatch(sql.Unsanitized))
+            {
+                // WHERE clause
+                var type = typeof(T);
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql} LIMIT 2");
+            }
+            else if (FromRegex().IsMatch(sql.Unsanitized))
+            {
+                // FROM clause
+                var type = typeof(T);
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql} LIMIT 2");
             }
             else
             {
-                var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM ({sql}) query LIMIT 2");
+                sql = Format($"SELECT * FROM ({sql}) query LIMIT 2");
             }
 
             try
@@ -196,11 +207,17 @@ namespace GiantTeam.Postgres
                 var type = typeof(T);
                 sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
             }
-            else if (Regex.IsMatch(sql.Unsanitized, @"\s*WHERE\s", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            else if (WhereRegex().IsMatch(sql.Unsanitized))
             {
                 // WHERE clause
                 var type = typeof(T);
                 sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql} LIMIT 2");
+            }
+            else if (FromRegex().IsMatch(sql.Unsanitized))
+            {
+                // FROM clause
+                var type = typeof(T);
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql} LIMIT 2");
             }
             else
             {
@@ -250,7 +267,21 @@ namespace GiantTeam.Postgres
             where T : new()
         {
             Type type = typeof(T);
-            sql ??= Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)}");
+
+            if (sql is null)
+            {
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)}");
+            }
+            else if (WhereRegex().IsMatch(sql.Unsanitized))
+            {
+                // WHERE clause
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql}");
+            }
+            else if (FromRegex().IsMatch(sql.Unsanitized))
+            {
+                // FROM clause
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql}");
+            }
 
             var list = new List<T>();
             try
@@ -368,5 +399,11 @@ namespace GiantTeam.Postgres
 
             return item;
         }
+
+        [GeneratedRegex("^\\s+WHERE\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
+        private static partial Regex WhereRegex();
+
+        [GeneratedRegex("^\\s+FROM\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
+        private static partial Regex FromRegex();
     }
 }

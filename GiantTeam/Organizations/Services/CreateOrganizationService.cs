@@ -1,7 +1,8 @@
-﻿using GiantTeam.ClusterManagement.Services;
+﻿using GiantTeam.Cluster.Security.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Organizations.Directory.Data;
+using GiantTeam.Organizations.Directory.Services;
 using GiantTeam.Organizations.Organization.Resources;
 using GiantTeam.Organizations.Organization.Services;
 using GiantTeam.Postgres;
@@ -30,7 +31,7 @@ namespace GiantTeam.Organizations.Services
         private readonly ILogger<CreateOrganizationService> logger;
         private readonly ValidationService validationService;
         private readonly SecurityDataService securityDataService;
-        private readonly DirectoryDataService directoryDataService;
+        private readonly UserDirectoryDataService directoryDataService;
         private readonly ManagerDirectoryDbContext directoryManagerDb;
         private readonly UserDataFactory organizationDataFactory;
         private readonly SessionService sessionService;
@@ -39,7 +40,7 @@ namespace GiantTeam.Organizations.Services
             ILogger<CreateOrganizationService> logger,
             ValidationService validationService,
             SecurityDataService securityDataService,
-            DirectoryDataService directoryDataService,
+            UserDirectoryDataService directoryDataService,
             ManagerDirectoryDbContext directoryManagerDb,
             UserDataFactory organizationDataFactory,
             SessionService sessionService)

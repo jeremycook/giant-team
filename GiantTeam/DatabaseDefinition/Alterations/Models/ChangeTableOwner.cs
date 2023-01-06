@@ -1,6 +1,6 @@
-﻿namespace GiantTeam.DatabaseDefinition.Changes.Models
+﻿namespace GiantTeam.DatabaseDefinition.Alterations.Models
 {
-    public class ChangeTableOwner : DatabaseChange
+    public class ChangeTableOwner : DatabaseAlteration
     {
         public ChangeTableOwner(string schemaName, string tableName, string newOwner)
             : base(nameof(ChangeTableOwner))

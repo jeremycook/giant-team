@@ -1,4 +1,4 @@
-﻿using GiantTeam.ClusterManagement.Services;
+﻿using GiantTeam.Cluster.Security.Services;
 using GiantTeam.Crypto;
 using GiantTeam.Organizations.Directory.Data;
 

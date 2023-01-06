@@ -1,6 +1,6 @@
 ﻿using GiantTeam.ComponentModel.Services;
 using GiantTeam.Linq;
-using GiantTeam.Organizations.Services;
+using GiantTeam.Organizations.Directory.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserManagement.Services;
 using Npgsql;
@@ -14,13 +14,13 @@ namespace GiantTeam.Workspaces.Services
     {
         private readonly ILogger<FetchRecordsService> logger;
         private readonly ValidationService validationService;
-        private readonly DirectoryDataService connectionService;
+        private readonly UserDirectoryDataService connectionService;
         private readonly SessionService sessionService;
 
         public FetchRecordsService(
             ILogger<FetchRecordsService> logger,
             ValidationService validationService,
-            DirectoryDataService connectionService,
+            UserDirectoryDataService connectionService,
             SessionService sessionService)
         {
             this.logger = logger;

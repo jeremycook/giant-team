@@ -1,4 +1,4 @@
-﻿using GiantTeam.DatabaseDefinition.Changes.Models;
+﻿using GiantTeam.DatabaseDefinition.Alterations.Models;
 using GiantTeam.DatabaseDefinition.Models;
 using GiantTeam.Text;
 using System.ComponentModel.DataAnnotations;
@@ -175,7 +175,7 @@ END $DDL$;
             return string.Empty;
         }
 
-        public string ScriptChanges(IEnumerable<DatabaseChange> changes)
+        public string ScriptChanges(IEnumerable<DatabaseAlteration> changes)
         {
             var script = new StringBuilder();
 

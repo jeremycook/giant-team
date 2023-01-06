@@ -5,7 +5,7 @@ using GiantTeam.Postgres;
 using GiantTeam.UserManagement.Services;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.ClusterManagement.Services
+namespace GiantTeam.Cluster.Security.Services
 {
     public class FetchRoleService
     {

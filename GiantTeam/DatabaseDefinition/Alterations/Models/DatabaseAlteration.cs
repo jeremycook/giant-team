@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace GiantTeam.DatabaseDefinition.Changes.Models
+namespace GiantTeam.DatabaseDefinition.Alterations.Models
 {
     [JsonDerivedType(typeof(AlterColumn), nameof(AlterColumn))]
     [JsonDerivedType(typeof(AlterIndex), nameof(AlterIndex))]
@@ -13,9 +13,9 @@ namespace GiantTeam.DatabaseDefinition.Changes.Models
     [JsonDerivedType(typeof(DropIndex), nameof(DropIndex))]
     [JsonDerivedType(typeof(RenameColumn), nameof(RenameColumn))]
     [JsonDerivedType(typeof(RenameTable), nameof(RenameTable))]
-    public abstract class DatabaseChange
+    public abstract class DatabaseAlteration
     {
-        protected DatabaseChange(string type)
+        protected DatabaseAlteration(string type)
         {
             Type = type;
         }

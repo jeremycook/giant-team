@@ -1,11 +1,11 @@
 ﻿using GiantTeam.DatabaseDefinition.Models;
 
-namespace GiantTeam.DatabaseDefinition.Changes.Models
+namespace GiantTeam.DatabaseDefinition.Alterations.Models
 {
-    public class CreateIndex : DatabaseChange
+    public class AlterIndex : DatabaseAlteration
     {
-        public CreateIndex(string schemaName, string tableName, TableIndex index)
-            : base(nameof(CreateIndex))
+        public AlterIndex(string schemaName, string tableName, TableIndex index)
+            : base(nameof(AlterIndex))
         {
             SchemaName = schemaName;
             TableName = tableName;

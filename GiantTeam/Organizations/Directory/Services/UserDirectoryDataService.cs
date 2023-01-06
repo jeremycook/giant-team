@@ -4,13 +4,12 @@ using GiantTeam.UserManagement.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace GiantTeam.Organizations.Services
+namespace GiantTeam.Organizations.Directory.Services
 {
-    [Obsolete("TODO: Rename to UserDirectoryDataService.")]
-    public class DirectoryDataService : PgDataService
+    public class UserDirectoryDataService : PgDataService
     {
-        public DirectoryDataService(
-            ILogger<DirectoryDataService> logger,
+        public UserDirectoryDataService(
+            ILogger<UserDirectoryDataService> logger,
             IOptions<GiantTeamOptions> options,
             SessionService sessionService)
             : base(logger, new NpgsqlConnectionStringBuilder(options.Value.UserConnectionString)

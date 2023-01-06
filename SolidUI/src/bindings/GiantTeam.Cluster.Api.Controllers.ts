@@ -1,6 +1,5 @@
 import { postJson, DataResponse } from "../helpers/httpHelpers";
-import { Organization } from "./GiantTeam.Organizations.Directory.Models";
-import { FetchOrganizationInput } from "./GiantTeam.Organizations.Directory.Services";
+import { FetchOrganizationInput, FetchOrganizationOutput } from "./GiantTeam.Organizations.Directory.Services";
 import { CreateOrganizationInput, CreateOrganizationResult } from "./GiantTeam.Organizations.Services";
 import { CreateWorkspaceRoleInput, CreateWorkspaceRoleOutput } from "./GiantTeam.UserManagement.Services";
 
@@ -14,4 +13,4 @@ export const postCreateWorkspaceRole = async (input: CreateWorkspaceRoleInput) =
     await postJson('/api/cluster/create-workspace-role', input) as DataResponse<CreateWorkspaceRoleOutput>;
 
 export const postFetchOrganization = async (input: FetchOrganizationInput) =>
-    await postJson('/api/cluster/fetch-organization', input) as DataResponse<Organization>;
+    await postJson('/api/cluster/fetch-organization', input) as DataResponse<FetchOrganizationOutput>;

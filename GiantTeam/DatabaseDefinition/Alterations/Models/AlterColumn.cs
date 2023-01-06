@@ -1,8 +1,8 @@
 ﻿using GiantTeam.DatabaseDefinition.Models;
 
-namespace GiantTeam.DatabaseDefinition.Changes.Models
+namespace GiantTeam.DatabaseDefinition.Alterations.Models
 {
-    public class AlterColumn : DatabaseChange
+    public class AlterColumn : DatabaseAlteration
     {
         public AlterColumn(string schemaName, string tableName, Column column, IReadOnlyCollection<AlterColumnModification> modifications)
             : base(nameof(AlterColumn))

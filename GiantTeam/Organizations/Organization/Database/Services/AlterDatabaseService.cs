@@ -1,52 +1,52 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.DatabaseDefinition.Changes.Models;
+using GiantTeam.DatabaseDefinition.Alterations.Models;
 using GiantTeam.Organizations.Organization.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserManagement.Services;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Workspaces.Services
+namespace GiantTeam.Organizations.Organization.Database.Services
 {
-    public class ChangeDatabaseInput
+    public class AlterDatabaseInput
     {
         [Required, StringLength(50), DatabaseName]
         public string DatabaseName { get; set; } = null!;
 
         [Required, MinLength(1)]
-        public DatabaseChange[] Changes { get; set; } = null!;
+        public DatabaseAlteration[] Changes { get; set; } = null!;
     }
 
-    public class ChangeDatabaseOutput
+    public class AlterDatabaseOutput
     {
     }
 
-    public class ChangeDatabaseService
+    public class AlterDatabaseService
     {
-        private readonly ILogger<ChangeDatabaseService> logger;
+        private readonly ILogger<AlterDatabaseService> logger;
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
-        private readonly UserDataFactory organizationDataFactory;
+        private readonly UserDataFactory userDataFactory;
 
-        public ChangeDatabaseService(
-            ILogger<ChangeDatabaseService> logger,
+        public AlterDatabaseService(
+            ILogger<AlterDatabaseService> logger,
             ValidationService validationService,
             SessionService sessionService,
-            UserDataFactory organizationDataFactory)
+            UserDataFactory userDataFactory)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.sessionService = sessionService;
-            this.organizationDataFactory = organizationDataFactory;
+            this.userDataFactory = userDataFactory;
         }
 
-        public async Task<ChangeDatabaseOutput> ChangeDatabaseAsync(ChangeDatabaseInput input)
+        public async Task<AlterDatabaseOutput> ChangeDatabaseAsync(AlterDatabaseInput input)
         {
             return await ProcessAsync(input);
         }
 
-        private async Task<ChangeDatabaseOutput> ProcessAsync(ChangeDatabaseInput input)
+        private async Task<AlterDatabaseOutput> ProcessAsync(AlterDatabaseInput input)
         {
             validationService.Validate(input);
 
@@ -58,7 +58,7 @@ namespace GiantTeam.Workspaces.Services
                 sessionService.User.UserId,
                 migrationScript);
 
-            var dataService = organizationDataFactory.NewDataService(input.DatabaseName);
+            var dataService = userDataFactory.NewDataService(input.DatabaseName);
             try
             {
                 await dataService.ExecuteUnsanitizedAsync(migrationScript);
@@ -93,7 +93,7 @@ namespace GiantTeam.Workspaces.Services
                 throw;
             }
 
-            return new ChangeDatabaseOutput()
+            return new AlterDatabaseOutput()
             {
             };
         }

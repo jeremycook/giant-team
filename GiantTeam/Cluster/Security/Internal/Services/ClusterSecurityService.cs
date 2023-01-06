@@ -1,11 +1,11 @@
-﻿using GiantTeam.ClusterManagement.Services;
+﻿using GiantTeam.Cluster.Security.Services;
 using GiantTeam.Crypto;
 using GiantTeam.Organizations.Directory.Helpers;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 
-namespace GiantTeam.ClusterManagement.Internal.Services
+namespace GiantTeam.Cluster.Security.Internal.Services
 {
     [Service(ServiceType = typeof(IClusterSecurityService))]
     internal class ClusterSecurityService : IClusterSecurityService

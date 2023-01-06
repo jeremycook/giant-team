@@ -1,6 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Organizations.Services;
 using GiantTeam.Postgres;
 using System.ComponentModel.DataAnnotations;
 
@@ -10,25 +9,25 @@ namespace GiantTeam.Organizations.Directory.Services
     {
         private readonly ILogger<FetchOrganizationService> logger;
         private readonly ValidationService validationService;
-        private readonly DirectoryDataService directoryDataService;
+        private readonly UserDirectoryDataService directoryDataService;
 
         public FetchOrganizationService(
             ILogger<FetchOrganizationService> logger,
             ValidationService validationService,
-            DirectoryDataService directoryDataService)
+            UserDirectoryDataService directoryDataService)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.directoryDataService = directoryDataService;
         }
 
-        public async Task<Models.Organization> FetchOrganizationAsync(FetchOrganizationInput input)
+        public async Task<FetchOrganizationOutput> FetchOrganizationAsync(FetchOrganizationInput input)
         {
             validationService.Validate(input);
 
             try
             {
-                var output = await directoryDataService.SingleAsync<Models.Organization>(Sql.Format($"WHERE organization_id = {input.OrganizationId}"));
+                var output = await directoryDataService.SingleAsync<FetchOrganizationOutput>(Sql.Format($"FROM organizations WHERE organization_id = {input.OrganizationId}"));
                 return output;
             }
             catch (Exception ex)
@@ -44,5 +43,13 @@ namespace GiantTeam.Organizations.Directory.Services
     {
         [Required]
         public string OrganizationId { get; set; } = null!;
+    }
+
+    public class FetchOrganizationOutput
+    {
+        public string OrganizationId { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public string DatabaseName { get; set; } = null!;
+        public DateTimeOffset Created { get; private set; }
     }
 }

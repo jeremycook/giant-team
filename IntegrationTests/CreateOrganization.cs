@@ -70,7 +70,7 @@ public class CreateOrganization : IClassFixture<WebApplicationFactory<WebApp.Pro
                 OrganizationId = organizationId,
             });
             if (!response.IsSuccessStatusCode) throw new Exception(response.StatusCode + ": " + await response.Content.ReadAsStringAsync());
-            var data = await response.Content.ReadFromJsonAsync<GiantTeam.Organizations.Directory.Models.Organization>();
+            var data = await response.Content.ReadFromJsonAsync<FetchOrganizationOutput>();
 
             Assert.NotNull(data);
             Assert.Equal(organizationId, data.OrganizationId);

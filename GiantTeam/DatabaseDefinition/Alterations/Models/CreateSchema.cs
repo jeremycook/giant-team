@@ -1,6 +1,6 @@
-﻿namespace GiantTeam.DatabaseDefinition.Changes.Models
+﻿namespace GiantTeam.DatabaseDefinition.Alterations.Models
 {
-    public class CreateSchema : DatabaseChange
+    public class CreateSchema : DatabaseAlteration
     {
         public CreateSchema(string schemaName)
             : base(nameof(CreateSchema))

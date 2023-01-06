@@ -1,6 +1,6 @@
 ﻿using GiantTeam.UserManagement.Services;
 
-namespace GiantTeam.ClusterManagement.Services
+namespace GiantTeam.Cluster.Security.Services
 {
     public interface IClusterSecurityService
     {

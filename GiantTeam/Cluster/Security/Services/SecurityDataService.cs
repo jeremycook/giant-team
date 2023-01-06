@@ -1,7 +1,7 @@
 ﻿using GiantTeam.Postgres;
 using Microsoft.Extensions.Options;
 
-namespace GiantTeam.ClusterManagement.Services
+namespace GiantTeam.Cluster.Security.Services
 {
     public class SecurityDataService : PgDataService
     {

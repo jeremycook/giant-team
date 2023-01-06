@@ -1,6 +1,6 @@
-﻿namespace GiantTeam.DatabaseDefinition.Changes.Models
+﻿namespace GiantTeam.DatabaseDefinition.Alterations.Models
 {
-    public class DropColumn : DatabaseChange
+    public class DropColumn : DatabaseAlteration
     {
         public DropColumn(string schemaName, string tableName, string columnName)
             : base(nameof(DropColumn))

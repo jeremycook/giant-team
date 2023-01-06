@@ -1,6 +1,6 @@
-﻿namespace GiantTeam.DatabaseDefinition.Changes.Models
+﻿namespace GiantTeam.DatabaseDefinition.Alterations.Models
 {
-    public class RenameColumn : DatabaseChange
+    public class RenameColumn : DatabaseAlteration
     {
         public RenameColumn(string schemaName, string tableName, string columnName, string newColumnName)
             : base(nameof(RenameColumn))

@@ -1,7 +1,7 @@
 ﻿using GiantTeam.Asp;
 using GiantTeam.Asp.Filters;
 using GiantTeam.Asp.Routing;
-using GiantTeam.ClusterManagement.Services;
+using GiantTeam.Cluster.Security.Services;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
