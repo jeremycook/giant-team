@@ -1,14 +1,14 @@
 ﻿using GiantTeam.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GiantTeam.Organization.Data.Spaces
+namespace GiantTeam.Organization.Spaces.Data
 {
     public class Space
     {
         [Key, StringLength(50), DatabaseName]
         public string SpaceId { get; set; } = null!;
 
+        [StringLength(100)]
         public string Name { get; set; } = null!;
 
         [StringLength(50), DatabaseName]

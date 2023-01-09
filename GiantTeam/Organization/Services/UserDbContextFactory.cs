@@ -1,5 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
-using GiantTeam.Organization.Data;
+using GiantTeam.Organization.Spaces.Data;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
@@ -10,12 +10,12 @@ using Npgsql;
 namespace GiantTeam.Organization.Services
 {
     [Service]
-    public class OrganizationDbContextFactory
+    public class UserDbContextFactory
     {
         private readonly IOptions<GiantTeamOptions> giantTeamOptions;
         private readonly SessionService sessionService;
 
-        public OrganizationDbContextFactory(
+        public UserDbContextFactory(
             IOptions<GiantTeamOptions> giantTeamOptions,
             SessionService sessionService)
         {
@@ -23,40 +23,46 @@ namespace GiantTeam.Organization.Services
             this.sessionService = sessionService;
         }
 
-        public OrganizationDbContext NewDbContext(string databaseName)
+        public TDbContext NewDbContext<TDbContext>(string databaseName, string defaultSchema = "")
+            where TDbContext : DbContext
         {
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder(giantTeamOptions.Value.UserConnectionString)
             {
                 Database = databaseName,
-                SearchPath = "spaces",
+                SearchPath = defaultSchema,
                 Username = sessionService.User.DbLogin,
                 Password = sessionService.User.DbPassword
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<OrganizationDbContext>()
+            var dbContextOptions = new DbContextOptionsBuilder<SpacesDbContext>()
                 .UseSnakeCaseNamingConvention()
                 .UseNpgsql(connectionStringBuilder)
                 .Options;
 
-            return new OrganizationDbContext((DbContextOptions<OrganizationDbContext>)dbContextOptions);
+            return (TDbContext)Activator.CreateInstance(
+                type: typeof(TDbContext),
+                args: new[] { (DbContextOptions<TDbContext>)dbContextOptions })!;
         }
 
-        public OrganizationDbContext NewElevatedDbContext(string databaseName)
+        public TDbContext NewElevatedDbContext<TDbContext>(string databaseName, string defaultSchema = "")
+            where TDbContext : DbContext
         {
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder(giantTeamOptions.Value.UserConnectionString)
             {
                 Database = databaseName,
-                SearchPath = "spaces",
-                Username = sessionService.User.DbElevatedLogin ?? throw new UnelevatedException(),
+                SearchPath = defaultSchema,
+                Username = sessionService.User.DbElevatedLogin,
                 Password = sessionService.User.DbPassword
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<OrganizationDbContext>()
+            var dbContextOptions = new DbContextOptionsBuilder<SpacesDbContext>()
                 .UseSnakeCaseNamingConvention()
                 .UseNpgsql(connectionStringBuilder)
                 .Options;
 
-            return new OrganizationDbContext((DbContextOptions<OrganizationDbContext>)dbContextOptions);
+            return (TDbContext)Activator.CreateInstance(
+                type: typeof(TDbContext),
+                args: new[] { (DbContextOptions<TDbContext>)dbContextOptions })!;
         }
     }
 }

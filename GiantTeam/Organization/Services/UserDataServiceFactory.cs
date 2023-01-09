@@ -1,9 +1,7 @@
 ﻿using GiantTeam.ComponentModel;
-using GiantTeam.Organization.Data;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Npgsql;
 

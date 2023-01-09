@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GiantTeam.Organization.Data.InformationSchema
+namespace GiantTeam.Postgres.InformationSchema.Data
 {
     [Keyless]
-    [Table("tables", Schema = "information_schema")]
     public class Tables
     {
         public string? table_catalog { get; set; }

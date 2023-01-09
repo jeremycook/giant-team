@@ -1,6 +1,6 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Organization.Data.Spaces;
+using GiantTeam.Organization.Spaces.Data;
 using GiantTeam.Postgres;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
@@ -28,18 +28,18 @@ namespace GiantTeam.Organization.Services
     {
         private readonly ILogger<CreateSpaceService> logger;
         private readonly ValidationService validationService;
-        private readonly OrganizationDbContextFactory organizationDbContextFactory;
+        private readonly UserDbContextFactory userDbContextFactory;
         private readonly UserDataServiceFactory userDataServiceFactory;
 
         public CreateSpaceService(
             ILogger<CreateSpaceService> logger,
             ValidationService validationService,
-            OrganizationDbContextFactory organizationDbContextFactory,
+            UserDbContextFactory userDbContextFactory,
             UserDataServiceFactory userDataServiceFactory)
         {
             this.logger = logger;
             this.validationService = validationService;
-            this.organizationDbContextFactory = organizationDbContextFactory;
+            this.userDbContextFactory = userDbContextFactory;
             this.userDataServiceFactory = userDataServiceFactory;
         }
 
@@ -51,7 +51,7 @@ namespace GiantTeam.Organization.Services
             }
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
-                logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                logger.LogError(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"An error occurred that prevented creation of the \"{input.Name}\" space. {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
             }
         }
@@ -61,7 +61,7 @@ namespace GiantTeam.Organization.Services
             validationService.Validate(input);
 
             var elevatedDataService = userDataServiceFactory.NewElevatedDataService(input.DatabaseName);
-            using var elevatedDbContext = organizationDbContextFactory.NewElevatedDbContext(input.DatabaseName);
+            using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<SpacesDbContext>(input.DatabaseName);
             await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
 
             var space = new Space()
@@ -73,7 +73,7 @@ namespace GiantTeam.Organization.Services
             };
 
             validationService.Validate(space);
-            elevatedDbContext.Spaces.Spaces.Add(space);
+            elevatedDbContext.Spaces.Add(space);
             await elevatedDbContext.SaveChangesAsync();
 
             string schemaName = input.SchemaName;
