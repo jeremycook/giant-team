@@ -17,13 +17,13 @@ public class FetchRecordsService
 {
     private readonly ILogger<FetchRecordsService> logger;
     private readonly ValidationService validationService;
-    private readonly UserDataFactory userDataFactory;
+    private readonly UserDataServiceFactory userDataFactory;
     private readonly SessionService sessionService;
 
     public FetchRecordsService(
         ILogger<FetchRecordsService> logger,
         ValidationService validationService,
-        UserDataFactory userDataFactory,
+        UserDataServiceFactory userDataFactory,
         SessionService sessionService)
     {
         this.logger = logger;

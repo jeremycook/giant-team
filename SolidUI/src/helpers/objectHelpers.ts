@@ -10,10 +10,10 @@ interface TabularData {
     rows: any[][];
 }
 
-export function objectifyTabularData<T>(data: TabularData) {
+export function objectifyTabularData<T>(data: TabularData, propertyNameTransformer = (propertyName: string) => propertyName) {
     const columnMap = data.columns
         .reduce((obj, name, i) => ([...obj, {
-            name: camelCase(name),
+            name: propertyNameTransformer(name),
             index: i
         }]), [] as { name: string, index: number }[]);
 
@@ -23,6 +23,27 @@ export function objectifyTabularData<T>(data: TabularData) {
             [col.name]: parseValue(rec[col.index]),
         }), {}) as T
     );
+}
+
+export function transformPropertyNames(data: any, propertyNameTransformer: (propertyName: string) => string): any {
+    if (data instanceof Array) {
+        return data.map(v => transformPropertyNames(v as any, propertyNameTransformer));
+    }
+    else if (typeof data === 'object') {
+        return Object.keys(data).reduce((obj, key) => {
+            return {
+                ...obj,
+                [propertyNameTransformer(key)]: transformPropertyNames(data[key], propertyNameTransformer),
+            }
+        }, {})
+    }
+    else {
+        return data;
+    }
+}
+
+export function camelCasePropertyNames(data: {}) {
+    return transformPropertyNames(data, camelCase);
 }
 
 const isoRegex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*))(?:Z|(\+|-)([\d|:]*))?$/;

@@ -53,6 +53,11 @@ namespace GiantTeam.UserManagement.Services
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Sub, Sub));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.Username, Username));
 
+            if (Elevated)
+            {
+                identity.AddClaim(new(PrincipalHelper.ClaimTypes.Elevated, "t"));
+            }
+
             // Database claims
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbUser, DbUser));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbLogin, DbLogin));
@@ -62,7 +67,7 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private Guid? _userId;
-        private string? _dbElevated;
+        private string? _dbElevatedUser;
         private string? _dbElevatedLogin;
 
         public Guid UserId => _userId ??= Guid.Parse(Sub);
@@ -79,7 +84,7 @@ namespace GiantTeam.UserManagement.Services
         public string DbLogin { get; }
         public string DbPassword { get; }
 
-        public string? DbElevatedUser => _dbElevated ??= (Elevated ? DirectoryHelpers.ElevatedUserRole(DbUser) : null);
+        public string? DbElevatedUser => _dbElevatedUser ??= (Elevated ? DirectoryHelpers.ElevatedUserRole(DbUser) : null);
         public string? DbElevatedLogin => _dbElevatedLogin ??= (Elevated ? DirectoryHelpers.ElevatedLogin(DbLogin) : null);
     }
 }

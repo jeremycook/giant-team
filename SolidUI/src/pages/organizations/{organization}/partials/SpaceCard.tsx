@@ -9,6 +9,6 @@ interface Space {
 
 export default function SpaceCard(props: { data: Space }) {
     return <div class='card'>
-        <A href={pageUrl('/organizations/{organization}/spaces/{space}', { ...here.routeValues, space: props.data.id })}>{props.data.name}</A>
+        <A href={pageUrl('/organizations/{organization}/spaces/{space}', { organization: here.routeValues.organization, space: props.data.id })}>{props.data.name}</A>
     </div>
 }

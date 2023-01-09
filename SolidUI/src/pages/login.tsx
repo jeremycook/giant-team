@@ -60,7 +60,7 @@ export default function LoginPage() {
       await refreshSession()
 
       const url = returnUrl();
-      console.debug(`Redirecting from ${window.location.href} to ${returnUrl}.`)
+      console.debug(`Redirecting from ${window.location.href} to ${url}.`)
       go(url);
       return;
     } else {

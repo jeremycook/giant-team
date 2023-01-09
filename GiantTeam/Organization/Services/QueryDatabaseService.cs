@@ -11,12 +11,12 @@ public class QueryDatabaseService
 {
     private readonly ILogger<QueryDatabaseService> logger;
     private readonly ValidationService validationService;
-    private readonly UserDataFactory organizationDataFactory;
+    private readonly UserDataServiceFactory organizationDataFactory;
 
     public QueryDatabaseService(
         ILogger<QueryDatabaseService> logger,
         ValidationService validationService,
-        UserDataFactory organizationDataFactory)
+        UserDataServiceFactory organizationDataFactory)
     {
         this.logger = logger;
         this.validationService = validationService;

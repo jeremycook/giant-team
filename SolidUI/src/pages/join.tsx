@@ -25,7 +25,7 @@ export default function JoinPage() {
   const dataOptions: FieldSetOptions = {
     name: { type: 'text', label: 'Name', required: true },
     username: { type: 'text', label: 'Username', required: true, autocomplete: 'new-username', onfocus: () => data.taintedUsername = true },
-    password: { type: 'password', label: 'Password', autocomplete: 'new-password' },
+    password: { type: 'password', label: 'Password', autocomplete: 'new-password', minLength: 12 },
     passwordConfirmation: { type: 'password', label: 'Password Confirmation', autocomplete: 'new-password' },
     email: { type: 'text', label: 'Email', required: true },
   };
@@ -35,7 +35,7 @@ export default function JoinPage() {
       data.username = data.name.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
   });
 
-  const formSubmit = async (e: SubmitEvent) => {
+  const onSubmitForm = async (e: SubmitEvent) => {
     e.preventDefault();
 
     // Client-side validation
@@ -53,7 +53,7 @@ export default function JoinPage() {
 
     if (output.ok) {
       const state = here.state as { returnUrl?: string };
-      toast.info('Success! Redirecting to the login page…');
+      toast.info('Success!');
       go('/login', { username: data.username, returnUrl: state.returnUrl });
     } else {
       toast.error(output.message);
@@ -69,7 +69,7 @@ export default function JoinPage() {
         Register a new user account.
       </p>
 
-      <form onSubmit={formSubmit} class='form-grid'>
+      <form onSubmit={onSubmitForm} class='form-grid'>
 
         <FieldStack data={data} options={dataOptions} />
 

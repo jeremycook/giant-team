@@ -43,6 +43,10 @@ namespace GiantTeam.Asp.Filters
 
                 context.ExceptionHandled = true;
             }
+            else if(context.Exception is not null)
+            {
+
+            }
         }
     }
 }

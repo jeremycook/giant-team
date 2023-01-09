@@ -53,7 +53,7 @@ namespace GiantTeam.Cluster.Security.Services
             await security.ExecuteAsync(
 // Create the login
 $"""
-CREATE ROLE {Sql.Identifier(dbLogin)} WITH LOGIN NOINHERIT NOCREATEDB NOSUPERUSER NOCREATEROLE NOREPLICATION
+CREATE ROLE {Sql.Identifier(dbLogin)} WITH LOGIN INHERIT NOCREATEDB NOSUPERUSER NOCREATEROLE NOREPLICATION
     IN ROLE {Sql.Identifier(dbUser)}
     ENCRYPTED PASSWORD {Sql.Literal(encryptedPassword)}
     VALID UNTIL {Sql.Literal(passwordValidUntil)}

@@ -13,4 +13,6 @@ SELECT format('DROP ROLE IF EXISTS %I;', rolname)
 FROM pg_roles
 WHERE rolname LIKE '_:%'
 
+ORDER BY 1
+
 -- \gexec

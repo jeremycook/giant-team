@@ -23,7 +23,7 @@ namespace GiantTeam.Cluster.Directory.Helpers
 
         public static string OrganizationRole(Guid organizationRoleId)
         {
-            return "r:" + WebEncoders.Base64UrlEncode(organizationRoleId.ToByteArray());
+            return $"r:{organizationRoleId:n}";
         }
     }
 }

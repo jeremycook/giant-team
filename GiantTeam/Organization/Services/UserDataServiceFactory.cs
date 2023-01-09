@@ -10,13 +10,13 @@ using Npgsql;
 namespace GiantTeam.Organization.Services
 {
     [Service]
-    public class UserDataFactory
+    public class UserDataServiceFactory
     {
         private readonly ILoggerFactory logger;
         private readonly IOptions<GiantTeamOptions> giantTeamOptions;
         private readonly SessionService sessionService;
 
-        public UserDataFactory(
+        public UserDataServiceFactory(
             ILoggerFactory logger,
             IOptions<GiantTeamOptions> giantTeamOptions,
             SessionService sessionService)
@@ -27,59 +27,41 @@ namespace GiantTeam.Organization.Services
         }
 
         /// <summary>
-        /// Create a new <see cref="OrganizationDataService"/> that connects to <paramref name="databaseName"/>.
+        /// Create a new elevated <see cref="PgDataService"/> connection to <paramref name="databaseName"/>.
         /// </summary>
         /// <param name="databaseName"></param>
-        public OrganizationDataService NewDataService(string databaseName, string defaultSchema = "spaces")
+        public PgDataService NewElevatedDataService(string databaseName, string defaultSchema = "")
         {
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder(giantTeamOptions.Value.UserConnectionString)
             {
                 Database = databaseName,
                 SearchPath = defaultSchema,
-                Username = sessionService.User.DbLogin,
+                Username = sessionService.User.DbElevatedLogin ?? throw new UnelevatedException(),
                 Password = sessionService.User.DbPassword,
             };
 
             return new(
-                logger: logger.CreateLogger<OrganizationDataService>(),
+                logger: logger.CreateLogger<PgDataService>(),
                 connectionString: connectionStringBuilder.ToString());
         }
 
         /// <summary>
-        /// Create a new elevated <see cref="OrganizationDataService"/> that connects to <paramref name="databaseName"/>.
+        /// Create a new regular <see cref="PgDataService"/> connection to <paramref name="databaseName"/>.
         /// </summary>
         /// <param name="databaseName"></param>
-        public OrganizationDataService NewElevatedDataService(string databaseName, string defaultSchema = "spaces")
+        public PgDataService NewDataService(string databaseName, string defaultSchema = "")
         {
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder(giantTeamOptions.Value.UserConnectionString)
             {
                 Database = databaseName,
                 SearchPath = defaultSchema,
-                Username = sessionService.User.DbElevatedLogin ?? throw new UnprivilegedException(),
+                Username = sessionService.User.DbLogin,
                 Password = sessionService.User.DbPassword,
             };
 
             return new(
-                logger: logger.CreateLogger<OrganizationDataService>(),
+                logger: logger.CreateLogger<PgDataService>(),
                 connectionString: connectionStringBuilder.ToString());
-        }
-
-        public OrganizationDbContext NewDbContext(string databaseName)
-        {
-            var connectionStringBuilder = new NpgsqlConnectionStringBuilder(giantTeamOptions.Value.UserConnectionString)
-            {
-                Database = databaseName,
-                SearchPath = "spaces",
-                Username = sessionService.User.DbLogin,
-                Password = sessionService.User.DbPassword
-            };
-
-            var dbContextOptions = new DbContextOptionsBuilder<OrganizationDbContext>()
-                .UseSnakeCaseNamingConvention()
-                .UseNpgsql(connectionStringBuilder)
-                .Options;
-
-            return new OrganizationDbContext((DbContextOptions<OrganizationDbContext>)dbContextOptions);
         }
     }
 }

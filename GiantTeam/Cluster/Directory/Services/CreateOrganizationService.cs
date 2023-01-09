@@ -1,4 +1,5 @@
 ﻿using GiantTeam.Cluster.Directory.Data;
+using GiantTeam.Cluster.Directory.Helpers;
 using GiantTeam.Cluster.Security.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
@@ -30,26 +31,23 @@ namespace GiantTeam.Cluster.Directory.Services
         private readonly ILogger<CreateOrganizationService> logger;
         private readonly ValidationService validationService;
         private readonly SecurityDataService securityDataService;
-        private readonly UserDirectoryDataService directoryDataService;
-        private readonly ManagerDirectoryDbContext directoryManagerDb;
-        private readonly UserDataFactory organizationDataFactory;
+        private readonly ManagerDirectoryDbContext managerDirectoryDb;
+        private readonly UserDataServiceFactory userDataFactory;
         private readonly SessionService sessionService;
 
         public CreateOrganizationService(
             ILogger<CreateOrganizationService> logger,
             ValidationService validationService,
             SecurityDataService securityDataService,
-            UserDirectoryDataService directoryDataService,
-            ManagerDirectoryDbContext directoryManagerDb,
-            UserDataFactory organizationDataFactory,
+            ManagerDirectoryDbContext managerDirectoryDb,
+            UserDataServiceFactory userDataFactory,
             SessionService sessionService)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.securityDataService = securityDataService;
-            this.directoryDataService = directoryDataService;
-            this.directoryManagerDb = directoryManagerDb;
-            this.organizationDataFactory = organizationDataFactory;
+            this.managerDirectoryDb = managerDirectoryDb;
+            this.userDataFactory = userDataFactory;
             this.sessionService = sessionService;
         }
 
@@ -61,7 +59,7 @@ namespace GiantTeam.Cluster.Directory.Services
             }
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
-                logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+                logger.LogError(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
                 throw new ValidationException($"An error occurred that prevented creation of the \"{input.Name}\" organization. {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
             }
         }
@@ -80,30 +78,31 @@ namespace GiantTeam.Cluster.Directory.Services
 
             validationService.Validate(input);
 
-            await using var dmtx = await directoryManagerDb.Database.BeginTransactionAsync();
+            await using var dmtx = await managerDirectoryDb.Database.BeginTransactionAsync();
 
             var owner = new OrganizationRole() { Name = "Owner" }.Init();
             var member = new OrganizationRole() { Name = "Member" }.Init();
             var guest = new OrganizationRole() { Name = "Guest" }.Init();
-            var org = new Data.Organization()
+            var organization = new Data.Organization()
             {
                 OrganizationId = input.DatabaseName,
                 Name = input.Name,
                 DatabaseName = input.DatabaseName,
             }.Init();
-            org.Roles!.AddRange(new[]
+            organization.Roles!.AddRange(new[]
             {
                 owner,
                 member,
                 guest,
             });
 
-            validationService.Validate(org);
-            directoryManagerDb.Organizations.Add(org);
-            await directoryManagerDb.SaveChangesAsync();
+            validationService.Validate(organization);
+            managerDirectoryDb.Organizations.Add(organization);
+            await managerDirectoryDb.SaveChangesAsync();
 
-            string databaseName = org.DatabaseName;
+            string databaseName = organization.DatabaseName;
 
+            var elevatedDirectoryDataService = userDataFactory.NewElevatedDataService(DirectoryHelpers.Database);
             try
             {
                 // Create the organization's initial roles.
@@ -115,7 +114,7 @@ namespace GiantTeam.Cluster.Directory.Services
                 );
 
                 // Create the database as the new owner.
-                await directoryDataService.ExecuteAsync(
+                await elevatedDirectoryDataService.ExecuteAsync(
                     $"SET ROLE {Sql.Identifier(owner.DbRole)}",
                     $"CREATE DATABASE {Sql.Identifier(databaseName)}");
 
@@ -140,27 +139,35 @@ namespace GiantTeam.Cluster.Directory.Services
                         Sql.Format($"GRANT CONNECT ON DATABASE {Sql.Identifier(databaseName)} TO {Sql.Identifier(sessionService.User.DbUser)}"),
                     }
                 };
-                var userDataService = organizationDataFactory.NewDataService(databaseName);
-                await userDataService.ExecuteAsync(batch);
-                await userDataService.ExecuteUnsanitizedAsync(OrganizationResources.SpacesSql);
+                var elevatedDatabaseService = userDataFactory.NewElevatedDataService(databaseName);
+                await elevatedDatabaseService.ExecuteAsync(batch);
+#pragma warning disable CS0618 // Type or member is obsolete
+                await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.SpacesSql);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 try
                 {
-                    await directoryDataService.ExecuteAsync(
+                    await elevatedDirectoryDataService.ExecuteAsync(
                         $"SET ROLE {Sql.Identifier(owner.DbRole)}",
                         $"DROP DATABASE IF EXISTS {Sql.Identifier(databaseName)}");
+                }
+                catch (Exception cleanupException)
+                {
+                    logger.LogInformation(cleanupException, "Suppressed drop database cleanup failure following error when creating {DatabaseName}.", databaseName);
+                }
 
+                try
+                {
                     await securityDataService.ExecuteAsync(
                         $"DROP ROLE IF EXISTS {Sql.Identifier(owner.DbRole)}",
                         $"DROP ROLE IF EXISTS {Sql.Identifier(member.DbRole)}",
                         $"DROP ROLE IF EXISTS {Sql.Identifier(guest.DbRole)}");
                 }
-                catch (Exception cleanupEx)
+                catch (Exception cleanupException)
                 {
-                    var aggregateException = new AggregateException(cleanupEx, ex);
-                    logger.LogError(aggregateException, "Suppressed cleanup failure following error when creating {DatabaseName}.", databaseName);
+                    logger.LogInformation(cleanupException, "Suppressed drop roles cleanup failure following error when creating {DatabaseName}.", databaseName);
                 }
 
                 throw;
@@ -170,7 +177,7 @@ namespace GiantTeam.Cluster.Directory.Services
 
             return new()
             {
-                OrganizationId = org.OrganizationId,
+                OrganizationId = organization.OrganizationId,
             };
         }
     }

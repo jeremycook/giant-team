@@ -16,12 +16,12 @@ public class ImportDataService
 {
     private readonly ILogger<ImportDataService> logger;
     private readonly ValidationService validationService;
-    private readonly UserDataFactory userDataFactory;
+    private readonly UserDataServiceFactory userDataFactory;
 
     public ImportDataService(
         ILogger<ImportDataService> logger,
         ValidationService validationService,
-        UserDataFactory connectionService)
+        UserDataServiceFactory connectionService)
     {
         this.logger = logger;
         this.validationService = validationService;
@@ -171,7 +171,7 @@ FROM unnest({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => 
                 logger.LogInformation("Inserting {Rows} rows into {Database}.{Schema}.{Table}: {CommandText}",
                     records.Count, databaseName, schemaName, tableName, insertSql);
 
-                var rowsAffected = await organizationDataService.ExecuteAsync();
+                var rowsAffected = await organizationDataService.ExecuteAsync(new NpgsqlBatch() { BatchCommands = { command } });
 
                 logger.LogInformation("Inserted {Rows} rows into {Database}.{Schema}.{Table}",
                     rowsAffected, databaseName, schemaName, tableName);

@@ -48,7 +48,7 @@ public static class PgQuote
         if (moment.Kind != DateTimeKind.Utc)
             throw new ArgumentException($"The {moment} argument must be in UTC.", nameof(moment));
 
-        return Literal(moment.ToString("O") + "Z");
+        return Literal(moment.ToString("o"));
     }
     public static string Literal(DateTimeOffset moment)
     {

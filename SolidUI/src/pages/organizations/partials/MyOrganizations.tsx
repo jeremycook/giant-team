@@ -2,6 +2,7 @@ import { createResource, For, JSX } from "solid-js";
 import { postQueryDatabase } from "../../../bindings/GiantTeam.Organization.Api.Controllers";
 import { objectifyTabularData } from "../../../helpers/objectHelpers";
 import { sql } from "../../../helpers/sqlHelpers";
+import { camelCase } from "../../../helpers/textHelpers";
 import { OrganizationCard, OrganizationModel } from "./OrganizationCard";
 
 export function createMyOrganizationsResource() {
@@ -9,7 +10,7 @@ export function createMyOrganizationsResource() {
         databaseName: 'directory',
         sql: sql`
             SELECT *
-            FROM directory.organizations
+            FROM directory.organization
             ORDER BY name
         `.text
     }));
@@ -22,7 +23,7 @@ export default function MyOrganizations(props: { children?: (model: Organization
     const records = () => {
         const response = resource();
         if (response?.ok) {
-            return objectifyTabularData<OrganizationModel>(response.data);
+            return objectifyTabularData<OrganizationModel>(response.data, camelCase);
         }
         else {
             return []

@@ -28,16 +28,19 @@ namespace GiantTeam.Organization.Services
     {
         private readonly ILogger<CreateSpaceService> logger;
         private readonly ValidationService validationService;
-        private readonly UserDataFactory organizationDataFactory;
+        private readonly OrganizationDbContextFactory organizationDbContextFactory;
+        private readonly UserDataServiceFactory userDataServiceFactory;
 
         public CreateSpaceService(
             ILogger<CreateSpaceService> logger,
             ValidationService validationService,
-            UserDataFactory organizationDataFactory)
+            OrganizationDbContextFactory organizationDbContextFactory,
+            UserDataServiceFactory userDataServiceFactory)
         {
             this.logger = logger;
             this.validationService = validationService;
-            this.organizationDataFactory = organizationDataFactory;
+            this.organizationDbContextFactory = organizationDbContextFactory;
+            this.userDataServiceFactory = userDataServiceFactory;
         }
 
         public async Task<CreateSpaceResult> CreateSpaceAsync(CreateSpaceInput input)
@@ -57,9 +60,9 @@ namespace GiantTeam.Organization.Services
         {
             validationService.Validate(input);
 
-            var dataService = organizationDataFactory.NewDataService(input.DatabaseName);
-            using var elevatedDb = organizationDataFactory.NewDbContext(input.DatabaseName);
-            await using var tx = await elevatedDb.Database.BeginTransactionAsync();
+            var elevatedDataService = userDataServiceFactory.NewElevatedDataService(input.DatabaseName);
+            using var elevatedDbContext = organizationDbContextFactory.NewElevatedDbContext(input.DatabaseName);
+            await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
 
             var space = new Space()
             {
@@ -70,13 +73,13 @@ namespace GiantTeam.Organization.Services
             };
 
             validationService.Validate(space);
-            elevatedDb.Spaces.Spaces.Add(space);
-            await elevatedDb.SaveChangesAsync();
+            elevatedDbContext.Spaces.Spaces.Add(space);
+            await elevatedDbContext.SaveChangesAsync();
 
             string schemaName = input.SchemaName;
 
             // Create the SCHEMA as the pg_database_owner.
-            await dataService.ExecuteAsync(
+            await elevatedDataService.ExecuteAsync(
                 $"SET ROLE pg_database_owner",
                 $"CREATE SCHEMA {Sql.Identifier(schemaName)}");
 

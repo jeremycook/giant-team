@@ -26,13 +26,13 @@ namespace GiantTeam.Organization.Services
         private readonly ILogger<AlterDatabaseService> logger;
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
-        private readonly UserDataFactory userDataFactory;
+        private readonly UserDataServiceFactory userDataFactory;
 
         public AlterDatabaseService(
             ILogger<AlterDatabaseService> logger,
             ValidationService validationService,
             SessionService sessionService,
-            UserDataFactory userDataFactory)
+            UserDataServiceFactory userDataFactory)
         {
             this.logger = logger;
             this.validationService = validationService;

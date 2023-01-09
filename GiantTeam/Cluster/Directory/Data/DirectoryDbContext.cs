@@ -1,5 +1,6 @@
 ﻿using GiantTeam.Cluster.Directory.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace GiantTeam.Cluster.Directory.Data;
 
@@ -7,6 +8,11 @@ public abstract class DirectoryDbContext<T> : DbContext where T : DirectoryDbCon
 {
     public DirectoryDbContext(DbContextOptions<T> options)
         : base(options) { }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Conventions.Remove(typeof(TableNameFromDbSetConvention));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

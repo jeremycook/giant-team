@@ -1,5 +1,5 @@
-import { useNavigate } from '@solidjs/router';
 import { ObjectStatus } from '../bindings/GiantTeam.ComponentModel.Models';
+import { go } from '../partials/Nav';
 import { authorize, refreshSession } from '../utils/session';
 import { parseJson } from './objectHelpers';
 
@@ -28,8 +28,7 @@ export type DataResponse<TData> = OkDataResponse<TData> | ObjectStatusResponse
 
 /** Parse {@param response} content using {@link parseJson}. */
 export const parseJsonResponse = async (response: Response) => {
-    const blob = await response.blob();
-    const json = await blob.text();
+    const json = await response.text();
     const result = parseJson(json);
     return result;
 }
@@ -71,52 +70,48 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
             }
         }
         else {
-            if (response.status === 401) {
-                // Sync with the server and re-authorize
-                await refreshSession();
-                authorize();
+            if (isJsonResponse) {
+                const details = await parseJsonResponse(response);
 
-                const result: ObjectStatusResponse = {
-                    ok: false,
-                    status: response.status,
-                    statusText: 'Login Required',
-                    message: 'Please login to access the requested resource.',
-                    details: []
-                };
-                console.debug(url, result);
-                return result;
-            }
-            else if (response.status === 403) {
-                const navigate = useNavigate();
-                navigate('/access-denied', { state: { returnUrl: location.href } });
+                let errorMessage;
+                if (response.status === 401) {
+                    // Sync with the server and re-authorize
+                    await refreshSession();
+                    authorize();
+                    errorMessage = details.message || 'Please login to access the requested resource.'
+                }
+                else if (response.status === 403) {
+                    go('/access-denied', { returnUrl: location.href });
+                    errorMessage = details.message || 'You do not have permission to access the requested resource.'
+                }
 
-                const result: ObjectStatusResponse = {
-                    ok: false,
-                    status: response.status,
-                    statusText: 'Access Denied',
-                    message: 'You do not have permission to access the requested resource.',
-                    details: []
-                };
-                console.debug(url, result);
-                return result;
-            }
-            else if (isJsonResponse) {
-                const data = await parseJsonResponse(response);
                 const result: ObjectStatusResponse = {
                     status: response.status,
                     statusText: response.statusText,
-                    ...data,
+                    message: errorMessage || 'An unexpected error occurred.',
+                    details: details,
                     ok: false,
                 };
                 console.debug(url, result);
                 return result;
             }
             else {
-                const errorMessage = await response.text();
+                let errorMessage = await response.text();
+                if (response.status === 401) {
+                    // Sync with the server and re-authorize
+                    await refreshSession();
+                    authorize();
+                    errorMessage ||= 'Please login to access the requested resource.'
+                }
+                else if (response.status === 403) {
+                    go('/access-denied', { returnUrl: location.href });
+                    errorMessage ||= 'You do not have permission to access the requested resource.'
+                }
+
                 const result: ObjectStatusResponse = {
                     ok: false,
                     status: response.status,
-                    statusText: response.statusText ?? 'Unexpected Error',
+                    statusText: response.statusText || 'Unexpected Error',
                     message: errorMessage ?? 'An unexpected error occurred.',
                     details: [],
                 };
