@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
-namespace GiantTeam.Organization.Spaces.Data;
+namespace GiantTeam.Organization.Etc.Data;
 
-public class SpacesDbContext : DbContext
+public class EtcDbContext : DbContext
 {
-    public SpacesDbContext(DbContextOptions<SpacesDbContext> options) : base(options)
+    public EtcDbContext(DbContextOptions<EtcDbContext> options) : base(options)
     {
     }
 
@@ -21,9 +21,15 @@ public class SpacesDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("spaces");
+        modelBuilder.HasDefaultSchema("etc");
     }
 
+    // Tables
+    public DbSet<Node> Nodes { get; } = null!;
+    public DbSet<File> Files { get; } = null!;
+    public DbSet<NodeType> Types { get; } = null!;
+    public DbSet<TypeConstraint> TypeConstraints { get; } = null!;
+
+    // Views
     public DbSet<DatabaseDefinition> DatabaseDefinitions { get; } = null!;
-    public DbSet<Space> Spaces { get; } = null!;
 }

@@ -5,8 +5,8 @@ SET ROLE directory_owner;
 -- Configure database access
 
 GRANT ALL ON DATABASE directory TO pg_database_owner;
-GRANT TEMPORARY, CONNECT ON DATABASE directory TO security_manager;
 GRANT TEMPORARY, CONNECT ON DATABASE directory TO directory_manager;
+GRANT TEMPORARY, CONNECT ON DATABASE directory TO security_manager;
 GRANT TEMPORARY, CONNECT ON DATABASE directory TO anyone;
 REVOKE ALL ON DATABASE directory FROM public;
 

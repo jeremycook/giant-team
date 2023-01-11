@@ -1,0 +1,52 @@
+username::text ~ '^[a-z][a-z0-9-_]{2,}$'::text
+
+
+
+-- FUNCTION: directory.database_exists(text)
+-- DROP FUNCTION IF EXISTS directory.database_exists(text);
+
+CREATE OR REPLACE FUNCTION directory.database_exists(
+	database_name text)
+    RETURNS boolean
+    LANGUAGE 'sql'
+    COST 100
+    IMMUTABLE STRICT PARALLEL UNSAFE
+
+RETURN (EXISTS (SELECT pg_database.datname FROM pg_database WHERE (lower((pg_database.datname)::text) = lower(database_exists.database_name))));
+
+ALTER FUNCTION directory.database_exists(text)
+    OWNER TO pg_database_owner;
+
+GRANT EXECUTE ON FUNCTION directory.database_exists(text) TO PUBLIC;
+
+GRANT EXECUTE ON FUNCTION directory.database_exists(text) TO pg_database_owner;
+
+-- FUNCTION: directory.organizations_inserting_trigger()
+-- DROP FUNCTION IF EXISTS directory.organizations_inserting_trigger();
+
+CREATE OR REPLACE FUNCTION directory.organizations_inserting_trigger()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+    BEGIN
+        IF directory.database_exists(NEW.database_name) THEN
+            RAISE EXCEPTION 'The % database already exists', NEW.database_name;
+        END IF;
+        RETURN NEW;
+    END;
+$BODY$;
+
+ALTER FUNCTION directory.organizations_inserting_trigger()
+    OWNER TO pg_database_owner;
+
+-- Trigger: organizations_inserting_trigger
+-- DROP TRIGGER IF EXISTS organizations_inserting_trigger ON directory.organizations;
+
+CREATE OR REPLACE TRIGGER organizations_inserting_trigger
+    BEFORE INSERT
+    ON directory.organizations
+    FOR EACH ROW
+    EXECUTE FUNCTION directory.organizations_inserting_trigger();
+

@@ -1,7 +1,7 @@
 ﻿using GiantTeam.DatabaseDefinition.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GiantTeam.Organization.Spaces.Data
+namespace GiantTeam.Organization.Etc.Data
 {
     [Keyless]
     public class DatabaseDefinition

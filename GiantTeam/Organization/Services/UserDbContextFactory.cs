@@ -1,5 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
-using GiantTeam.Organization.Spaces.Data;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
@@ -34,7 +34,7 @@ namespace GiantTeam.Organization.Services
                 Password = sessionService.User.DbPassword
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<SpacesDbContext>()
+            var dbContextOptions = new DbContextOptionsBuilder<EtcDbContext>()
                 .UseSnakeCaseNamingConvention()
                 .UseNpgsql(connectionStringBuilder)
                 .Options;
@@ -55,7 +55,7 @@ namespace GiantTeam.Organization.Services
                 Password = sessionService.User.DbPassword
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<SpacesDbContext>()
+            var dbContextOptions = new DbContextOptionsBuilder<EtcDbContext>()
                 .UseSnakeCaseNamingConvention()
                 .UseNpgsql(connectionStringBuilder)
                 .Options;

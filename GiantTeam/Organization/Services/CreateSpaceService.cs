@@ -1,6 +1,6 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Organization.Spaces.Data;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Postgres;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
@@ -9,19 +9,16 @@ namespace GiantTeam.Organization.Services
 {
     public class CreateSpaceInput
     {
-        [Required, StringLength(100)]
+        [Required, StringLength(50)]
         public string DatabaseName { get; set; } = null!;
 
-        [Required, StringLength(100)]
+        [Required, StringLength(50), NodeName]
         public string Name { get; set; } = null!;
-
-        [Required, StringLength(50), DatabaseName]
-        public string SchemaName { get; set; } = null!;
     }
 
     public class CreateSpaceResult
     {
-        public string SpaceId { get; set; } = null!;
+        public Guid NodeId { get; set; }
     }
 
     public class CreateSpaceService
@@ -61,22 +58,23 @@ namespace GiantTeam.Organization.Services
             validationService.Validate(input);
 
             var elevatedDataService = userDataServiceFactory.NewElevatedDataService(input.DatabaseName);
-            using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<SpacesDbContext>(input.DatabaseName);
+            using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName);
             await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
 
-            var space = new Space()
+            var space = new Node()
             {
-                SpaceId = input.SchemaName,
+                NodeId = Guid.NewGuid(),
+                ParentId = NodeId.Root,
                 Name = input.Name,
-                SchemaName = input.SchemaName,
+                TypeId = "Space",
                 Created = DateTime.UtcNow,
             };
 
             validationService.Validate(space);
-            elevatedDbContext.Spaces.Add(space);
+            elevatedDbContext.Nodes.Add(space);
             await elevatedDbContext.SaveChangesAsync();
 
-            string schemaName = input.SchemaName;
+            string schemaName = input.Name;
 
             // Create the SCHEMA as the pg_database_owner.
             await elevatedDataService.ExecuteAsync(
@@ -88,7 +86,7 @@ namespace GiantTeam.Organization.Services
 
             return new()
             {
-                SpaceId = space.SpaceId,
+                NodeId = space.NodeId,
             };
         }
     }

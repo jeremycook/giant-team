@@ -59,7 +59,6 @@ export default function OrganizationPage() {
             const org = organization()!;
 
             return <>
-                    {JSON.stringify(org)}
                 <h1>{org.name}</h1>
 
                 <h2>Apps</h2>

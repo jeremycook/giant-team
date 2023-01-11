@@ -14,11 +14,10 @@ export interface AlterDatabaseOutput {
 export interface CreateSpaceInput {
     databaseName: string;
     name: string;
-    schemaName: string;
 }
 
 export interface CreateSpaceResult {
-    spaceId: string;
+    nodeId: string;
 }
 
 export interface FetchRecords {
