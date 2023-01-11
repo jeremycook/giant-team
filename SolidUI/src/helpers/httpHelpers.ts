@@ -1,5 +1,5 @@
+import { useNavigate } from '@solidjs/router';
 import { ObjectStatus } from '../bindings/GiantTeam.ComponentModel.Models';
-import { go } from '../partials/Nav';
 import { authorize, refreshSession } from '../utils/session';
 import { parseJson } from './objectHelpers';
 
@@ -131,4 +131,16 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
             details: [],
         } as ObjectStatusResponse;
     }
+}
+
+export function useGo() {
+    const navigate = useNavigate();
+    return (to: string, state?: { [key: string]: any }) => {
+        navigate(to, { state });
+    };
+}
+
+export function go(to: string, state: { [key: string]: any }) {
+    const navigate = useNavigate();
+    navigate(to, { state });
 }

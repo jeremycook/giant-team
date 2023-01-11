@@ -20,6 +20,33 @@ export interface CreateSpaceResult {
     nodeId: string;
 }
 
+export interface ExploreInput {
+    organizationId: string;
+    path: string;
+}
+
+export interface ExploreResult {
+    path: string;
+    node: Node;
+}
+
+export interface FetchOrganizationDetailsInput {
+    organizationId: string;
+}
+
+export interface FetchOrganizationDetailsResult {
+    organizationId: string;
+    name: string;
+    databaseName: string;
+    created: Date;
+    roles: FetchOrganizationDetailsRole[];
+}
+
+export interface FetchOrganizationDetailsRole {
+    name: string;
+    dbRole: string;
+}
+
 export interface FetchRecords {
     sql: string | null;
     columns: FetchRecordsColumn[];

@@ -1,17 +1,13 @@
-import { go, PageSettings } from '../../partials/Nav';
-import { toast } from '../../partials/Alerts';
-import { isAuthenticated } from '../../utils/session';
+import { toast } from '../../partials/Toasts';
 import { FieldSetOptions, FieldStack } from '../../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
 import { createEffect } from 'solid-js';
 import { postCreateOrganization } from '../../bindings/GiantTeam.Cluster.Api.Controllers';
-
-export const pageSettings: PageSettings = {
-    name: 'New Organization',
-    showInNav: () => isAuthenticated(),
-}
+import { useNavigate } from '@solidjs/router';
 
 export default function NewOrganizationPage() {
+    const nav = useNavigate();
+
     const data = createMutable({
         name: '',
         databaseName: '',
@@ -42,7 +38,7 @@ export default function NewOrganizationPage() {
 
         if (response.ok) {
             toast.info('Organization created!');
-            go('/organizations/' + response.data.organizationId);
+            nav('/organizations/' + response.data.organizationId);
         }
         else {
             toast.error(response.message);

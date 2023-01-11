@@ -1,10 +1,9 @@
 import { Show } from 'solid-js';
-import { A, PageSettings } from '../partials/Nav';
+import { Anchor } from '../partials/Anchor';
 import { logout, isAuthenticated } from '../utils/session';
 
-export const pageSettings: PageSettings = {
+export const pageSettings = {
   name: 'Logout',
-  showInNav: () => isAuthenticated(),
 }
 
 export default function LogoutPage() {
@@ -24,8 +23,8 @@ export default function LogoutPage() {
           You have been logged out.
         </p>
         <ul>
-          <li><A href='/'>Go home</A></li>
-          <li><A href='/login'>Login</A></li>
+          <li><Anchor href='/'>Go home</Anchor></li>
+          <li><Anchor href='/login'>Login</Anchor></li>
         </ul>
       </Show>
 

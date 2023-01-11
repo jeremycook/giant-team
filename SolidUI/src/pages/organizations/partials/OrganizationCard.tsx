@@ -1,5 +1,5 @@
 import { FetchOrganizationOutput } from "../../../bindings/GiantTeam.Cluster.Directory.Services";
-import { A } from "../../../partials/Nav";
+import { Anchor } from "../../../partials/Anchor";
 
 export interface OrganizationModel extends FetchOrganizationOutput {
 }
@@ -7,7 +7,7 @@ export interface OrganizationModel extends FetchOrganizationOutput {
 export function OrganizationCard(props: { model: OrganizationModel }) {
     return (
         <div class='card'>
-            <A href={'/organizations/' + props.model.organizationId}>{props.model.name}</A>
+            <Anchor href={'/organizations/' + props.model.organizationId}>{props.model.name}</Anchor>
         </div>
     )
 }

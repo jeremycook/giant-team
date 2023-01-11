@@ -1,11 +1,5 @@
-import { A, PageSettings } from '../../partials/Nav';
-import { isAuthenticated } from '../../utils/session';
+import { A } from '@solidjs/router';
 import MyOrganizations from './partials/MyOrganizations';
-
-export const pageSettings: PageSettings = {
-  name: 'Organizations',
-  showInNav: () => isAuthenticated(),
-}
 
 export default function OrganizationsPage() {
 

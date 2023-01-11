@@ -1,12 +1,12 @@
 import { Navigate, Outlet, useLocation } from "@solidjs/router";
 import { Show } from "solid-js";
-import { isAuthenticated } from "../utils/session";
+import { user } from "../utils/session";
 
-export const Protected = () => {
+export const ProtectedRoute = () => {
     const location = useLocation();
 
     return (
-        <Show when={isAuthenticated()}
+        <Show when={user.isAuthenticated}
             fallback={
                 <Navigate href='/login' state={{ returnUrl: location.pathname + location.search + location.hash }} />
             }>
@@ -15,4 +15,4 @@ export const Protected = () => {
     );
 }
 
-export default Protected;
+export default { ProtectedRoute };

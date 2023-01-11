@@ -1,17 +1,19 @@
 import { createEffect } from 'solid-js';
 import { createMutable } from 'solid-js/store';
-import { A, go, here, PageSettings } from '../partials/Nav';
-import { toast } from '../partials/Alerts';
-import { isAuthenticated } from '../utils/session';
+import { Anchor } from '../partials/Anchor';
+import { toast } from '../partials/Toasts';
 import { FieldSetOptions, FieldStack } from '../widgets/FieldStack';
 import { postRegister } from '../bindings/GiantTeam.Authentication.Api.Controllers';
+import { useLocation } from '@solidjs/router';
+import { useGo } from '../helpers/httpHelpers';
 
-export const pageSettings: PageSettings = {
+export const pageSettings = {
   name: 'Join',
-  showInNav: () => !isAuthenticated(),
 }
 
 export default function JoinPage() {
+  const here = useLocation<{ returnUrl: string }>();
+  const go = useGo();
 
   const data = createMutable({
     name: '',
@@ -52,9 +54,8 @@ export default function JoinPage() {
     });
 
     if (output.ok) {
-      const state = here.state as { returnUrl?: string };
       toast.info('Success!');
-      go('/login', { username: data.username, returnUrl: state.returnUrl });
+      go('/login', { username: data.username, returnUrl: here.state?.returnUrl });
     } else {
       toast.error(output.message);
     }
@@ -78,7 +79,7 @@ export default function JoinPage() {
           <button type='submit' class='button paint-primary'>
             Join Now
           </button>
-          <A href='/login' class='p-button'>Login</A>
+          <Anchor href='/login' class='p-button'>Login</Anchor>
         </div>
 
       </form>

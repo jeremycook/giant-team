@@ -20,7 +20,7 @@ export const toast = {
     },
 }
 
-export function Alerts() {
+export function Toasts() {
     return <>
         <For each={lanes.filter(o => !o.dismissed)}>{alert => <>
             <div classList={{

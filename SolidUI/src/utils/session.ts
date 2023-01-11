@@ -1,11 +1,19 @@
 import { createStore } from 'solid-js/store';
 import { postLogout, postSession } from '../bindings/GiantTeam.Authentication.Api.Controllers';
-import { go } from '../partials/Nav';
+import { go } from '../helpers/httpHelpers';
 
 const KEY = 'SESSION388';
 
 /** Keep the session alive */
 setInterval(() => isAuthenticated() && refreshSession(), 30 * 60 * 1000);
+
+export class User {
+  public get isAuthenticated() {
+    return isAuthenticated();
+  }
+}
+
+export const user = new User();
 
 export interface Session {
   userId: string | null;

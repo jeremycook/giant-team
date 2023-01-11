@@ -1,15 +1,14 @@
 import { A } from '@solidjs/router';
-import { Component, Show } from 'solid-js';
-import AppRoutes from './routes';
+import { Show } from 'solid-js';
+import { AppRoutes } from './AppRoutes';
 import { session, isAuthenticated } from './utils/session';
 import { HomeIcon, AlertOutlineIcon, PersonOutlineIcon, PersonIcon, SearchIcon, SparklesIcon, SparklesOutlineIcon, HomeOutlineIcon, MenuOutline, MenuIcon } from './helpers/icons';
-import { BreadcrumbTrail } from './utils/nav';
 
-const App: Component = () => {
+export function App() {
   return (
     <>
       <nav class='site-nav bg-gray-100 b-b' role='navigation'>
-        
+
         <div class='py md:grid md:grid-cols-[1fr_2fr_1fr] print:hidden'>
 
           <Show when={isAuthenticated()} fallback={(
@@ -85,7 +84,7 @@ const App: Component = () => {
                 <div class='dropdown-anchor' aria-labelledby='site-navbar-user-dropdown'>
                   <div class='dropdown-content stack md:position-right'>
                     <strong class='stack-item'>Hi {session.username}!</strong>
-                    <A href='/profile' class='stack-item'>My Profile</A>
+                    <A href='/my' class='stack-item'>My Profile</A>
                     <A href='/logout' class='stack-item'>Logout</A>
                   </div>
                 </div>
@@ -97,19 +96,9 @@ const App: Component = () => {
 
         </div>
 
-        <div class='flex mb justify-center children:px-2'>
-          <BreadcrumbTrail />
-        </div>
-
       </nav>
 
-      <main>
-        <AppRoutes />
-      </main>
-
-      <div id='main-portal' class='absolute top-0 left-0 right-0 h-0 flex justify-center'></div>
+      <AppRoutes />
     </>
   );
 };
-
-export default App;

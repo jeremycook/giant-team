@@ -1,18 +1,15 @@
+import { useLocation } from "@solidjs/router";
 import { createEffect } from "solid-js";
 import { createMutable } from "solid-js/store";
 import { postCreateSpace } from "../../../bindings/GiantTeam.Organization.Api.Controllers";
-import { toast } from "../../../partials/Alerts";
-import { PageSettings, go, here } from "../../../partials/Nav";
-import { isAuthenticated } from "../../../utils/session";
+import { useGo } from "../../../helpers/httpHelpers";
+import { toast } from "../../../partials/Toasts";
 import { FieldSetOptions, FieldStack } from "../../../widgets/FieldStack";
 
-
-export const pageSettings: PageSettings = {
-    name: 'New Space',
-    showInNav: () => isAuthenticated(),
-}
-
 export default function NewSpacePage() {
+    const location = useLocation<{ organization: string }>();
+    const go = useGo();
+
     const data = createMutable({
         name: '',
         schemaName: '',
@@ -37,14 +34,13 @@ export default function NewSpacePage() {
         e.preventDefault();
 
         const response = await postCreateSpace({
-            databaseName: here.routeValues.organization!,
+            databaseName: location.state?.organization!,
             name: data.name,
-            schemaName: data.schemaName,
         });
 
         if (response.ok) {
             toast.info('Space created!');
-            go(`/organizations/${here.routeValues.organization}/spaces/` + response.data.spaceId);
+            go(`/organizations/${location.state?.organization!}/spaces/${response.data.nodeId}`);
         }
         else {
             toast.error(response.message);

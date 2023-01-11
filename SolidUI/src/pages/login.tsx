@@ -3,14 +3,10 @@ import { isAuthenticated, refreshSession, session } from '../utils/session';
 import { InfoIcon, WarningIcon } from '../helpers/icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
-import { A, go, here, PageSettings } from '../partials/Nav';
+import { Anchor } from '../partials/Anchor';
 import { isLocalUrl } from '../helpers/urlHelpers';
 import { postLogin } from '../bindings/GiantTeam.Authentication.Api.Controllers';
-
-export const pageSettings: PageSettings = {
-  name: 'Login',
-  showInNav: () => !isAuthenticated(),
-}
+import { useLocation, useNavigate } from '@solidjs/router';
 
 const dataOptions: FieldSetOptions = {
   username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
@@ -19,8 +15,11 @@ const dataOptions: FieldSetOptions = {
 };
 
 export default function LoginPage() {
+  const here = useLocation<{ username: string, returnUrl: string }>();
+  const navigate = useNavigate();
+
   const data = createMutable({
-    username: here.state.username ?? '',
+    username: here.state?.username ?? '',
     password: '',
     remainLoggedIn: false,
   });
@@ -29,9 +28,8 @@ export default function LoginPage() {
   const [message, messageSetter] = createSignal('');
 
   const returnUrl = () => {
-    const state = here.state as { returnUrl?: string };
-    if (state?.returnUrl) {
-      const url = new URL(state.returnUrl, location.href);
+    if (here.state?.returnUrl) {
+      const url = new URL(here.state?.returnUrl, location.href);
       if (isLocalUrl(url) && !url.pathname.endsWith('/login'))
         return url.toString();
     }
@@ -40,7 +38,7 @@ export default function LoginPage() {
     return '/my';
   };
 
-  const formSubmit = async (e: SubmitEvent) => {
+  const onSubmitForm = async (e: SubmitEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
 
@@ -60,8 +58,8 @@ export default function LoginPage() {
       await refreshSession()
 
       const url = returnUrl();
-      console.debug(`Redirecting from ${window.location.href} to ${url}.`)
-      go(url);
+      console.debug(`Redirecting from ${location.href} to ${url}.`)
+      navigate(url);
       return;
     } else {
       messageSetter(output.message);
@@ -76,9 +74,9 @@ export default function LoginPage() {
       <Show when={isAuthenticated()}>
         <p class='text-info' role='alert'>
           <InfoIcon class='animate-bounce-in' />{' '}
-          FYI: You are currently logged in as <A href='/profile'>{session.username}</A>.
+          FYI: You are currently logged in as <Anchor href='/profile'>{session.username}</Anchor>.
           <Show when={returnUrl()}>
-            {' '}<A href={returnUrl()!} class='underline'>Click here to go back</A>.
+            {' '}<Anchor href={returnUrl()!} class='underline'>Click here to go back</Anchor>.
           </Show>
         </p>
       </Show>
@@ -90,7 +88,7 @@ export default function LoginPage() {
         </p>
       </Show>
 
-      <form onSubmit={formSubmit} class='form-grid'>
+      <form onSubmit={onSubmitForm} class='form-grid'>
 
         <FieldStack data={data} options={dataOptions} />
 
@@ -99,7 +97,7 @@ export default function LoginPage() {
           <button type='submit' class='button paint-primary'>
             Login
           </button>
-          <A href='/join' class='p-button'>Join</A>
+          <Anchor href='/join' class='p-button'>Join</Anchor>
         </div>
 
       </form>

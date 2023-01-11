@@ -1,8 +1,5 @@
-import { PageSettings } from "../partials/Nav";
-
-export const pageSettings: PageSettings = {
+export const pageSettings = {
   name: 'Error',
-  showInNav: () => false,
 }
 
 export default function ErrorPage() {
