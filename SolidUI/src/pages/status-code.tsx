@@ -1,8 +1,10 @@
+import { CardLayout } from "../partials/CardLayout";
+
 export default function StatusCodePage({ status, statusText, message }: { status: number, statusText: string, message: string }) {
   return (
-    <section class='card md:w-md mx-auto'>
+    <CardLayout>
       <h1>{status}: {statusText}</h1>
       <p>{message}</p>
-    </section>
+    </CardLayout>
   );
 }

@@ -99,9 +99,11 @@ export function createConfig(): VitePluginConfig {
         'badge': 'inline-block rounded text-.8em px-.5em py-.1em font-thin',
 
         'button': 'p-button border paint-secondary-400 rounded-1 shadow active:shadow-inset',
+        'button-new': 'p-button border border-2 border-dashed paint-secondary-100 rounded-1 hover:border-primary',
         'button-primary': 'button paint-primary p-2',
 
         'card': 'pxy bg-white border rounded shadow',
+        'card-new': 'pxy bg-white border border-2 border-dashed rounded',
 
         // 'dropdown-anchor': 'z-1 relative overflow-hidden opacity-0 top-15px transition-opacity transition-top',
         // 'dropdown-content': 'absolute',

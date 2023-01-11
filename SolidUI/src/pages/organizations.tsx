@@ -1,10 +1,10 @@
 import { A } from '@solidjs/router';
-import MyOrganizations from './partials/MyOrganizations';
+import { MainLayout } from '../partials/MainLayout';
+import MyOrganizations from './organizations/partials/MyOrganizations';
 
 export default function OrganizationsPage() {
-
   return (
-    <section class='card md:w-md md:mx-auto'>
+    <MainLayout>
       <h1>Organizations</h1>
 
       <div class='flex gap-4'>
@@ -13,6 +13,6 @@ export default function OrganizationsPage() {
           <A href='/organizations/new-organization'>New Organization</A>
         </div>
       </div>
-    </section>
+    </MainLayout>
   )
 }

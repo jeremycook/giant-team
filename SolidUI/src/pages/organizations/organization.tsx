@@ -1,9 +1,10 @@
-import { RouteDataFuncArgs, useRouteData } from "@solidjs/router";
+import { RouteDataFuncArgs, useParams, useRouteData } from "@solidjs/router";
 import { createResource, Show } from "solid-js";
 import { postFetchOrganizationDetails } from "../../bindings/GiantTeam.Organization.Api.Controllers";
 import { FetchOrganizationDetailsResult } from "../../bindings/GiantTeam.Organization.Services";
 import { DataResponseResource } from "../../helpers/DataResponseResource";
-import { Explorer } from "./{organization}/partials/Explorer";
+import { MainLayout } from "../../partials/MainLayout";
+import { Explorer } from "./organization/partials/Explorer";
 
 export class OrganizationRouteData extends DataResponseResource<FetchOrganizationDetailsResult>{ }
 
@@ -20,14 +21,15 @@ export function useOrganizationRouteData() {
 }
 
 export default function OrganizationPage() {
-    const routeData = useOrganizationRouteData();
+    const route = useParams<{ path: string }>();
+    const org = useOrganizationRouteData();
 
-    return <>
-        <Show when={routeData.data}>{() => {
+    return <MainLayout>
+        <Show when={org.data}>{() => {
             return <>
-                <h1>{routeData.data!.name}</h1>
-                <Explorer organizationId={routeData.data!.organizationId} path='/' />
+                <h1>{org.data!.name}</h1>
+                <Explorer organizationId={org.data!.organizationId} path={route.path} />
             </>
         }}</Show>
-    </>
+    </MainLayout>
 }

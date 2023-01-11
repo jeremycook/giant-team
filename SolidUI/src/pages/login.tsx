@@ -1,107 +1,97 @@
-import { createSignal, Show } from 'solid-js';
+import { Show } from 'solid-js';
 import { isAuthenticated, refreshSession, session } from '../utils/session';
-import { InfoIcon, WarningIcon } from '../helpers/icons';
+import { InfoIcon } from '../helpers/icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
 import { Anchor } from '../partials/Anchor';
 import { isLocalUrl } from '../helpers/urlHelpers';
 import { postLogin } from '../bindings/GiantTeam.Authentication.Api.Controllers';
 import { useLocation, useNavigate } from '@solidjs/router';
+import { toast } from '../partials/Toasts';
+import { CardLayout } from '../partials/CardLayout';
 
 const dataOptions: FieldSetOptions = {
-  username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
-  password: { type: 'password', label: 'Password', autocomplete: 'current-password' },
-  remainLoggedIn: { type: 'boolean', label: 'Remember me' },
+    username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
+    password: { type: 'password', label: 'Password', autocomplete: 'current-password' },
+    remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
 
 export default function LoginPage() {
-  const here = useLocation<{ username: string, returnUrl: string }>();
-  const navigate = useNavigate();
+    const here = useLocation<{ username: string, returnUrl: string }>();
+    const navigate = useNavigate();
 
-  const data = createMutable({
-    username: here.state?.username ?? '',
-    password: '',
-    remainLoggedIn: false,
-  });
-
-  const [ok, okSetter] = createSignal(true);
-  const [message, messageSetter] = createSignal('');
-
-  const returnUrl = () => {
-    if (here.state?.returnUrl) {
-      const url = new URL(here.state?.returnUrl, location.href);
-      if (isLocalUrl(url) && !url.pathname.endsWith('/login'))
-        return url.toString();
-    }
-
-    // Fallback
-    return '/my';
-  };
-
-  const onSubmitForm = async (e: SubmitEvent) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-
-    const output = await postLogin({
-      username: form.username.value,
-      password: form.password.value,
-      elevated: true, // TODO: toggle
-      remainLoggedIn: form.remainLoggedIn.checked,
+    const data = createMutable({
+        username: here.state?.username ?? '',
+        password: '',
+        remainLoggedIn: false,
     });
 
-    okSetter(output.ok);
+    const returnUrl = () => {
+        if (here.state?.returnUrl) {
+            const url = new URL(here.state?.returnUrl, location.href);
+            if (isLocalUrl(url) && !url.pathname.endsWith('/login'))
+                return url.toString();
+        }
 
-    if (output.ok) {
-      messageSetter('Logging you in…');
+        // Fallback
+        return '/my';
+    };
 
-      // Refresh the session
-      await refreshSession()
+    const onSubmitForm = async (e: SubmitEvent) => {
+        e.preventDefault();
+        const form = e.target as HTMLFormElement;
 
-      const url = returnUrl();
-      console.debug(`Redirecting from ${location.href} to ${url}.`)
-      navigate(url);
-      return;
-    } else {
-      messageSetter(output.message);
-    }
-  };
+        const output = await postLogin({
+            username: form.username.value,
+            password: form.password.value,
+            elevated: true, // TODO: toggle
+            remainLoggedIn: form.remainLoggedIn.checked,
+        });
 
-  return (
-    <section class='card md:w-md md:mx-auto'>
+        if (output.ok) {
+            toast.success('Logging you in…');
 
-      <h1>Login</h1>
+            // Refresh the session
+            await refreshSession()
 
-      <Show when={isAuthenticated()}>
-        <p class='text-info' role='alert'>
-          <InfoIcon class='animate-bounce-in' />{' '}
-          FYI: You are currently logged in as <Anchor href='/profile'>{session.username}</Anchor>.
-          <Show when={returnUrl()}>
-            {' '}<Anchor href={returnUrl()!} class='underline'>Click here to go back</Anchor>.
-          </Show>
-        </p>
-      </Show>
+            const url = returnUrl();
+            console.debug(`Redirecting from ${location.href} to ${url}.`)
+            navigate(url);
+            return;
+        } else {
+            toast.error(output.message);
+        }
+    };
 
-      <Show when={message()}>
-        <p class={(ok() ? 'text-ok' : 'text-error')} role='alert'>
-          <WarningIcon class='animate-bounce-in' />{' '}
-          {message()}
-        </p>
-      </Show>
+    return (
+        <CardLayout>
 
-      <form onSubmit={onSubmitForm} class='form-grid'>
+            <h1>Login</h1>
 
-        <FieldStack data={data} options={dataOptions} />
+            <Show when={isAuthenticated()}>
+                <p class='text-info' role='alert'>
+                    <InfoIcon class='animate-bounce-in' />{' '}
+                    FYI: You are currently logged in as <Anchor href='/profile'>{session.username}</Anchor>.
+                    <Show when={returnUrl()}>
+                        {' '}<Anchor href={returnUrl()!} class='underline'>Click here to go back</Anchor>.
+                    </Show>
+                </p>
+            </Show>
 
-        <div />
-        <div>
-          <button type='submit' class='button paint-primary'>
-            Login
-          </button>
-          <Anchor href='/join' class='p-button'>Join</Anchor>
-        </div>
+            <form onSubmit={onSubmitForm} class='form-grid'>
 
-      </form>
+                <FieldStack data={data} options={dataOptions} />
 
-    </section>
-  );
+                <div />
+                <div>
+                    <button type='submit' class='button paint-primary'>
+                        Login
+                    </button>
+                    <Anchor href='/join' class='p-button'>Join</Anchor>
+                </div>
+
+            </form>
+
+        </CardLayout>
+    );
 }

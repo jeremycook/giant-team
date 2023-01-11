@@ -1,17 +1,11 @@
-import { ParentProps } from "solid-js";
-import { RenderSection, SectionContext, SectionContextValue } from "./Section";
+import { ParentProps } from 'solid-js';
+import { NavBar } from './NavBar';
 
-export interface SiteLayoutProps extends ParentProps {
-}
-
-export default function SiteLayout(props: SiteLayoutProps) {
-    const sectionContextValue = new SectionContextValue();
-
-    return (<>
-        <SectionContext.Provider value={sectionContextValue}>
-            <RenderSection name='siteNav' />
-            {props.children}
-            <RenderSection name='siteFooter' />
-        </SectionContext.Provider>
-    </>)
-}
+export function SiteLayout(props: ParentProps) {
+  return (
+    <>
+      <NavBar />
+      {props.children}
+    </>
+  );
+};

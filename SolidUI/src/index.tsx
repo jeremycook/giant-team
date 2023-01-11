@@ -8,12 +8,12 @@ import 'uno.css';
 import './style/plugins.css';
 import './style/overrides.css';
 import { Router } from '@solidjs/router';
-import { App } from './App';
+import { AppRoutes } from './AppRoutes';
 
 render(
     () => (
         <Router>
-            <App />
+            <AppRoutes />
         </Router>
     ),
     document.getElementById('root') as HTMLElement,
