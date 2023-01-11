@@ -2,6 +2,7 @@
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
 using GiantTeam.Postgres.Models;
+using GiantTeam.UserData.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 

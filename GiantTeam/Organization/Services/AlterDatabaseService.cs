@@ -2,6 +2,7 @@
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.DatabaseDefinition.Alterations.Models;
 using GiantTeam.Postgres;
+using GiantTeam.UserData.Services;
 using GiantTeam.UserManagement.Services;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;

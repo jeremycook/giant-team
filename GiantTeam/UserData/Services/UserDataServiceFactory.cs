@@ -5,7 +5,7 @@ using GiantTeam.UserManagement.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace GiantTeam.Organization.Services
+namespace GiantTeam.UserData.Services
 {
     [Service]
     public class UserDataServiceFactory

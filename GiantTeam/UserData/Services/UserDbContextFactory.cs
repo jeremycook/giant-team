@@ -1,13 +1,11 @@
-﻿using GiantTeam.ComponentModel;
-using GiantTeam.Organization.Etc.Data;
-using GiantTeam.Postgres;
+﻿using GiantTeam.Postgres;
 using GiantTeam.Startup;
 using GiantTeam.UserManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace GiantTeam.Organization.Services
+namespace GiantTeam.UserData.Services
 {
     [Service]
     public class UserDbContextFactory
@@ -34,7 +32,7 @@ namespace GiantTeam.Organization.Services
                 Password = sessionService.User.DbPassword
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<EtcDbContext>()
+            var dbContextOptions = new DbContextOptionsBuilder<TDbContext>()
                 .UseSnakeCaseNamingConvention()
                 .UseNpgsql(connectionStringBuilder)
                 .Options;
@@ -55,7 +53,7 @@ namespace GiantTeam.Organization.Services
                 Password = sessionService.User.DbPassword
             };
 
-            var dbContextOptions = new DbContextOptionsBuilder<EtcDbContext>()
+            var dbContextOptions = new DbContextOptionsBuilder<TDbContext>()
                 .UseSnakeCaseNamingConvention()
                 .UseNpgsql(connectionStringBuilder)
                 .Options;

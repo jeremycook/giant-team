@@ -6,6 +6,7 @@ using GiantTeam.ComponentModel.Services;
 using GiantTeam.Organization.Resources;
 using GiantTeam.Organization.Services;
 using GiantTeam.Postgres;
+using GiantTeam.UserData.Services;
 using GiantTeam.UserManagement.Services;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
@@ -34,6 +35,7 @@ namespace GiantTeam.Cluster.Directory.Services
         private readonly ManagerDirectoryDbContext managerDirectoryDb;
         private readonly UserDataServiceFactory userDataFactory;
         private readonly SessionService sessionService;
+        private readonly CreateSpaceService createSpaceService;
 
         public CreateOrganizationService(
             ILogger<CreateOrganizationService> logger,
@@ -41,7 +43,8 @@ namespace GiantTeam.Cluster.Directory.Services
             SecurityDataService securityDataService,
             ManagerDirectoryDbContext managerDirectoryDb,
             UserDataServiceFactory userDataFactory,
-            SessionService sessionService)
+            SessionService sessionService,
+            CreateSpaceService createSpaceService)
         {
             this.logger = logger;
             this.validationService = validationService;
@@ -49,6 +52,7 @@ namespace GiantTeam.Cluster.Directory.Services
             this.managerDirectoryDb = managerDirectoryDb;
             this.userDataFactory = userDataFactory;
             this.sessionService = sessionService;
+            this.createSpaceService = createSpaceService;
         }
 
         public async Task<CreateOrganizationResult> CreateOrganizationAsync(CreateOrganizationInput input)
@@ -80,21 +84,22 @@ namespace GiantTeam.Cluster.Directory.Services
 
             await using var dmtx = await managerDirectoryDb.Database.BeginTransactionAsync();
 
-            var owner = new OrganizationRole() { Name = "Owner" }.Init();
-            var member = new OrganizationRole() { Name = "Member" }.Init();
-            var guest = new OrganizationRole() { Name = "Guest" }.Init();
+            var owner = new OrganizationRole() { Name = "Owner", Created = DateTime.UtcNow };
+            var member = new OrganizationRole() { Name = "Member", Created = DateTime.UtcNow };
+            var guest = new OrganizationRole() { Name = "Guest", Created = DateTime.UtcNow };
             var organization = new Data.Organization()
             {
                 OrganizationId = input.DatabaseName,
                 Name = input.Name,
                 DatabaseName = input.DatabaseName,
-            }.Init();
-            organization.Roles!.AddRange(new[]
-            {
-                owner,
-                member,
-                guest,
-            });
+                Created = DateTime.UtcNow,
+                Roles = new(new[]
+                {
+                    owner,
+                    member,
+                    guest,
+                }),
+            };
 
             validationService.Validate(organization);
             managerDirectoryDb.Organizations.Add(organization);
@@ -142,8 +147,15 @@ namespace GiantTeam.Cluster.Directory.Services
                 var elevatedDatabaseService = userDataFactory.NewElevatedDataService(databaseName);
                 await elevatedDatabaseService.ExecuteAsync(batch);
 #pragma warning disable CS0618 // Type or member is obsolete
-                await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.SpacesSql);
+                await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
 #pragma warning restore CS0618 // Type or member is obsolete
+
+                // Create the default Home space
+                await createSpaceService.CreateSpaceAsync(new()
+                {
+                    DatabaseName = organization.DatabaseName,
+                    Name = "Home",
+                });
             }
             catch (Exception)
             {

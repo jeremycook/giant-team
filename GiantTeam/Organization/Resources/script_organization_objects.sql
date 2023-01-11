@@ -76,6 +76,7 @@ ALTER TABLE IF EXISTS etc.node
     OWNER to pg_database_owner;
 
 GRANT ALL ON TABLE etc.node TO pg_database_owner;
+GRANT SELECT ON TABLE etc.node TO anyone;
 
 -- Function: etc.check_node_type
 -- DROP FUNCTION IF EXISTS etc.check_node_type;
@@ -241,19 +242,22 @@ CREATE OR REPLACE VIEW etc.node_path
  AS
  WITH RECURSIVE cte AS (
          SELECT node.node_id,
-            '/'::text || node.name::text AS path
+            '/'::text || node.name_lower::text AS path
            FROM etc.node
           WHERE node.parent_id = '00000000-0000-0000-0000-000000000000'::uuid AND node.node_id <> node.parent_id
         UNION ALL
          SELECT node.node_id,
-            (cte_1.path || '/'::text) || node.name::text
+            (cte_1.path || '/'::text) || node.name_lower::text
            FROM cte cte_1
              JOIN etc.node ON cte_1.node_id = node.parent_id
         )
+ SELECT '00000000-0000-0000-0000-000000000000'::uuid node_id, '/' path
+ UNION ALL
  SELECT cte.node_id,
     cte.path
    FROM cte
-  ORDER BY cte.path;
+   JOIN etc.node ON node.node_id = cte.node_id
+  ORDER BY path;
 
 ALTER TABLE etc.node_path
     OWNER TO pg_database_owner;

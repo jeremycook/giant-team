@@ -1,31 +1,25 @@
 ﻿using GiantTeam.Cluster.Directory.Helpers;
+using GiantTeam.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiantTeam.Cluster.Directory.Data
 {
     public class OrganizationRole
     {
-        public OrganizationRole Init()
-        {
-            OrganizationRoleId = Guid.NewGuid();
-            Created = DateTimeOffset.UtcNow;
-            DbRole = DirectoryHelpers.OrganizationRole(OrganizationRoleId);
-            return this;
-        }
-
         [Key]
-        public Guid OrganizationRoleId { get; private set; }
+        public Guid OrganizationRoleId { get; set; }
 
-        public DateTimeOffset Created { get; private set; }
+        public DateTime Created { get; set; }
 
-        public string OrganizationId { get; private set; } = null!;
+        public string OrganizationId { get; set; } = null!;
         public Organization? Organization { get; private set; }
 
-        [StringLength(50)]
+        [StringLength(50), RoleName]
         public string Name { get; set; } = null!;
 
-        [StringLength(60)]
-        public string DbRole { get; private set; } = null!;
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DbRole { get => DirectoryHelpers.OrganizationRole(OrganizationRoleId); private set { } }
 
         public string Description { get; set; } = string.Empty;
     }

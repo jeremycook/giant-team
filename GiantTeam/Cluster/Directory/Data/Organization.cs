@@ -5,13 +5,6 @@ namespace GiantTeam.Cluster.Directory.Data
 {
     public class Organization
     {
-        public Organization Init()
-        {
-            Created = DateTimeOffset.UtcNow;
-            Roles = new();
-            return this;
-        }
-
         [Key]
         [Required, StringLength(50), DatabaseName]
         public string OrganizationId { get; set; } = null!;
@@ -22,8 +15,8 @@ namespace GiantTeam.Cluster.Directory.Data
         [Required, StringLength(50), DatabaseName]
         public string DatabaseName { get; set; } = null!;
 
-        public DateTimeOffset Created { get; private set; }
+        public DateTime Created { get; set; }
 
-        public List<OrganizationRole>? Roles { get; private set; }
+        public List<OrganizationRole>? Roles { get; set; }
     }
 }

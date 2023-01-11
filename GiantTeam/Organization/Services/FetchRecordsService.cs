@@ -3,6 +3,7 @@ using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Linq;
 using GiantTeam.Postgres;
+using GiantTeam.UserData.Services;
 using GiantTeam.UserManagement.Services;
 using Npgsql;
 using Npgsql.Schema;

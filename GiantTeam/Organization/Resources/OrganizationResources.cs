@@ -4,10 +4,7 @@
     {
         static Type Type { get; } = typeof(OrganizationResources);
 
-        /// <summary>
-        /// The contents of "spaces.sql".
-        /// </summary>
-        public static string SpacesSql { get; } = ReadAllText("spaces.sql");
+        public static string ScriptOrganizationObjectsSql { get; } = ReadAllText("script_organization_objects.sql");
 
         public static string ReadAllText(string name)
         {
