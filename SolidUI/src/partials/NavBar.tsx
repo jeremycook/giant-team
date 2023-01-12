@@ -1,7 +1,8 @@
 import { A } from "@solidjs/router";
 import { Show } from "solid-js";
-import { HomeIcon, HomeOutlineIcon, PersonIcon, PersonOutlineIcon, SparklesIcon, SparklesOutlineIcon, MenuIcon, MenuOutline, SearchIcon, AlertOutlineIcon } from "../helpers/icons";
-import { session, user } from "../utils/session";
+import { HomeIcon, HomeOutlineIcon, PersonIcon, PersonOutlineIcon, SparklesIcon, SparklesOutlineIcon, MenuIcon, MenuOutline, SearchIcon, AlertOutlineIcon, BuildingIcon, BuildingOutlineIcon } from "../helpers/icons";
+import { user } from "../utils/session";
+import { toggleNotifications } from "./Toasts";
 
 export function NavBar() {
     return <>
@@ -41,18 +42,11 @@ export function NavBar() {
                             <HomeOutlineIcon class='parent-inactive' />
                             <span class='md:sr-only'> Home</span>
                         </A>
-                        <div class='dropdown'>
-                            <button class='dropdown-button' type='button' id='site-navbar-menu-dropdown'>
-                                <MenuIcon class='parent-active' />
-                                <MenuOutline class='parent-inactive' />
-                                <span class='md:sr-only'> Menu</span>
-                            </button>
-                            <div class='dropdown-anchor' aria-labelledby='site-navbar-menu-dropdown'>
-                                <div class='dropdown-content stack'>
-                                    <A href='/workspaces' class='stack-item'>Workspaces</A>
-                                </div>
-                            </div>
-                        </div>
+                        <A href='/organizations'>
+                            <BuildingIcon class='parent-active' />
+                            <BuildingOutlineIcon class='parent-inactive' />
+                            <span class='md:sr-only'> Organizations</span>
+                        </A>
                     </div>
 
                     <div class='px md:px-0'>
@@ -69,10 +63,10 @@ export function NavBar() {
 
                     <div class='flex md:mr-auto children:px-4 children:py-2'>
 
-                        <A href='/notifications'>
+                        <button onclick={() => toggleNotifications()}>
                             <AlertOutlineIcon />
                             <span class='md:sr-only'> Notifications</span>
-                        </A>
+                        </button>
                         <div class='dropdown'>
                             <button class='dropdown-button' type='button' id='site-navbar-user-dropdown'>
                                 <PersonIcon class='parent-active' />
@@ -81,7 +75,7 @@ export function NavBar() {
                             </button>
                             <div class='dropdown-anchor' aria-labelledby='site-navbar-user-dropdown'>
                                 <div class='dropdown-content stack md:position-right'>
-                                    <strong class='stack-item'>Hi {session.username}!</strong>
+                                    <strong class='stack-item'>Hi {user.username}!</strong>
                                     <A href='/my' class='stack-item'>My Profile</A>
                                     <A href='/logout' class='stack-item'>Logout</A>
                                 </div>

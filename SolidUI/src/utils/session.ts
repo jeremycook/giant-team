@@ -1,82 +1,76 @@
-import { useNavigate } from '@solidjs/router';
 import { createStore } from 'solid-js/store';
 import { postLogout, postSession } from '../bindings/GiantTeam.Authentication.Api.Controllers';
 
 const KEY = 'SESSION388';
 
-/** Keep the session alive */
-setInterval(() => isAuthenticated() && refreshSession(), 30 * 60 * 1000);
+/** Refresh every 30 minutes if still authenticated to keep the session alive. */
+setInterval(() => user.isAuthenticated && user.refresh(), 30 * 60 * 1000);
 
 export class User {
-  public get isAuthenticated() {
-    return isAuthenticated();
-  }
+    public get isAuthenticated() {
+        return _session.isAuthenticated;
+    }
+
+    public get username() {
+        return _session.username;
+    }
+
+    public get userId() {
+        return _session.userId;
+    }
+
+    /** Refresh the session from the server */
+    public async refresh() {
+        console.debug('Refreshing session.');
+
+        var response = await postSession();
+
+        if (response.ok) {
+            this._setSession({
+                isAuthenticated: true,
+                userId: response.data.userId ?? undefined,
+                username: response.data.username ?? undefined,
+            });
+        }
+    }
+
+    /** Logout from the server and clear the session */
+    public async logout() {
+        console.debug('Logging out.');
+
+        await postLogout();
+
+        this._setSession({ isAuthenticated: false });
+    }
+
+    private _setSession(session: Session) {
+        sessionStorage.setItem(KEY, JSON.stringify(session));
+        _setSession(session);
+    }
 }
 
 export const user = new User();
 
 export interface Session {
-  userId: string | null;
-  username: string | null;
+    isAuthenticated: boolean;
+    userId?: string;
+    username?: string;
 }
 
 const [_session, _setSession] = (() => {
-  const json = sessionStorage.getItem(KEY);
+    const json = sessionStorage.getItem(KEY);
 
-  console.log(KEY, json);
-
-  if (typeof json === 'string')
-    return createStore<Session>(JSON.parse(json));
-  else {
-    return createStore<Session>({
-      userId: null,
-      username: null,
-    });
-  }
+    if (typeof json === 'string') {
+        const session = JSON.parse(json);
+        return createStore<Session>({
+            isAuthenticated: session.isAuthenticated === true,
+            userId: session.userId ?? undefined,
+            username: session.username ?? undefined,
+        });
+    }
+    else {
+        return createStore<Session>({
+            isAuthenticated: false,
+        });
+    }
 })()
-
-export const session = _session;
-
-export const setSession = (session: Session) => {
-  sessionStorage.setItem(KEY, JSON.stringify(session));
-  _setSession(session);
-}
-
-export const isAuthenticated = () => session.userId ? true : false;
-
-/** Logout from the server and refresh the session */
-export const logout = async () => {
-  console.debug('Logging out.');
-
-  await postLogout();
-
-  setSession({
-    userId: null,
-    username: null
-  });
-}
-
-/** Refresh the session from the server */
-export const refreshSession = async () => {
-  console.debug('Refreshing session.');
-
-  var response = await postSession();
-
-  if (response.ok) {
-    setSession(response.data as Session);
-  }
-}
-
-/** Present the login page to anonymous users. */
-export const authorize = () => {
-  const navigate = useNavigate();
-
-  // Redirect for now, popup login in the future
-  if (!isAuthenticated()) {
-    const url = location.pathname + location.search + location.hash;
-
-    console.debug(`Redirecting from ${url} to /login.`);
-
-    navigate('/login', { state: { returnUrl: url } });
-  }
-}

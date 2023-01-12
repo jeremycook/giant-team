@@ -1,5 +1,5 @@
 import { Show } from 'solid-js';
-import { refreshSession, session, user } from '../utils/session';
+import { user } from '../utils/session';
 import { InfoIcon } from '../helpers/icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
@@ -16,20 +16,66 @@ const dataOptions: FieldSetOptions = {
     remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
 
-export default function LoginPage() {
-    const here = useLocation<{ username: string, returnUrl: string }>();
+export function Login(props: { username?: string, returnUrl?: string | false }) {
     const navigate = useNavigate();
 
     const data = createMutable({
-        username: here.state?.username ?? '',
+        username: props.username ?? '',
         password: '',
         remainLoggedIn: false,
     });
 
+
+    const onSubmitForm = async (e: SubmitEvent) => {
+        e.preventDefault();
+
+        const output = await postLogin({
+            username: data.username,
+            password: data.password,
+            remainLoggedIn: data.remainLoggedIn,
+            elevated: true,
+        });
+
+        if (output.ok) {
+            toast.success(`Welcome back ${data.username}!`);
+
+            await user.refresh()
+
+            if (typeof props.returnUrl === 'string' && isLocalUrl(props.returnUrl)) {
+                console.debug(`Redirecting from ${location.href} to ${props.returnUrl}.`)
+                navigate(props.returnUrl);
+            }
+            
+            return;
+        } else {
+            toast.error(output.message);
+        }
+    };
+
+    return <>
+        <form onSubmit={onSubmitForm} class='form-grid'>
+
+            <FieldStack data={data} options={dataOptions} />
+
+            <div />
+            <div>
+                <button type='submit' class='button paint-primary'>
+                    Login
+                </button>
+                <Anchor href='/join' class='p-button'>Join</Anchor>
+            </div>
+
+        </form>
+    </>
+}
+
+export default function LoginPage() {
+    const here = useLocation<{ username: string, returnUrl: string }>();
+
     const returnUrl = () => {
         const returnUrl = here.state?.returnUrl ?? here.query.returnUrl;
 
-        if (isLocalUrl(returnUrl)) {
+        if (returnUrl && isLocalUrl(returnUrl)) {
             const url = createUrl(returnUrl);
             if (isLocalUrl(url) && !url.pathname.endsWith('/login'))
                 return relativeHref(url);
@@ -39,61 +85,19 @@ export default function LoginPage() {
         return '/my';
     };
 
-    const onSubmitForm = async (e: SubmitEvent) => {
-        e.preventDefault();
-        const form = e.target as HTMLFormElement;
+    return <CardLayout>
+        <h1>Login</h1>
 
-        const output = await postLogin({
-            username: form.username.value,
-            password: form.password.value,
-            elevated: true, // TODO: toggle
-            remainLoggedIn: form.remainLoggedIn.checked,
-        });
+        <Show when={user.isAuthenticated}>
+            <p class='text-info' role='alert'>
+                <InfoIcon class='animate-bounce-in' />{' '}
+                FYI: You are currently logged in as <Anchor href='/profile'>{user.username}</Anchor>.
+                <Show when={returnUrl()}>
+                    {' '}<Anchor href={returnUrl()!} class='underline'>Click here to go back</Anchor>.
+                </Show>
+            </p>
+        </Show>
 
-        if (output.ok) {
-            toast.success('Logging you in…');
-
-            // Refresh the session
-            await refreshSession()
-
-            const url = returnUrl();
-            console.debug(`Redirecting from ${location.href} to ${url}.`)
-            navigate(url);
-            return;
-        } else {
-            toast.error(output.message);
-        }
-    };
-
-    return (
-        <CardLayout>
-
-            <h1>Login</h1>
-
-            <Show when={user.isAuthenticated}>
-                <p class='text-info' role='alert'>
-                    <InfoIcon class='animate-bounce-in' />{' '}
-                    FYI: You are currently logged in as <Anchor href='/profile'>{session.username}</Anchor>.
-                    <Show when={returnUrl()}>
-                        {' '}<Anchor href={returnUrl()!} class='underline'>Click here to go back</Anchor>.
-                    </Show>
-                </p>
-            </Show>
-
-            <form onSubmit={onSubmitForm} class='form-grid'>
-
-                <FieldStack data={data} options={dataOptions} />
-
-                <div />
-                <div>
-                    <button type='submit' class='button paint-primary'>
-                        Login
-                    </button>
-                    <Anchor href='/join' class='p-button'>Join</Anchor>
-                </div>
-
-            </form>
-
-        </CardLayout>
-    );
+        <Login username={here.state?.username} returnUrl={returnUrl()} />
+    </CardLayout>
 }

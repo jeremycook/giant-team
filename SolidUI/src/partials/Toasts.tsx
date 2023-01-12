@@ -1,8 +1,9 @@
-import { For, JSX, Match, Show, Switch } from "solid-js"
+import { batch, createEffect, createSignal, For, JSX, Match, Show, Switch } from "solid-js"
 import { createMutable } from "solid-js/store"
-import { DismissIcon } from "../helpers/icons";
+import { DismissIcon, InfoIcon } from "../helpers/icons";
 
 type NotificationTypeEnum = 'info' | 'success' | 'warning' | 'error';
+
 const NotificationType = {
     Info: 'info' as const,
     Success: 'success' as const,
@@ -13,27 +14,61 @@ const NotificationType = {
 type Notification = {
     type: NotificationTypeEnum;
     content: JSX.Element;
-    dismissed: boolean;
-    countDown: number | null;
+    read: boolean;
+    autoDismissAfter?: Date;
 };
 
-const notifications = createMutable<Notification[]>([]);
+const [show, setShow] = createSignal(false);
+const [notifications, setNotifications] = createSignal<Notification[]>([]);
+const unreadNotifications = () => notifications().filter(o => !o.read);
+const reversedNotifications = () => [...notifications()].reverse();
 
-const activeNotifications = () => notifications.filter(o => !o.dismissed).reverse();
+export const toggleNotifications = () => {
+    batch(() => {
+        if (show()) {
+            // Dismiss all
+            unreadNotifications().forEach(n => n.read = true);
+        }
+        setShow(!show());
+    })
+};
+
+createEffect(() => {
+    if (unreadNotifications().length > 0) {
+        setShow(true);
+    }
+})
 
 const push = (type: NotificationTypeEnum, content: JSX.Element) => {
-    const notice = createMutable({ type, content, dismissed: false, countDown: Math.ceil(75 * (content?.toString().length ?? 100)) });
+    const offset = Math.max(2000, Math.ceil(75 * (content?.toString().length ?? 0)));
+    const autoDismissAfter = new Date(Date.now() + offset);
 
-    setInterval(() => notice.countDown -= 1000, 1000);
+    const notice = createMutable({
+        type,
+        content,
+        read: false,
+        autoDismissAfter,
+    });
+
     setTimeout(() => {
-        if (notice.countDown !== null)
-            notice.dismissed = true;
-    }, notice.countDown);
+        if (notice.autoDismissAfter instanceof Date) {
+            notice.read = true;
+            if (unreadNotifications().length <= 0) {
+                // Hide the whole tray if this was the last auto dismiss
+                setShow(false);
+            }
+        }
+    }, offset);
 
-    notifications.push(notice);
+    setNotifications([...notifications(), notice]);
+
+    if (notifications().length > 10) {
+        setNotifications(notifications().slice(notifications().length - 10));
+    }
 };
 
 export const toast = {
+    show,
     push,
     info: (content: JSX.Element) => {
         push(NotificationType.Info, content);
@@ -50,17 +85,33 @@ export const toast = {
 }
 
 export function Toasts() {
-    return <Show when={activeNotifications().length > 0}>
-        <div class='fixed position-top position-right max-w-100% w-300px max-h-screen overflow-auto flex flex-col gap-2 p-2 bg-black bg-opacity-10 rounded-b shadow-xl'>
-            <For each={activeNotifications()}>{notice => <>
+    return <Show when={show()}>
+        <div class='fixed position-top position-bottom position-right max-w-90% w-300px overflow-auto flex flex-col gap-2 p-2 bg-black bg-opacity-10 shadow-xl'
+            onmouseenter={() => unreadNotifications().forEach(n => n.autoDismissAfter = undefined)}
+            onclick={() => unreadNotifications().forEach(n => n.autoDismissAfter = undefined)}>
+            <button type='button' onclick={() => toggleNotifications()}>
+                Dismiss Notifications
+            </button>
+            <Show when={notifications().length <= 0}>
                 <div class='rounded animate-fade-in animate-duration-200'>
-                    <div class='flex p-2 rounded-t text-white' classList={{
+                    <div class='grow p-2 overflow-auto bg-white bg-opacity-90'>
+                        <InfoIcon /> No recent notifications.
+                    </div>
+                </div>
+            </Show>
+            <For each={reversedNotifications()}>{notice => <>
+                <div class='rounded animate-fade-in animate-duration-200'
+                    classList={{
+                        'opacity-70': notice.read
+                    }}>
+                    <div class='flex p-2 text-white' classList={{
                         'bg-info': notice.type == NotificationType.Info,
                         'bg-ok': notice.type == NotificationType.Success,
                         'bg-warn': notice.type == NotificationType.Warning,
                         'bg-danger': notice.type == NotificationType.Error,
                     }}>
-                        <button type='button' class='text-white' onclick={() => notice.dismissed = true}>
+                        <button type='button' class='text-white' title='Mark as read'
+                            onclick={() => notice.read = true}>
                             <DismissIcon />
                             <span class='sr-only'>Dismiss Notification</span>
                         </button>
@@ -80,11 +131,9 @@ export function Toasts() {
                                 </Match>
                             </Switch>
                         </div>
-                        <Show when={notice.countDown ?? 0 > 0}>
-                            <div>
-                                {Math.round(notice.countDown! / 1000)}s
-                            </div>
-                        </Show>
+                        <div>
+                            {notice.read ? 'Read' : 'Unread'}
+                        </div>
                     </div>
                     <div class='grow p-2 overflow-auto bg-white bg-opacity-90'>
                         {notice.content}

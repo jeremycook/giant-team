@@ -1,6 +1,6 @@
 import { Anchor } from "../partials/Anchor";
 import { MainLayout } from "../partials/MainLayout";
-import { session } from "../utils/session";
+import { user } from "../utils/session";
 import MyOrganizations from "./organizations/partials/MyOrganizations";
 
 export default function MyPage() {
@@ -8,7 +8,7 @@ export default function MyPage() {
         <MainLayout>
             <h1>My Profile</h1>
             <p>
-                Welcome {session.username}!
+                Welcome {user.username}!
             </p>
 
             <h2>My Organizations</h2>

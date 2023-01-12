@@ -7,6 +7,8 @@ import arrowUpCircle from '@iconify-icons/fluent/arrow-circle-up-12-filled';
 import arrowUpCircleOutline from '@iconify-icons/fluent/arrow-circle-up-12-regular';
 import beakerFilled from '@iconify-icons/fluent/beaker-16-filled';
 import beakerOutline from '@iconify-icons/fluent/beaker-16-regular';
+import building from '@iconify-icons/fluent/building-multiple-20-filled';
+import buildingOutline from '@iconify-icons/fluent/building-multiple-20-regular';
 import chevronDown from '@iconify-icons/fluent/chevron-down-12-filled';
 import columnEditFilled from '@iconify-icons/fluent/column-edit-20-filled';
 import columnEditOutline from '@iconify-icons/fluent/column-edit-20-regular';
@@ -46,6 +48,8 @@ export const ArrowUpCircleIcon = (props: any) => <Icon icon={arrowUpCircle} aria
 export const ArrowUpCircleOutlineIcon = (props: any) => <Icon icon={arrowUpCircleOutline} aria-hidden {...props} />;
 export const BeakerFilledIcon = (props: any) => <Icon icon={beakerFilled} aria-hidden {...props} />;
 export const BeakerOutlineIcon = (props: any) => <Icon icon={beakerOutline} aria-hidden {...props} />;
+export const BuildingIcon = (props: any) => <Icon icon={building} aria-hidden {...props} />;
+export const BuildingOutlineIcon = (props: any) => <Icon icon={buildingOutline} aria-hidden {...props} />;
 export const ChevronDownIcon = (props: any) => <Icon icon={chevronDown} aria-hidden {...props} />;
 export const ColumnEditFilledIcon = (props: any) => <Icon icon={columnEditFilled} aria-hidden {...props} />;
 export const ColumnEditOutlineIcon = (props: any) => <Icon icon={columnEditOutline} aria-hidden {...props} />;

@@ -4,7 +4,7 @@ import { createMutable } from 'solid-js/store';
 import { createEffect } from 'solid-js';
 import { postCreateOrganization } from '../../bindings/GiantTeam.Cluster.Api.Controllers';
 import { useNavigate } from '@solidjs/router';
-import { MainLayout } from '../../partials/MainLayout';
+import { CardLayout } from '../../partials/CardLayout';
 
 export default function NewOrganizationPage() {
     const nav = useNavigate();
@@ -47,7 +47,7 @@ export default function NewOrganizationPage() {
     };
 
     return (
-        <MainLayout>
+        <CardLayout>
 
             <h1>New Organization</h1>
 
@@ -64,6 +64,6 @@ export default function NewOrganizationPage() {
 
             </form>
 
-        </MainLayout>
+        </CardLayout>
     );
 }

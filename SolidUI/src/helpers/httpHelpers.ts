@@ -1,5 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { ObjectStatus } from '../bindings/GiantTeam.ComponentModel.Models';
+import { log } from './logging';
 import { parseJson } from './objectHelpers';
 
 export enum HttpStatusCode {
@@ -74,10 +75,14 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
 
                 let errorMessage = details.message;
                 if (response.status === 401) {
-                    errorMessage ||= 'Please login to access the requested resource.'
+                    errorMessage ||= 'You must be logged in to access the requested resource.';
+                    // TODO: user.requestLogin();
                 }
                 else if (response.status === 403) {
                     errorMessage ||= 'You do not have permission to access the requested resource.'
+                }
+                else {
+                    log.warn('Non-OK response in {MemberName}: {ErrorMessage}.', ['postJson', errorMessage]);
                 }
 
                 const result: ObjectStatusResponse = {
@@ -93,10 +98,14 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
             else {
                 let errorMessage = await response.text();
                 if (response.status === 401) {
-                    errorMessage ||= 'Please login to access the requested resource.'
+                    errorMessage ||= 'You must be logged in to access the requested resource.'
+                    // TODO: user.requestLogin();
                 }
                 else if (response.status === 403) {
                     errorMessage ||= 'You do not have permission to access the requested resource.'
+                }
+                else {
+                    log.warn('Non-OK response in {MemberName}: {ErrorMessage}.', ['postJson', errorMessage]);
                 }
 
                 const result: ObjectStatusResponse = {
@@ -112,8 +121,7 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
         }
     }
     catch (err) {
-        // TODO: Upload errors
-        console.error(url, err);
+        log.warn('Suppressed {Error} in {MemberName}.', [err, 'postJson']);
         return {
             ok: false,
             status: HttpStatusCode.ConnectionFailure,

@@ -1,5 +1,5 @@
 import { Route, Routes } from '@solidjs/router';
-import { ProtectedRoute } from './widgets/Protected';
+import { ProtectedRoute } from './widgets/ProtectedRoute';
 
 import AccessDeniedPage from './pages/access-denied';
 import HomePage from './pages/home';

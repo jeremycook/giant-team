@@ -1,18 +1,30 @@
-function warn(message: string, data?: Record<string, any>) {
+function warn(message: string, data?: { [key: string]: any } | any[]) {
     console.warn(message, data);
     // TODO: Log
 }
 
-function error(message: string, data?: Record<string, any>) {
+function error(message: string, data?: { [key: string]: any } | any[]) {
     if (data) {
-        const pattern = new RegExp('(' + Object.keys(data).map(o => '{' + data + '}').join('|') + ')', 'g');
-        const replacedMessage = message.replaceAll(pattern, (m) => data[m]);
-        console.error(replacedMessage, data);
+        if (data instanceof Array) {
+            const pattern = /{[^{]+}/g;
+            let i = 0;
+            let namedData = {};
+            const replacedMessage = message.replaceAll(pattern, (m) => {
+                namedData = { ...namedData, [m]: data[i] };
+                return data[i++];
+            });
+            console.error(replacedMessage, namedData, message);
+        }
+        else {
+            const pattern = new RegExp('(' + Object.keys(data).map(key => '{' + key + '}').join('|') + ')', 'g');
+            const replacedMessage = message.replaceAll(pattern, (m) => data[m]);
+            console.error(replacedMessage, data, message);
+        }
     }
     else {
         console.error(message);
     }
-    // TODO: Log
+    // TODO: Upload to log
 }
 
 export const log = {

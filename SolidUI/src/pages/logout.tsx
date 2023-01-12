@@ -1,21 +1,21 @@
 import { Show } from 'solid-js';
 import { Anchor } from '../partials/Anchor';
 import { CardLayout } from '../partials/CardLayout';
-import { logout, isAuthenticated } from '../utils/session';
+import { user } from '../utils/session';
 
 export const pageSettings = {
     name: 'Logout',
 }
 
 export default function LogoutPage() {
-    logout();
+    user.logout();
 
     return (
         <CardLayout>
 
             <h1>Logout</h1>
 
-            <Show when={!isAuthenticated()} fallback={
+            <Show when={!user.isAuthenticated} fallback={
                 <p>
                     One moment please, logging out…
                 </p>
