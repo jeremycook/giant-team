@@ -56,10 +56,11 @@ CREATE TABLE IF NOT EXISTS etc.node
     name character varying(248) NOT NULL,
     type_id text COLLATE pg_catalog."default" NOT NULL,
 	created timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
-	name_lower character varying(248) NOT NULL GENERATED ALWAYS AS (lower(name)) STORED,
+	path text NOT NULL DEFAULT ('/*/' || gen_random_uuid()),
+	path_lower text NOT NULL GENERATED ALWAYS AS (lower(path)) STORED,
     CONSTRAINT node_check CHECK ((node_id <> parent_id AND name ~ '^[^<>:"/\|?*]+$') OR (node_id = '00000000-0000-0000-0000-000000000000' AND parent_id = '00000000-0000-0000-0000-000000000000')),
     CONSTRAINT node_pkey PRIMARY KEY (node_id),
-    CONSTRAINT node_key UNIQUE (parent_id, name_lower),
+    CONSTRAINT node_key UNIQUE (path),
     CONSTRAINT node_parent_id_fkey FOREIGN KEY (parent_id)
         REFERENCES etc.node (node_id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -78,16 +79,93 @@ ALTER TABLE IF EXISTS etc.node
 GRANT ALL ON TABLE etc.node TO pg_database_owner;
 GRANT SELECT ON TABLE etc.node TO anyone;
 
+-- FUNCTION: etc.get_node_path(uuid)
+-- DROP FUNCTION IF EXISTS etc.get_node_path(uuid);
+
+CREATE OR REPLACE FUNCTION etc.get_node_path(
+	_node_id uuid)
+    RETURNS text
+    LANGUAGE 'plpgsql'
+    COST 100
+    STABLE STRICT PARALLEL SAFE 
+AS $BODY$
+BEGIN
+	RETURN (CASE 
+		WHEN _node_id IS NULL THEN NULL
+		WHEN _node_id = '00000000-0000-0000-0000-000000000000'::uuid THEN '/'
+		ELSE (SELECT regexp_replace(etc.get_node_path(parent_id), '/+$', '') || '/' || name::text FROM etc.node WHERE node_id = _node_id LIMIT 1)
+	END);
+END;
+$BODY$;
+
+ALTER FUNCTION etc.get_node_path(uuid)
+    OWNER TO pg_database_owner;
+
+GRANT ALL ON FUNCTION etc.get_node_path(uuid) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.get_node_path(uuid) TO anyone;
+
 -- Function: etc.check_node_type
 -- DROP FUNCTION IF EXISTS etc.check_node_type;
 
 CREATE OR REPLACE FUNCTION etc.check_node_type(node_parent_id uuid, node_type_id text) RETURNS boolean
     LANGUAGE SQL
-    IMMUTABLE
+    STABLE STRICT PARALLEL SAFE 
 	RETURN EXISTS (SELECT 1
 				   FROM etc.node parent_node
 				   JOIN etc.type_constraint tc ON tc.parent_type_id = parent_node.type_id
 				   WHERE parent_node.node_id = node_parent_id AND tc.type_id = node_type_id);
+
+GRANT ALL ON FUNCTION etc.check_node_type(uuid, text) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.check_node_type(uuid, text) TO anyone;
+
+-- FUNCTION: etc.node_name_or_parent_id_upserting_trigger()
+
+CREATE OR REPLACE FUNCTION etc.node_name_or_parent_id_upserting_trigger()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+    BEGIN
+		IF NEW.node_id = '00000000-0000-0000-0000-000000000000'::uuid THEN
+			IF NEW.path IS NULL OR NEW.path <> '' THEN
+				NEW.path = '';
+			END IF;
+		ELSIF NEW.parent_id IS NOT NULL THEN
+			NEW.path = (SELECT parent.path || '/' || NEW.name FROM etc.node parent WHERE parent.node_id = NEW.parent_id);
+		END IF;
+        RETURN NEW;
+    END;
+$BODY$;
+
+CREATE OR REPLACE TRIGGER node_name_or_parent_id_upserting_trigger
+    BEFORE INSERT OR UPDATE OF name, parent_id
+    ON etc.node
+    FOR EACH ROW
+    EXECUTE FUNCTION etc.node_name_or_parent_id_upserting_trigger();
+
+-- FUNCTION: etc.node_path_upserted_trigger()
+
+CREATE OR REPLACE FUNCTION etc.node_path_upserted_trigger()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+    BEGIN
+		-- Update children
+		UPDATE etc.node
+		SET path = NEW.path || '/' || node.name
+		WHERE node.parent_id = NEW.node_id AND node_id <> parent_id;
+        RETURN NEW;
+    END;
+$BODY$;
+
+CREATE OR REPLACE TRIGGER node_path_upserted_trigger
+    AFTER INSERT OR UPDATE OF name, parent_id, path
+    ON etc.node
+    FOR EACH ROW
+    EXECUTE FUNCTION etc.node_path_upserted_trigger();
 
 -- Insert Root node before applying the node_type_id_check
 
@@ -102,6 +180,40 @@ INSERT INTO etc.type_constraint (type_id, parent_type_id) values
 INSERT INTO etc.node (node_id, parent_id, name, type_id) values
 	('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'Root', 'Root')
 	ON CONFLICT DO NOTHING;
+
+-- FUNCTION: etc.get_node_tree(uuid)
+-- DROP FUNCTION IF EXISTS etc.get_node_tree(uuid);
+
+CREATE OR REPLACE FUNCTION etc.get_node_tree(
+	_node_id uuid)
+    RETURNS jsonb
+    LANGUAGE 'plpgsql'
+    COST 100
+    STABLE STRICT PARALLEL UNSAFE
+AS $BODY$
+BEGIN
+	RETURN json_build_object(
+		'node_id',
+		node_id,
+		'name',
+		"name",
+		'children',
+		array(
+			SELECT etc.get_node_tree(node_id)
+			FROM etc.node 
+			WHERE parent_id = _node_id AND node_id <> parent_id
+		)
+	)
+	FROM etc.node
+	WHERE node_id = _node_id;
+END;
+$BODY$;
+
+ALTER FUNCTION etc.get_node_tree(uuid)
+    OWNER TO pg_database_owner;
+
+GRANT ALL ON FUNCTION etc.get_node_tree(uuid) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.get_node_tree(uuid) TO anyone;
 
 -- Check: node_type_id_check
 -- ALTER TABLE etc.node DROP CONSTRAINT IF EXISTS node_type_id_check;
@@ -234,37 +346,6 @@ ALTER TABLE etc.database_definition
 GRANT ALL ON TABLE etc.database_definition TO pg_database_owner;
 GRANT SELECT ON TABLE etc.database_definition TO anyone;
 
--- View: etc.node_path
-
--- DROP VIEW etc.node_path;
-
-CREATE OR REPLACE VIEW etc.node_path
- AS
- WITH RECURSIVE cte AS (
-         SELECT node.node_id,
-            '/'::text || node.name_lower::text AS path
-           FROM etc.node
-          WHERE node.parent_id = '00000000-0000-0000-0000-000000000000'::uuid AND node.node_id <> node.parent_id
-        UNION ALL
-         SELECT node.node_id,
-            (cte_1.path || '/'::text) || node.name_lower::text
-           FROM cte cte_1
-             JOIN etc.node ON cte_1.node_id = node.parent_id
-        )
- SELECT '00000000-0000-0000-0000-000000000000'::uuid node_id, '/' path
- UNION ALL
- SELECT cte.node_id,
-    cte.path
-   FROM cte
-   JOIN etc.node ON node.node_id = cte.node_id
-  ORDER BY path;
-
-ALTER TABLE etc.node_path
-    OWNER TO pg_database_owner;
-
-GRANT ALL ON TABLE etc.node_path TO pg_database_owner;
-GRANT SELECT ON TABLE etc.node_path TO anyone;
-
 -- DATA:
 
 INSERT INTO etc.type (type_id) values 
@@ -282,15 +363,3 @@ INSERT INTO etc.type_constraint (type_id, parent_type_id) values
 INSERT INTO etc.node (node_id, parent_id, name, type_id) values
 	('3e544ebc-f30a-471f-a8ec-f9e3ac84f19a', '00000000-0000-0000-0000-000000000000', 'etc', 'Space')
 	ON CONFLICT DO NOTHING;
-
--- TODO: Remove these test nodes
-
-INSERT INTO etc.node (node_id, parent_id, name, type_id) values
-	('9b3eb00c-5845-4b0e-97d0-779985883568', '3e544ebc-f30a-471f-a8ec-f9e3ac84f19a', 'My Folder', 'Folder');
-
-INSERT INTO etc.node (node_id, parent_id, name, type_id) values
-	('2b49819a-22f1-4645-a81f-f2d8baa3595f', '3e544ebc-f30a-471f-a8ec-f9e3ac84f19a', 'My File', 'File'),
-	('36e41bf0-1eb3-44ee-ae50-9d18befd965b', '9b3eb00c-5845-4b0e-97d0-779985883568', 'My File', 'File');
-
-INSERT INTO etc.file (node_id, content_type, data) values
-	('2b49819a-22f1-4645-a81f-f2d8baa3595f', 'text/plain', convert_to('Hello World', 'UTF8'));

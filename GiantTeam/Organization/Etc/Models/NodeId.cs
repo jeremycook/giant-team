@@ -1,4 +1,4 @@
-﻿namespace GiantTeam.Organization.Etc.Data;
+﻿namespace GiantTeam.Organization.Etc.Models;
 
 public static class NodeId
 {

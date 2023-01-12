@@ -40,11 +40,20 @@ export interface FetchOrganizationDetailsResult {
     databaseName: string;
     created: Date;
     roles: FetchOrganizationDetailsRole[];
+    spaces: FetchOrganizationDetailsSpace[];
 }
 
 export interface FetchOrganizationDetailsRole {
     name: string;
     dbRole: string;
+}
+
+export interface FetchOrganizationDetailsSpace {
+    nodeId: string;
+    parentId: string;
+    typeId: string;
+    name: string;
+    created: Date;
 }
 
 export interface FetchRecords {
