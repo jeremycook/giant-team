@@ -115,6 +115,12 @@ export function createConfig(): VitePluginConfig {
         'stack': 'flex flex-col bg-white border shadow rounded-1',
         'stack-item': 'px-2 py-1 max-w-sm overflow-x-hidden overflow-ellipsis whitespace-nowrap block',
 
+        'bg-ok': 'bg-green-500',
+        'bg-danger': 'bg-red-500',
+        'bg-error': 'bg-red-500',
+        'bg-warn': 'bg-orange-500',
+        'bg-info': 'bg-cyan-500',
+
         'text-ok': 'text-green-500',
         'text-danger': 'text-red-500',
         'text-error': 'text-red-500',

@@ -1,10 +1,10 @@
 import { Show } from 'solid-js';
-import { isAuthenticated, refreshSession, session } from '../utils/session';
+import { refreshSession, session, user } from '../utils/session';
 import { InfoIcon } from '../helpers/icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
 import { Anchor } from '../partials/Anchor';
-import { isLocalUrl } from '../helpers/urlHelpers';
+import { createUrl, isLocalUrl, relativeHref } from '../helpers/urlHelpers';
 import { postLogin } from '../bindings/GiantTeam.Authentication.Api.Controllers';
 import { useLocation, useNavigate } from '@solidjs/router';
 import { toast } from '../partials/Toasts';
@@ -27,10 +27,12 @@ export default function LoginPage() {
     });
 
     const returnUrl = () => {
-        if (here.state?.returnUrl) {
-            const url = new URL(here.state?.returnUrl, location.href);
+        const returnUrl = here.state?.returnUrl ?? here.query.returnUrl;
+
+        if (isLocalUrl(returnUrl)) {
+            const url = createUrl(returnUrl);
             if (isLocalUrl(url) && !url.pathname.endsWith('/login'))
-                return url.toString();
+                return relativeHref(url);
         }
 
         // Fallback
@@ -68,7 +70,7 @@ export default function LoginPage() {
 
             <h1>Login</h1>
 
-            <Show when={isAuthenticated()}>
+            <Show when={user.isAuthenticated}>
                 <p class='text-info' role='alert'>
                     <InfoIcon class='animate-bounce-in' />{' '}
                     FYI: You are currently logged in as <Anchor href='/profile'>{session.username}</Anchor>.

@@ -9,11 +9,13 @@ import './style/plugins.css';
 import './style/overrides.css';
 import { Router } from '@solidjs/router';
 import { AppRoutes } from './AppRoutes';
+import { Toasts } from './partials/Toasts';
 
 render(
     () => (
         <Router>
             <AppRoutes />
+            <Toasts />
         </Router>
     ),
     document.getElementById('root') as HTMLElement,

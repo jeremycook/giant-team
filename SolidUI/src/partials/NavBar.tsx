@@ -1,7 +1,7 @@
 import { A } from "@solidjs/router";
 import { Show } from "solid-js";
 import { HomeIcon, HomeOutlineIcon, PersonIcon, PersonOutlineIcon, SparklesIcon, SparklesOutlineIcon, MenuIcon, MenuOutline, SearchIcon, AlertOutlineIcon } from "../helpers/icons";
-import { isAuthenticated, session } from "../utils/session";
+import { session, user } from "../utils/session";
 
 export function NavBar() {
     return <>
@@ -9,7 +9,7 @@ export function NavBar() {
 
             <div class='py md:grid md:grid-cols-[1fr_2fr_1fr] print:hidden'>
 
-                <Show when={isAuthenticated()} fallback={(
+                <Show when={user.isAuthenticated} fallback={(
                     <>
                         <div />
                         <div class='md:flex md:mx-auto children:px-4 children:py-2'>

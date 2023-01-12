@@ -1,6 +1,6 @@
+import { useNavigate } from '@solidjs/router';
 import { createStore } from 'solid-js/store';
 import { postLogout, postSession } from '../bindings/GiantTeam.Authentication.Api.Controllers';
-import { go } from '../helpers/httpHelpers';
 
 const KEY = 'SESSION388';
 
@@ -69,12 +69,14 @@ export const refreshSession = async () => {
 
 /** Present the login page to anonymous users. */
 export const authorize = () => {
+  const navigate = useNavigate();
+
   // Redirect for now, popup login in the future
   if (!isAuthenticated()) {
     const url = location.pathname + location.search + location.hash;
 
     console.debug(`Redirecting from ${url} to /login.`);
 
-    go('/login', { returnUrl: url });
+    navigate('/login', { state: { returnUrl: url } });
   }
 }

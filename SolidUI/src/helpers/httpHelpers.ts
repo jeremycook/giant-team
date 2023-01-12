@@ -1,6 +1,5 @@
 import { useNavigate } from '@solidjs/router';
 import { ObjectStatus } from '../bindings/GiantTeam.ComponentModel.Models';
-import { authorize, refreshSession } from '../utils/session';
 import { parseJson } from './objectHelpers';
 
 export enum HttpStatusCode {
@@ -73,16 +72,12 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
             if (isJsonResponse) {
                 const details = await parseJsonResponse(response);
 
-                let errorMessage;
+                let errorMessage = details.message;
                 if (response.status === 401) {
-                    // Sync with the server and re-authorize
-                    await refreshSession();
-                    authorize();
-                    errorMessage = details.message || 'Please login to access the requested resource.'
+                    errorMessage ||= 'Please login to access the requested resource.'
                 }
                 else if (response.status === 403) {
-                    go('/access-denied', { returnUrl: location.href });
-                    errorMessage = details.message || 'You do not have permission to access the requested resource.'
+                    errorMessage ||= 'You do not have permission to access the requested resource.'
                 }
 
                 const result: ObjectStatusResponse = {
@@ -98,13 +93,9 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
             else {
                 let errorMessage = await response.text();
                 if (response.status === 401) {
-                    // Sync with the server and re-authorize
-                    await refreshSession();
-                    authorize();
                     errorMessage ||= 'Please login to access the requested resource.'
                 }
                 else if (response.status === 403) {
-                    go('/access-denied', { returnUrl: location.href });
                     errorMessage ||= 'You do not have permission to access the requested resource.'
                 }
 
@@ -138,9 +129,4 @@ export function useGo() {
     return (to: string, state?: { [key: string]: any }) => {
         navigate(to, { state });
     };
-}
-
-export function go(to: string, state: { [key: string]: any }) {
-    const navigate = useNavigate();
-    navigate(to, { state });
 }
