@@ -79,31 +79,6 @@ ALTER TABLE IF EXISTS etc.node
 GRANT ALL ON TABLE etc.node TO pg_database_owner;
 GRANT SELECT ON TABLE etc.node TO anyone;
 
--- FUNCTION: etc.get_node_path(uuid)
--- DROP FUNCTION IF EXISTS etc.get_node_path(uuid);
-
-CREATE OR REPLACE FUNCTION etc.get_node_path(
-	_node_id uuid)
-    RETURNS text
-    LANGUAGE 'plpgsql'
-    COST 100
-    STABLE STRICT PARALLEL SAFE 
-AS $BODY$
-BEGIN
-	RETURN (CASE 
-		WHEN _node_id IS NULL THEN NULL
-		WHEN _node_id = '00000000-0000-0000-0000-000000000000'::uuid THEN '/'
-		ELSE (SELECT regexp_replace(etc.get_node_path(parent_id), '/+$', '') || '/' || name::text FROM etc.node WHERE node_id = _node_id LIMIT 1)
-	END);
-END;
-$BODY$;
-
-ALTER FUNCTION etc.get_node_path(uuid)
-    OWNER TO pg_database_owner;
-
-GRANT ALL ON FUNCTION etc.get_node_path(uuid) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.get_node_path(uuid) TO anyone;
-
 -- Function: etc.check_node_type
 -- DROP FUNCTION IF EXISTS etc.check_node_type;
 
