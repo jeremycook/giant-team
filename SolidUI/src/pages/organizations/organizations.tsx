@@ -9,7 +9,7 @@ export default function OrganizationsPage() {
 
       <div class='flex gap-4'>
         <MyOrganizations />
-        <div class='card'>
+        <div class='card-new'>
           <A href='/organizations/new-organization'>New Organization</A>
         </div>
       </div>

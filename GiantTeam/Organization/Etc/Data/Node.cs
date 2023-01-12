@@ -20,7 +20,10 @@ public class Node
     public DateTime Created { get; set; }
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public string NameLower { get; private set; } = null!;
+    public string Path { get; private set; } = null!;
+
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+    public string PathLower { get; private set; } = null!;
 
     public List<Node>? Children { get; set; }
 }

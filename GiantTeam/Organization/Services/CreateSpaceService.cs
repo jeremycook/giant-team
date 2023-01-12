@@ -63,7 +63,7 @@ namespace GiantTeam.Organization.Services
             using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName);
             await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
 
-            var space = new Node()
+            var space = new Etc.Data.Node()
             {
                 NodeId = Guid.NewGuid(),
                 ParentId = NodeId.Root,

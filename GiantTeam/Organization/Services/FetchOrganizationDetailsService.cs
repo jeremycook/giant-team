@@ -11,16 +11,16 @@ public class FetchOrganizationDetailsService
 {
     private readonly ValidationService validationService;
     private readonly UserDirectoryDbContextFactory userDirectoryDbContextFactory;
-    private readonly UserDbContextFactory userDbContextFactory;
+    private readonly ExploreService exploreService;
 
     public FetchOrganizationDetailsService(
         ValidationService validationService,
         UserDirectoryDbContextFactory userDirectoryDbContextFactory,
-        UserDbContextFactory userDbContextFactory)
+        ExploreService exploreService)
     {
         this.validationService = validationService;
         this.userDirectoryDbContextFactory = userDirectoryDbContextFactory;
-        this.userDbContextFactory = userDbContextFactory;
+        this.exploreService = exploreService;
     }
 
     public async Task<FetchOrganizationDetailsResult> FetchOrganizationDetailsAsync(FetchOrganizationDetailsInput input)
@@ -34,11 +34,11 @@ public class FetchOrganizationDetailsService
             .SingleOrDefaultAsync(o => o.OrganizationId == input.OrganizationId) ??
             throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
 
-        using var etcDb = userDbContextFactory.NewDbContext<EtcDbContext>(org.DatabaseName, "etc");
-        var spaces = await etcDb.Nodes
-            .Where(o => o.ParentId == NodeId.Root && o.NodeId != o.ParentId)
-            .OrderBy(o => o.Name)
-            .ToListAsync();
+        var rootResult = await exploreService.ExploreAsync(new()
+        {
+            OrganizationId = input.OrganizationId,
+            Path = "", // Root
+        });
 
         var result = new FetchOrganizationDetailsResult()
         {
@@ -51,26 +51,10 @@ public class FetchOrganizationDetailsService
                 Name = r.Name,
                 DbRole = r.DbRole,
             }).ToArray(),
-            Spaces = spaces.Select(n => new FetchOrganizationDetailsSpace()
-            {
-                NodeId = n.NodeId,
-                ParentId = n.ParentId,
-                TypeId = n.TypeId,
-                Name = n.Name,
-                Created = n.Created,
-            }).ToArray(),
+            RootNode = rootResult.Node,
         };
         return result;
     }
-}
-
-public class FetchOrganizationDetailsSpace
-{
-    public Guid NodeId { get; init; }
-    public Guid ParentId { get; init; }
-    public string TypeId { get; init; } = null!;
-    public string Name { get; init; } = null!;
-    public DateTime Created { get; init; }
 }
 
 public class FetchOrganizationDetailsInput
@@ -85,7 +69,7 @@ public class FetchOrganizationDetailsResult
     public string DatabaseName { get; init; } = null!;
     public DateTime Created { get; init; }
     public FetchOrganizationDetailsRole[] Roles { get; init; } = null!;
-    public FetchOrganizationDetailsSpace[] Spaces { get; init; } = null!;
+    public Etc.Models.Node RootNode { get; init; } = null!;
 }
 
 public class FetchOrganizationDetailsRole

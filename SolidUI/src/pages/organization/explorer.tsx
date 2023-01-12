@@ -1,17 +1,15 @@
-import { useParams } from "@solidjs/router";
 import { Show } from "solid-js";
 import { useOrganizationRouteData } from "./organization";
 import { Explorer } from "./partials/Explorer";
 
 export default function ExplorerPage() {
-    const route = useParams<{ path: string }>();
-    const organization = useOrganizationRouteData();
+    const org = useOrganizationRouteData();
 
     return <>
-        <Show when={organization.data}>{() => {
+        <Show when={org.data}>{() => {
             return <>
-                <h1>{organization.data!.name}</h1>
-                <Explorer organizationId={organization.data!.organizationId} path={route.path} />
+                <h1>{org.data!.name}</h1>
+                <Explorer organizationId={org.data!.organizationId} data={org.data!.rootNode} />
             </>
         }}</Show>
     </>

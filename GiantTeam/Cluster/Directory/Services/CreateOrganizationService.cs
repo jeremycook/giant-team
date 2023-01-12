@@ -3,11 +3,14 @@ using GiantTeam.Cluster.Directory.Helpers;
 using GiantTeam.Cluster.Security.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Data;
+using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Organization.Resources;
 using GiantTeam.Organization.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
 using GiantTeam.UserManagement.Services;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.ComponentModel.DataAnnotations;
 
@@ -34,6 +37,7 @@ namespace GiantTeam.Cluster.Directory.Services
         private readonly SecurityDataService securityDataService;
         private readonly ManagerDirectoryDbContext managerDirectoryDb;
         private readonly UserDataServiceFactory userDataFactory;
+        private readonly UserDbContextFactory userDbContextFactory;
         private readonly SessionService sessionService;
         private readonly CreateSpaceService createSpaceService;
 
@@ -43,6 +47,7 @@ namespace GiantTeam.Cluster.Directory.Services
             SecurityDataService securityDataService,
             ManagerDirectoryDbContext managerDirectoryDb,
             UserDataServiceFactory userDataFactory,
+            UserDbContextFactory userDbContextFactory,
             SessionService sessionService,
             CreateSpaceService createSpaceService)
         {
@@ -51,6 +56,7 @@ namespace GiantTeam.Cluster.Directory.Services
             this.securityDataService = securityDataService;
             this.managerDirectoryDb = managerDirectoryDb;
             this.userDataFactory = userDataFactory;
+            this.userDbContextFactory = userDbContextFactory;
             this.sessionService = sessionService;
             this.createSpaceService = createSpaceService;
         }
@@ -149,6 +155,14 @@ namespace GiantTeam.Cluster.Directory.Services
 #pragma warning disable CS0618 // Type or member is obsolete
                 await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
 #pragma warning restore CS0618 // Type or member is obsolete
+
+                // Set the name of the root node to match
+                // the name of the organization from the directory.
+                await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName, "etc");
+                var root = await elevatedDbContext.Nodes
+                    .SingleAsync(o => o.NodeId == NodeId.Root);
+                root.Name = input.Name;
+                await elevatedDbContext.SaveChangesAsync();
 
                 // Create the default Home space
                 await createSpaceService.CreateSpaceAsync(new()

@@ -1,5 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { ObjectStatus } from '../bindings/GiantTeam.ComponentModel.Models';
+import { toast } from '../partials/Toasts';
 import { log } from './logging';
 import { parseJson } from './objectHelpers';
 
@@ -82,13 +83,16 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                     errorMessage ||= 'You do not have permission to access the requested resource.'
                 }
                 else {
+                    errorMessage ||= 'An unexpected error occurred.'
                     log.warn('Non-OK response in {MemberName}: {ErrorMessage}.', ['postJson', errorMessage]);
                 }
+
+                toast.error(errorMessage);
 
                 const result: ObjectStatusResponse = {
                     status: response.status,
                     statusText: response.statusText,
-                    message: errorMessage || 'An unexpected error occurred.',
+                    message: errorMessage,
                     details: details,
                     ok: false,
                 };
@@ -105,14 +109,17 @@ export const postJson = async <TInput, TData>(url: string, input?: TInput): Prom
                     errorMessage ||= 'You do not have permission to access the requested resource.'
                 }
                 else {
+                    errorMessage ||= 'An unexpected error occurred.'
                     log.warn('Non-OK response in {MemberName}: {ErrorMessage}.', ['postJson', errorMessage]);
                 }
+
+                toast.error(errorMessage);
 
                 const result: ObjectStatusResponse = {
                     ok: false,
                     status: response.status,
                     statusText: response.statusText || 'Unexpected Error',
-                    message: errorMessage ?? 'An unexpected error occurred.',
+                    message: errorMessage,
                     details: [],
                 };
                 console.debug(url, result);
