@@ -6,8 +6,8 @@ SET ROLE pg_database_owner;
 CREATE SCHEMA IF NOT EXISTS etc
     AUTHORIZATION pg_database_owner;
 GRANT ALL ON SCHEMA etc TO pg_database_owner;
-GRANT USAGE ON SCHEMA etc TO anyone;
 REVOKE ALL ON SCHEMA etc FROM PUBLIC;
+GRANT USAGE ON SCHEMA etc TO PUBLIC;
 
 SET search_path = etc;
 
@@ -26,7 +26,7 @@ ALTER TABLE IF EXISTS etc.type
     OWNER to pg_database_owner;
 
 GRANT ALL ON TABLE etc.type TO pg_database_owner;
-GRANT SELECT ON TABLE etc.type TO anyone;
+GRANT SELECT ON TABLE etc.type TO PUBLIC;
 
 -- Table: etc.type_constraint
 -- DROP TABLE IF EXISTS etc.type_constraint;
@@ -44,7 +44,7 @@ ALTER TABLE IF EXISTS etc.type_constraint
     OWNER to pg_database_owner;
 
 GRANT ALL ON TABLE etc.type_constraint TO pg_database_owner;
-GRANT SELECT ON TABLE etc.type_constraint TO anyone;
+GRANT SELECT ON TABLE etc.type_constraint TO PUBLIC;
 
 -- Table: etc.node
 -- DROP TABLE IF EXISTS etc.node;
@@ -77,7 +77,6 @@ ALTER TABLE IF EXISTS etc.node
     OWNER to pg_database_owner;
 
 GRANT ALL ON TABLE etc.node TO pg_database_owner;
-GRANT SELECT ON TABLE etc.node TO anyone;
 
 -- FUNCTION: etc.node_type_id_is_valid(text, uuid)
 -- DROP FUNCTION IF EXISTS etc.node_type_id_is_valid(text, uuid);
@@ -104,8 +103,8 @@ END;
 ALTER FUNCTION etc.node_type_id_is_valid(text, uuid)
     OWNER TO pg_database_owner;
 
-GRANT EXECUTE ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO anyone;
-GRANT EXECUTE ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO pg_database_owner;
+GRANT ALL ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO PUBLIC;
 
 -- FUNCTION: etc.node_name_or_parent_id_upserting_trigger()
 
@@ -128,7 +127,7 @@ AS $BODY$
 $BODY$;
 
 GRANT ALL ON FUNCTION etc.node_name_or_parent_id_upserting_trigger() TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.node_name_or_parent_id_upserting_trigger() TO anyone;
+GRANT EXECUTE ON FUNCTION etc.node_name_or_parent_id_upserting_trigger() TO PUBLIC;
 
 CREATE OR REPLACE TRIGGER node_name_or_parent_id_upserting_trigger
     BEFORE INSERT OR UPDATE OF name, parent_id
@@ -154,7 +153,7 @@ AS $BODY$
 $BODY$;
 
 GRANT ALL ON FUNCTION etc.node_path_upserted_trigger() TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.node_path_upserted_trigger() TO anyone;
+GRANT EXECUTE ON FUNCTION etc.node_path_upserted_trigger() TO PUBLIC;
 
 CREATE OR REPLACE TRIGGER node_path_upserted_trigger
     AFTER INSERT OR UPDATE OF name, parent_id, path
@@ -208,7 +207,7 @@ ALTER FUNCTION etc.get_node_tree(uuid)
     OWNER TO pg_database_owner;
 
 GRANT ALL ON FUNCTION etc.get_node_tree(uuid) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.get_node_tree(uuid) TO anyone;
+GRANT EXECUTE ON FUNCTION etc.get_node_tree(uuid) TO PUBLIC;
 
 -- Check: node_type_id_check
 -- ALTER TABLE etc.node DROP CONSTRAINT IF EXISTS node_type_id_check;
@@ -239,7 +238,6 @@ ALTER TABLE IF EXISTS etc.file
     OWNER to pg_database_owner;
 
 GRANT ALL ON TABLE etc.file TO pg_database_owner;
-GRANT SELECT, INSERT, UPDATE ON TABLE etc.file TO anyone;
 
 -- VIEW: etc.database_definition
 -- DROP VIEW etc.database_definition;
@@ -339,7 +337,7 @@ ALTER TABLE etc.database_definition
     OWNER TO pg_database_owner;
 
 GRANT ALL ON TABLE etc.database_definition TO pg_database_owner;
-GRANT SELECT ON TABLE etc.database_definition TO anyone;
+GRANT SELECT ON TABLE etc.database_definition TO PUBLIC;
 
 -- DATA:
 
