@@ -79,19 +79,33 @@ ALTER TABLE IF EXISTS etc.node
 GRANT ALL ON TABLE etc.node TO pg_database_owner;
 GRANT SELECT ON TABLE etc.node TO anyone;
 
--- Function: etc.check_node_type
--- DROP FUNCTION IF EXISTS etc.check_node_type;
+-- FUNCTION: etc.node_type_id_is_valid(text, uuid)
+-- DROP FUNCTION IF EXISTS etc.node_type_id_is_valid(text, uuid);
 
-CREATE OR REPLACE FUNCTION etc.check_node_type(node_parent_id uuid, node_type_id text) RETURNS boolean
-    LANGUAGE SQL
+CREATE OR REPLACE FUNCTION etc.node_type_id_is_valid(
+	_node_type_id text,
+	_node_parent_id uuid)
+    RETURNS boolean
+    LANGUAGE 'sql'
+    COST 100
     STABLE STRICT PARALLEL SAFE 
-	RETURN EXISTS (SELECT 1
-				   FROM etc.node parent_node
-				   JOIN etc.type_constraint tc ON tc.parent_type_id = parent_node.type_id
-				   WHERE parent_node.node_id = node_parent_id AND tc.type_id = node_type_id);
 
-GRANT ALL ON FUNCTION etc.check_node_type(uuid, text) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.check_node_type(uuid, text) TO anyone;
+RETURN CASE
+	WHEN _node_type_id IS NULL OR _node_parent_id IS NULL THEN NULL
+	ELSE EXISTS (
+		SELECT 1 
+		FROM (etc.node parent_node 
+			  JOIN etc.type_constraint tc ON ((tc.parent_type_id = parent_node.type_id))) 
+		WHERE ((parent_node.node_id = node_type_id_is_valid._node_parent_id) 
+			   AND (tc.type_id = node_type_id_is_valid._node_type_id))
+	)
+END;
+
+ALTER FUNCTION etc.node_type_id_is_valid(text, uuid)
+    OWNER TO pg_database_owner;
+
+GRANT EXECUTE ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO anyone;
+GRANT EXECUTE ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO pg_database_owner;
 
 -- FUNCTION: etc.node_name_or_parent_id_upserting_trigger()
 
@@ -201,7 +215,7 @@ GRANT EXECUTE ON FUNCTION etc.get_node_tree(uuid) TO anyone;
 
 DO $$BEGIN
 IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'node_type_id_check') THEN
-	ALTER TABLE etc.node ADD CONSTRAINT node_type_id_check CHECK (etc.check_node_type(parent_id, type_id));
+	ALTER TABLE etc.node ADD CONSTRAINT node_type_id_check CHECK (etc.node_type_id_is_valid(type_id, parent_id));
 END IF;
 END$$;
 
