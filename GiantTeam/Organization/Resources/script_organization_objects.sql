@@ -113,6 +113,9 @@ AS $BODY$
     END;
 $BODY$;
 
+GRANT ALL ON FUNCTION etc.node_name_or_parent_id_upserting_trigger() TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.node_name_or_parent_id_upserting_trigger() TO anyone;
+
 CREATE OR REPLACE TRIGGER node_name_or_parent_id_upserting_trigger
     BEFORE INSERT OR UPDATE OF name, parent_id
     ON etc.node
@@ -135,6 +138,9 @@ AS $BODY$
         RETURN NEW;
     END;
 $BODY$;
+
+GRANT ALL ON FUNCTION etc.node_path_upserted_trigger() TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.node_path_upserted_trigger() TO anyone;
 
 CREATE OR REPLACE TRIGGER node_path_upserted_trigger
     AFTER INSERT OR UPDATE OF name, parent_id, path
