@@ -9,7 +9,7 @@ export default function ExplorerPage() {
         <Show when={org.data}>{() => {
             return <>
                 <h1>{org.data!.name}</h1>
-                <Explorer organizationId={org.data!.organizationId} data={org.data!.rootNode} />
+                <Explorer organizationId={org.data!.organizationId} datum={org.data!.rootDatum} />
             </>
         }}</Show>
     </>

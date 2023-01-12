@@ -1,7 +1,7 @@
 ﻿namespace GiantTeam.Organization.Etc.Models;
 
-public class NodeType
+public class DatumType
 {
     public string TypeId { get; set; } = null!;
-    public List<NodeTypeConstraint> Constraints { get; set; } = null!;
+    public List<DatumTypeConstraint> Constraints { get; set; } = null!;
 }

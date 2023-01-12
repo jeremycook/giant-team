@@ -1,17 +1,17 @@
 import { For } from "solid-js";
-import { Node } from "../../../bindings/GiantTeam.Organization.Etc.Models";
+import { Datum } from "../../../bindings/GiantTeam.Organization.Etc.Models";
 
-export function Explorer(props: { organizationId: string, data: Node }) {
+export function Explorer(props: { organizationId: string, datum: Datum }) {
     return <>
         <p>
-            You are here: {props.organizationId}/{props.data.path}.
+            You are here: {props.organizationId}/{props.datum.path}.
         </p>
 
         <h1>
-            {props.data.name}
+            {props.datum.name}
         </h1>
 
-        <For each={props.data.children}>{item => (<>
+        <For each={props.datum.children}>{item => (<>
             <div class='card'>
                 {item.name}: {item.typeId}
             </div>

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace GiantTeam.Organization.Etc.Data;
 
 [Table("type")]
-public class NodeType
+public class DatumType
 {
     [Key]
     public string TypeId { get; set; } = null!;

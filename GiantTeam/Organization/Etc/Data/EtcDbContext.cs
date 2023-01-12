@@ -7,13 +7,13 @@ public class EtcDbContext : DbContext
 {
     public EtcDbContext(DbContextOptions<EtcDbContext> options) : base(options)
     {
-        Nodes = Set<Node>();
+        Datums = Set<Datum>();
         Files = Set<File>();
-        Types = Set<NodeType>();
+        Types = Set<DatumType>();
         TypeConstraints = Set<TypeConstraint>();
 
         DatabaseDefinitions = Set<DatabaseDefinition>();
-        NodePaths = Set<NodePath>();
+        DatumPaths = Set<DatumPath>();
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -30,16 +30,16 @@ public class EtcDbContext : DbContext
     {
         modelBuilder.HasDefaultSchema("etc");
 
-        modelBuilder.Entity<Node>().HasMany(o => o.Children).WithOne().HasForeignKey(o => o.ParentId).OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<Datum>().HasMany(o => o.Children).WithOne().HasForeignKey(o => o.ParentId).OnDelete(DeleteBehavior.NoAction);
     }
 
     // Tables
-    public DbSet<Node> Nodes { get; }
+    public DbSet<Datum> Datums { get; }
     public DbSet<File> Files { get; }
-    public DbSet<NodeType> Types { get; }
+    public DbSet<DatumType> Types { get; }
     public DbSet<TypeConstraint> TypeConstraints { get; }
 
     // Views
     public DbSet<DatabaseDefinition> DatabaseDefinitions { get; }
-    public DbSet<NodePath> NodePaths { get; }
+    public DbSet<DatumPath> DatumPaths { get; }
 }

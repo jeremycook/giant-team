@@ -14,13 +14,13 @@ namespace GiantTeam.Organization.Services
         [Required, StringLength(50)]
         public string DatabaseName { get; set; } = null!;
 
-        [Required, StringLength(50), NodeName]
+        [Required, StringLength(50), DatumName]
         public string Name { get; set; } = null!;
     }
 
     public class CreateSpaceResult
     {
-        public Guid NodeId { get; set; }
+        public Guid DatumId { get; set; }
     }
 
     public class CreateSpaceService
@@ -63,17 +63,17 @@ namespace GiantTeam.Organization.Services
             using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName);
             await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
 
-            var space = new Etc.Data.Node()
+            var space = new Etc.Data.Datum()
             {
-                NodeId = Guid.NewGuid(),
-                ParentId = NodeId.Root,
+                DatumId = Guid.NewGuid(),
+                ParentId = DatumId.Root,
                 Name = input.Name,
                 TypeId = "Space",
                 Created = DateTime.UtcNow,
             };
 
             validationService.Validate(space);
-            elevatedDbContext.Nodes.Add(space);
+            elevatedDbContext.Datums.Add(space);
             await elevatedDbContext.SaveChangesAsync();
 
             string schemaName = input.Name;
@@ -88,7 +88,7 @@ namespace GiantTeam.Organization.Services
 
             return new()
             {
-                NodeId = space.NodeId,
+                DatumId = space.DatumId,
             };
         }
     }

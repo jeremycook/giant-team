@@ -3,10 +3,10 @@
 namespace GiantTeam.Organization.Etc.Data;
 
 [Keyless]
-public class NodePath
+public class DatumPath
 {
-    public Guid NodeId { get; private set; }
-    public Node? Node { get; private set; }
+    public Guid DatumId { get; private set; }
+    public Datum? Datum { get; private set; }
 
     public string Path { get; private set; } = null!;
 }

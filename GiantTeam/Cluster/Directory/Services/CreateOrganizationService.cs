@@ -156,11 +156,11 @@ namespace GiantTeam.Cluster.Directory.Services
                 await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                // Set the name of the root node to match
+                // Set the name of the root datum to match
                 // the name of the organization from the directory.
                 await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName, "etc");
-                var root = await elevatedDbContext.Nodes
-                    .SingleAsync(o => o.NodeId == NodeId.Root);
+                var root = await elevatedDbContext.Datums
+                    .SingleAsync(o => o.DatumId == DatumId.Root);
                 root.Name = input.Name;
                 await elevatedDbContext.SaveChangesAsync();
 

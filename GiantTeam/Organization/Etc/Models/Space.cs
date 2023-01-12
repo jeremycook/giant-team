@@ -2,5 +2,5 @@
 
 public class Space
 {
-    public Node Node { get; set; } = null!;
+    public Datum Datum { get; set; } = null!;
 }
