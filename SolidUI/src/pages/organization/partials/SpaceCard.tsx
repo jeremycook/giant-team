@@ -1,4 +1,4 @@
-import { Schema } from "../../../../bindings/GiantTeam.DatabaseDefinition.Models";
+import { Schema } from "../../../bindings/GiantTeam.DatabaseDefinition.Models";
 
 interface Space {
     id: string;

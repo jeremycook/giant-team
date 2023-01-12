@@ -1,6 +1,6 @@
 import { useParams } from "@solidjs/router";
 import { Show } from "solid-js";
-import { useOrganizationRouteData } from "../organization";
+import { useOrganizationRouteData } from "./organization";
 import { Explorer } from "./partials/Explorer";
 
 export default function ExplorerPage() {

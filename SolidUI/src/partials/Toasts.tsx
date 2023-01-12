@@ -1,4 +1,4 @@
-import { batch, createEffect, createSignal, For, JSX, Match, Show, Switch } from "solid-js"
+import { batch, createSignal, For, JSX, Match, Show, Switch } from "solid-js"
 import { createMutable } from "solid-js/store"
 import { DismissIcon, InfoIcon } from "../helpers/icons";
 
@@ -33,12 +33,6 @@ export const toggleNotifications = () => {
     })
 };
 
-createEffect(() => {
-    if (unreadNotifications().length > 0) {
-        setShow(true);
-    }
-})
-
 const push = (type: NotificationTypeEnum, content: JSX.Element) => {
     const offset = Math.max(2000, Math.ceil(75 * (content?.toString().length ?? 0)));
     const autoDismissAfter = new Date(Date.now() + offset);
@@ -65,6 +59,8 @@ const push = (type: NotificationTypeEnum, content: JSX.Element) => {
     if (notifications().length > 10) {
         setNotifications(notifications().slice(notifications().length - 10));
     }
+
+    setShow(true);
 };
 
 export const toast = {

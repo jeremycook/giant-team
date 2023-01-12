@@ -39,7 +39,7 @@ export default function NewOrganizationPage() {
 
         if (response.ok) {
             toast.info('Organization created!');
-            nav('/organizations/' + response.data.organizationId);
+            nav('/o/' + response.data.organizationId);
         }
         else {
             toast.error(response.message);

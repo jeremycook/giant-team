@@ -4,7 +4,7 @@ import { postFetchOrganizationDetails } from "../../bindings/GiantTeam.Organizat
 import { FetchOrganizationDetailsResult } from "../../bindings/GiantTeam.Organization.Services";
 import { DataResponseResource } from "../../helpers/DataResponseResource";
 import { MainLayout } from "../../partials/MainLayout";
-import { Explorer } from "./organization/partials/Explorer";
+import { Explorer } from "./partials/Explorer";
 
 export class OrganizationRouteData extends DataResponseResource<FetchOrganizationDetailsResult>{ }
 

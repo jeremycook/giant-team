@@ -1,6 +1,6 @@
 import { A } from '@solidjs/router';
-import { MainLayout } from '../partials/MainLayout';
-import MyOrganizations from './organizations/partials/MyOrganizations';
+import { MainLayout } from '../../partials/MainLayout';
+import MyOrganizations from './partials/MyOrganizations';
 
 export default function OrganizationsPage() {
   return (

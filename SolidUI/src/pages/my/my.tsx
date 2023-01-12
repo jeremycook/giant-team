@@ -1,7 +1,7 @@
-import { Anchor } from "../partials/Anchor";
-import { MainLayout } from "../partials/MainLayout";
-import { user } from "../utils/session";
-import MyOrganizations from "./organizations/partials/MyOrganizations";
+import { Anchor } from "../../partials/Anchor";
+import { MainLayout } from "../../partials/MainLayout";
+import { user } from "../../utils/session";
+import MyOrganizations from "../organizations/partials/MyOrganizations";
 
 export default function MyPage() {
     return (

@@ -1,6 +1,6 @@
 import { A } from "@solidjs/router";
 import { Show } from "solid-js";
-import { HomeIcon, HomeOutlineIcon, PersonIcon, PersonOutlineIcon, SparklesIcon, SparklesOutlineIcon, MenuIcon, MenuOutline, SearchIcon, AlertOutlineIcon, BuildingIcon, BuildingOutlineIcon } from "../helpers/icons";
+import { HomeIcon, HomeOutlineIcon, PersonIcon, PersonOutlineIcon, SparklesIcon, SparklesOutlineIcon, SearchIcon, AlertOutlineIcon, BuildingIcon, BuildingOutlineIcon } from "../helpers/icons";
 import { user } from "../utils/session";
 import { toggleNotifications } from "./Toasts";
 

@@ -6,11 +6,11 @@ import HomePage from './pages/home';
 import JoinPage from './pages/join';
 import LoginPage from './pages/login';
 import LogoutPage from './pages/logout';
-import MyPage from './pages/my';
 import NewOrganizationPage from './pages/organizations/new-organization';
 import NotFoundPage from './pages/not-found';
-import OrganizationPage, { createOrganizationRouteData } from './pages/organizations/organization';
-import OrganizationsPage from './pages/organizations';
+import MyPage from './pages/my/my';
+import OrganizationPage, { createOrganizationRouteData } from './pages/organization/organization';
+import OrganizationsPage from './pages/organizations/organizations';
 
 export function AppRoutes() {
   return (
@@ -30,9 +30,10 @@ export function AppRoutes() {
         <Route path="/organizations">
           <Route path='/' component={OrganizationsPage} />
           <Route path='/new-organization' component={NewOrganizationPage} />
-          <Route path="/:organization" data={createOrganizationRouteData}>
-            <Route path='/*path' component={OrganizationPage} />
-          </Route>
+        </Route>
+
+        <Route path="/o/:organization" data={createOrganizationRouteData}>
+          <Route path='/*path' component={OrganizationPage} />
         </Route>
 
       </Route>

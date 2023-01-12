@@ -1,14 +1,13 @@
-import { useLocation } from "@solidjs/router";
+import { useLocation, useNavigate } from "@solidjs/router";
 import { createEffect } from "solid-js";
 import { createMutable } from "solid-js/store";
-import { postCreateSpace } from "../../../bindings/GiantTeam.Organization.Api.Controllers";
-import { useGo } from "../../../helpers/httpHelpers";
-import { toast } from "../../../partials/Toasts";
-import { FieldSetOptions, FieldStack } from "../../../widgets/FieldStack";
+import { postCreateSpace } from "../../bindings/GiantTeam.Organization.Api.Controllers";
+import { toast } from "../../partials/Toasts";
+import { FieldSetOptions, FieldStack } from "../../widgets/FieldStack";
 
 export default function NewSpacePage() {
     const location = useLocation<{ organization: string }>();
-    const go = useGo();
+    const nav = useNavigate();
 
     const data = createMutable({
         name: '',
@@ -40,7 +39,7 @@ export default function NewSpacePage() {
 
         if (response.ok) {
             toast.info('Space created!');
-            go(`/organizations/${location.state?.organization!}/spaces/${response.data.nodeId}`);
+            nav(`/o/${location.state?.organization!}/${data.schemaName}`);
         }
         else {
             toast.error(response.message);
