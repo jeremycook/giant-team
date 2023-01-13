@@ -19,23 +19,23 @@ public class ExploreService
     {
         using var db = userDbContextFactory.NewDbContext<EtcDbContext>(input.OrganizationId);
 
-        Etc.Models.Datum datum = await db.Datums
+        Etc.Models.Inode inode = await db.Inodes
             .Where(o => o.PathLower == input.Path.ToLower())
-            .Select(o => new Etc.Models.Datum()
+            .Select(o => new Etc.Models.Inode()
             {
-                TypeId = o.TypeId,
-                DatumId = o.DatumId,
-                ParentId = o.ParentId,
+                InodeTypeId = o.InodeTypeId,
+                InodeId = o.InodeId,
+                ParentInodeId = o.ParentInodeId,
                 Name = o.Name,
                 Created = o.Created,
                 Path = o.Path,
                 Children = o.Children!
-                    .Where(c => c.DatumId != c.ParentId)
-                    .Select(c => new Etc.Models.Datum()
+                    .Where(c => c.InodeId != c.ParentInodeId)
+                    .Select(c => new Etc.Models.Inode()
                     {
-                        TypeId = c.TypeId,
-                        DatumId = c.DatumId,
-                        ParentId = c.ParentId,
+                        InodeTypeId = c.InodeTypeId,
+                        InodeId = c.InodeId,
+                        ParentInodeId = c.ParentInodeId,
                         Name = c.Name,
                         Created = c.Created,
                         Path = c.Path,
@@ -46,7 +46,7 @@ public class ExploreService
 
         var result = new ExploreResult()
         {
-            Datum = datum,
+            Inode = inode,
         };
         return result;
     }
@@ -66,5 +66,5 @@ public class ExploreInput
 
 public class ExploreResult
 {
-    public Etc.Models.Datum Datum { get; set; } = null!;
+    public Etc.Models.Inode Inode { get; set; } = null!;
 }

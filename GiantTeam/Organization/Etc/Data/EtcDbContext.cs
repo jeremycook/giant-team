@@ -7,13 +7,13 @@ public class EtcDbContext : DbContext
 {
     public EtcDbContext(DbContextOptions<EtcDbContext> options) : base(options)
     {
-        Datums = Set<Datum>();
+        Inodes = Set<Inode>();
         Files = Set<File>();
-        Types = Set<DatumType>();
-        TypeConstraints = Set<TypeConstraint>();
+        InodeTypes = Set<InodeType>();
+        InodeTypeConstraints = Set<InodeTypeConstraint>();
 
+        // Keyless
         DatabaseDefinitions = Set<DatabaseDefinition>();
-        DatumPaths = Set<DatumPath>();
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -30,16 +30,15 @@ public class EtcDbContext : DbContext
     {
         modelBuilder.HasDefaultSchema("etc");
 
-        modelBuilder.Entity<Datum>().HasMany(o => o.Children).WithOne().HasForeignKey(o => o.ParentId).OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<Inode>().HasMany(o => o.Children).WithOne().HasForeignKey(o => o.ParentInodeId).OnDelete(DeleteBehavior.NoAction);
     }
 
     // Tables
-    public DbSet<Datum> Datums { get; }
+    public DbSet<Inode> Inodes { get; }
     public DbSet<File> Files { get; }
-    public DbSet<DatumType> Types { get; }
-    public DbSet<TypeConstraint> TypeConstraints { get; }
+    public DbSet<InodeType> InodeTypes { get; }
+    public DbSet<InodeTypeConstraint> InodeTypeConstraints { get; }
 
     // Views
     public DbSet<DatabaseDefinition> DatabaseDefinitions { get; }
-    public DbSet<DatumPath> DatumPaths { get; }
 }

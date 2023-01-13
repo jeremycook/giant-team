@@ -15,7 +15,7 @@ namespace GiantTeam.Organization.Services
         [Required, StringLength(50)]
         public string OrganizationId { get; set; } = null!;
 
-        [Required, StringLength(50), DatumName]
+        [Required, StringLength(50), InodeName]
         public string SpaceName { get; set; } = null!;
 
         [Required, MinLength(1)]

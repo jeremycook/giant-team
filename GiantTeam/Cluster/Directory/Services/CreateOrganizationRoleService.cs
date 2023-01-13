@@ -154,7 +154,7 @@ WHERE datname = current_database()
         [Required, StringLength(50), DatabaseName]
         public string OrganizationId { get; set; } = null!;
 
-        [Required, StringLength(50), DatumName]
+        [Required, StringLength(50), InodeName]
         public string RoleName { get; set; } = null!;
 
         [Required, MinLength(1)]

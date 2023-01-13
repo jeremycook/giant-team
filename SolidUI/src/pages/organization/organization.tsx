@@ -26,7 +26,7 @@ export default function OrganizationPage() {
     return <MainLayout>
         <Show when={org.data}>{() => {
             return <>
-                <Explorer organizationId={org.data!.organizationId} datum={org.data!.rootDatum} />
+                <Explorer organizationId={org.data!.organizationId} inode={org.data!.rootInode} />
             </>
         }}</Show>
     </MainLayout>

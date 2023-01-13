@@ -4,18 +4,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiantTeam.Organization.Etc.Data;
 
-public class Datum
+public class Inode
 {
     [Key]
-    public Guid DatumId { get; set; }
+    public Guid InodeId { get; set; }
 
-    public Guid ParentId { get; set; }
+    public Guid ParentInodeId { get; set; }
 
-    [StringLength(248), DatumName]
+    [StringLength(248), InodeName]
     public string Name { get; set; } = null!;
 
-    public string TypeId { get; set; } = null!;
-    public DatumType? Type { get; set; }
+    public string InodeTypeId { get; set; } = null!;
+    public InodeType? InodeType { get; set; }
 
     public DateTime Created { get; set; }
 
@@ -25,5 +25,5 @@ public class Datum
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public string PathLower { get; private set; } = null!;
 
-    public List<Datum>? Children { get; set; }
+    public List<Inode>? Children { get; set; }
 }

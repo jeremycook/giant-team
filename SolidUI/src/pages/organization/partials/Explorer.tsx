@@ -1,21 +1,21 @@
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
-import { Datum } from "../../../bindings/GiantTeam.Organization.Etc.Models";
+import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
 import { link } from "../../../helpers/link";
 
-export function Explorer(props: { organizationId: string, datum: Datum }) {
+export function Explorer(props: { organizationId: string, inode: Inode }) {
     return <>
         <p>
-            You are here: {props.organizationId}/{props.datum.path}.
+            You are here: {props.organizationId}/{props.inode.path}.
         </p>
 
         <h1>
-            {props.datum.name} - {props.datum.path}
+            {props.inode.name} - {props.inode.path}
         </h1>
 
-        <For each={props.datum.children}>{datum => (<>
+        <For each={props.inode.children}>{inode => (<>
             <div class='card'>
-                <A href={link.datum(props.organizationId, datum.path)}>{datum.name}</A>
+                <A href={link.inode(props.organizationId, inode.path)}>{inode.name}</A>
             </div>
         </>)}</For>
     </>

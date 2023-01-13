@@ -51,7 +51,7 @@ public class FetchOrganizationDetailsService
                 Name = r.Name,
                 DbRole = r.DbRole,
             }).ToArray(),
-            RootDatum = rootResult.Datum,
+            RootInode = rootResult.Inode,
         };
         return result;
     }
@@ -69,7 +69,7 @@ public class FetchOrganizationDetailsResult
     public string DatabaseName { get; init; } = null!;
     public DateTime Created { get; init; }
     public FetchOrganizationDetailsRole[] Roles { get; init; } = null!;
-    public Etc.Models.Datum RootDatum { get; init; } = null!;
+    public Etc.Models.Inode RootInode { get; init; } = null!;
 }
 
 public class FetchOrganizationDetailsRole

@@ -149,11 +149,11 @@ namespace GiantTeam.Cluster.Directory.Services
 
                     await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
 
-                    // Set the name of the root datum to match
+                    // Set the name of the root inode to match
                     // the name of the organization in the directory.
                     await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName, "etc");
-                    var root = await elevatedDbContext.Datums
-                        .SingleAsync(o => o.DatumId == DatumId.Root);
+                    var root = await elevatedDbContext.Inodes
+                        .SingleAsync(o => o.InodeId == InodeId.Root);
                     root.Name = input.Name;
                     await elevatedDbContext.SaveChangesAsync();
                 }
@@ -219,7 +219,7 @@ namespace GiantTeam.Cluster.Directory.Services
                     },
                 },
             });
-            foreach (var tableName in new[] { "datum", "file" })
+            foreach (var tableName in new[] { "inode", "file" })
             {
                 await grantTableService.GrantTableAsync(new()
                 {

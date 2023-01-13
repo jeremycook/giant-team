@@ -11,133 +11,135 @@ GRANT USAGE ON SCHEMA etc TO PUBLIC;
 
 SET search_path = etc;
 
--- Table: etc.type
--- DROP TABLE IF EXISTS etc.type;
+-- Table: etc.inode_type
+-- DROP TABLE IF EXISTS etc.inode_type;
 
-CREATE TABLE IF NOT EXISTS etc.type
+CREATE TABLE IF NOT EXISTS etc.inode_type
 (
-    type_id text NOT NULL,
-    CONSTRAINT type_pkey PRIMARY KEY (type_id)
+    inode_type_id text NOT NULL,
+    CONSTRAINT inode_type_pkey PRIMARY KEY (inode_type_id)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS etc.type
+ALTER TABLE IF EXISTS etc.inode_type
     OWNER to pg_database_owner;
 
-GRANT ALL ON TABLE etc.type TO pg_database_owner;
-GRANT SELECT ON TABLE etc.type TO PUBLIC;
+GRANT ALL ON TABLE etc.inode_type TO pg_database_owner;
+GRANT SELECT ON TABLE etc.inode_type TO PUBLIC;
 
--- Table: etc.type_constraint
--- DROP TABLE IF EXISTS etc.type_constraint;
+-- Table: etc.inode_type_constraint
+-- DROP TABLE IF EXISTS etc.inode_type_constraint;
 
-CREATE TABLE IF NOT EXISTS etc.type_constraint
+CREATE TABLE IF NOT EXISTS etc.inode_type_constraint
 (
-    type_id text NOT NULL,
-    parent_type_id text NOT NULL,
-    CONSTRAINT type_constraint_pkey PRIMARY KEY (type_id, parent_type_id)
+    inode_type_id text NOT NULL,
+    parent_inode_type_id text NOT NULL,
+    CONSTRAINT inode_type_constraint_pkey PRIMARY KEY (inode_type_id, parent_inode_type_id)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS etc.type_constraint
+ALTER TABLE IF EXISTS etc.inode_type_constraint
     OWNER to pg_database_owner;
 
-GRANT ALL ON TABLE etc.type_constraint TO pg_database_owner;
-GRANT SELECT ON TABLE etc.type_constraint TO PUBLIC;
+GRANT ALL ON TABLE etc.inode_type_constraint TO pg_database_owner;
+GRANT SELECT ON TABLE etc.inode_type_constraint TO PUBLIC;
 
--- Table: etc.datum
--- DROP TABLE IF EXISTS etc.datum;
+-- Table: etc.inode
+-- DROP TABLE IF EXISTS etc.inode;
 
-CREATE TABLE IF NOT EXISTS etc.datum
+CREATE TABLE IF NOT EXISTS etc.inode
 (
-    datum_id uuid NOT NULL DEFAULT (gen_random_uuid()),
-    parent_id uuid NOT NULL,
+    inode_id uuid NOT NULL DEFAULT (gen_random_uuid()),
+    parent_inode_id uuid NOT NULL,
     name character varying(248) NOT NULL,
-    type_id text COLLATE pg_catalog."default" NOT NULL,
+    inode_type_id text COLLATE pg_catalog."default" NOT NULL,
 	created timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
 	path text NOT NULL DEFAULT ('/*/' || gen_random_uuid()),
 	path_lower text NOT NULL GENERATED ALWAYS AS (lower(path)) STORED,
-    CONSTRAINT datum_check CHECK ((datum_id <> parent_id AND name ~ '^[^<>:"/\|?*]+$') OR (datum_id = '00000000-0000-0000-0000-000000000000' AND parent_id = '00000000-0000-0000-0000-000000000000')),
-    CONSTRAINT datum_pkey PRIMARY KEY (datum_id),
-    CONSTRAINT datum_key UNIQUE (path),
-    CONSTRAINT datum_parent_id_fkey FOREIGN KEY (parent_id)
-        REFERENCES etc.datum (datum_id) MATCH SIMPLE
+    CONSTRAINT inode_check CHECK ((inode_id <> parent_inode_id AND name ~ '^[^<>:"/\|?*]+$') OR (inode_id = '00000000-0000-0000-0000-000000000000' AND parent_inode_id = '00000000-0000-0000-0000-000000000000')),
+    CONSTRAINT inode_pkey PRIMARY KEY (inode_id),
+    CONSTRAINT inode_key UNIQUE (path),
+    CONSTRAINT inode_parent_inode_id_fkey FOREIGN KEY (parent_inode_id)
+        REFERENCES etc.inode (inode_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
-    CONSTRAINT datum_type_id_fkey FOREIGN KEY (type_id)
-        REFERENCES etc.type (type_id) MATCH SIMPLE
+    CONSTRAINT inode_inode_type_id_fkey FOREIGN KEY (inode_type_id)
+        REFERENCES etc.inode_type (inode_type_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS etc.datum
+ALTER TABLE IF EXISTS etc.inode
     OWNER to pg_database_owner;
 
-GRANT ALL ON TABLE etc.datum TO pg_database_owner;
+GRANT ALL ON TABLE etc.inode TO pg_database_owner;
 
--- FUNCTION: etc.datum_type_id_is_valid(text, uuid)
--- DROP FUNCTION IF EXISTS etc.datum_type_id_is_valid(text, uuid);
+-- FUNCTION: etc.inode_inode_type_id_is_valid(text, uuid)
+-- DROP FUNCTION IF EXISTS etc.inode_inode_type_id_is_valid(text, uuid);
 
-CREATE OR REPLACE FUNCTION etc.datum_type_id_is_valid(
-	_datum_type_id text,
-	_datum_parent_id uuid)
+CREATE OR REPLACE FUNCTION etc.inode_inode_type_id_is_valid(
+	_inode_inode_type_id text,
+	_inode_parent_inode_id uuid)
     RETURNS boolean
     LANGUAGE 'sql'
     COST 100
     STABLE STRICT PARALLEL SAFE 
 
 RETURN CASE
-	WHEN _datum_type_id IS NULL OR _datum_parent_id IS NULL THEN NULL
+	WHEN _inode_inode_type_id IS NULL OR _inode_parent_inode_id IS NULL THEN NULL
 	ELSE EXISTS (
 		SELECT 1 
-		FROM (etc.datum parent_datum 
-			  JOIN etc.type_constraint tc ON ((tc.parent_type_id = parent_datum.type_id))) 
-		WHERE ((parent_datum.datum_id = datum_type_id_is_valid._datum_parent_id) 
-			   AND (tc.type_id = datum_type_id_is_valid._datum_type_id))
+		FROM (etc.inode parent_inode 
+			  JOIN etc.inode_type_constraint tc ON ((tc.parent_inode_type_id = parent_inode.inode_type_id))) 
+		WHERE ((parent_inode.inode_id = inode_inode_type_id_is_valid._inode_parent_inode_id) 
+			   AND (tc.inode_type_id = inode_inode_type_id_is_valid._inode_inode_type_id))
 	)
 END;
 
-ALTER FUNCTION etc.datum_type_id_is_valid(text, uuid)
+ALTER FUNCTION etc.inode_inode_type_id_is_valid(text, uuid)
     OWNER TO pg_database_owner;
 
-GRANT ALL ON FUNCTION etc.datum_type_id_is_valid(text, uuid) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.datum_type_id_is_valid(text, uuid) TO PUBLIC;
+GRANT ALL ON FUNCTION etc.inode_inode_type_id_is_valid(text, uuid) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.inode_inode_type_id_is_valid(text, uuid) TO PUBLIC;
 
--- FUNCTION: etc.datum_name_or_parent_id_upserting_trigger()
+-- FUNCTION: etc.inode_path_upserting_trigger()
+-- Modifies the path when name or parent_inode_id change.
 
-CREATE OR REPLACE FUNCTION etc.datum_name_or_parent_id_upserting_trigger()
+CREATE OR REPLACE FUNCTION etc.inode_path_upserting_trigger()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE NOT LEAKPROOF
 AS $BODY$
     BEGIN
-		IF NEW.datum_id = '00000000-0000-0000-0000-000000000000'::uuid THEN
+		IF NEW.inode_id = '00000000-0000-0000-0000-000000000000'::uuid THEN
 			IF NEW.path IS NULL OR NEW.path <> '' THEN
 				NEW.path = '';
 			END IF;
-		ELSIF NEW.parent_id IS NOT NULL THEN
-			NEW.path = (SELECT (CASE WHEN length(parent.path) > 0 THEN parent.path || '/' ELSE '' END) || NEW.name FROM etc.datum parent WHERE parent.datum_id = NEW.parent_id);
+		ELSIF NEW.parent_inode_id IS NOT NULL THEN
+			NEW.path = (SELECT (CASE WHEN length(parent.path) > 0 THEN parent.path || '/' ELSE '' END) || NEW.name FROM etc.inode parent WHERE parent.inode_id = NEW.parent_inode_id);
 		END IF;
         RETURN NEW;
     END;
 $BODY$;
 
-GRANT ALL ON FUNCTION etc.datum_name_or_parent_id_upserting_trigger() TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.datum_name_or_parent_id_upserting_trigger() TO PUBLIC;
+GRANT ALL ON FUNCTION etc.inode_path_upserting_trigger() TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.inode_path_upserting_trigger() TO PUBLIC;
 
-CREATE OR REPLACE TRIGGER datum_name_or_parent_id_upserting_trigger
-    BEFORE INSERT OR UPDATE OF name, parent_id
-    ON etc.datum
+CREATE OR REPLACE TRIGGER inode_path_upserting_trigger
+    BEFORE INSERT OR UPDATE OF name, parent_inode_id
+    ON etc.inode
     FOR EACH ROW
-    EXECUTE FUNCTION etc.datum_name_or_parent_id_upserting_trigger();
+    EXECUTE FUNCTION etc.inode_path_upserting_trigger();
 
--- FUNCTION: etc.datum_path_upserted_trigger()
+-- FUNCTION: etc.inode_path_upserted_trigger()
+-- Modifies the paths of its children when its path changes.
 
-CREATE OR REPLACE FUNCTION etc.datum_path_upserted_trigger()
+CREATE OR REPLACE FUNCTION etc.inode_path_upserted_trigger()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
@@ -146,41 +148,41 @@ AS $BODY$
     BEGIN
 		-- Update children
 		-- All descendants will be updated via this trigger recursively firing as each path is changed
-		UPDATE etc.datum
-		SET path = (CASE WHEN length(NEW.path) > 0 THEN NEW.path || '/' ELSE '' END) || datum.name
-		WHERE datum.parent_id = NEW.datum_id AND datum_id <> parent_id;
+		UPDATE etc.inode
+		SET path = (CASE WHEN length(NEW.path) > 0 THEN NEW.path || '/' ELSE '' END) || inode.name
+		WHERE inode.parent_inode_id = NEW.inode_id AND inode_id <> parent_inode_id;
         RETURN NEW;
     END;
 $BODY$;
 
-GRANT ALL ON FUNCTION etc.datum_path_upserted_trigger() TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.datum_path_upserted_trigger() TO PUBLIC;
+GRANT ALL ON FUNCTION etc.inode_path_upserted_trigger() TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.inode_path_upserted_trigger() TO PUBLIC;
 
-CREATE OR REPLACE TRIGGER datum_path_upserted_trigger
-    AFTER INSERT OR UPDATE OF name, parent_id, path
-    ON etc.datum
+CREATE OR REPLACE TRIGGER inode_path_upserted_trigger
+    AFTER INSERT OR UPDATE OF name, parent_inode_id, path
+    ON etc.inode
     FOR EACH ROW
-    EXECUTE FUNCTION etc.datum_path_upserted_trigger();
+    EXECUTE FUNCTION etc.inode_path_upserted_trigger();
 
--- Insert Root datum before applying the datum_type_id_check
+-- Insert Root inode before applying the inode_inode_type_id_check
 
-INSERT INTO etc.type (type_id) values 
+INSERT INTO etc.inode_type (inode_type_id) values 
 	('Root')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.type_constraint (type_id, parent_type_id) values 
+INSERT INTO etc.inode_type_constraint (inode_type_id, parent_inode_type_id) values 
 	('Root', 'Root')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.datum (datum_id, parent_id, name, type_id) values
+INSERT INTO etc.inode (inode_id, parent_inode_id, name, inode_type_id) values
 	('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'Root', 'Root')
 	ON CONFLICT DO NOTHING;
 
--- FUNCTION: etc.get_datum_tree(uuid)
--- DROP FUNCTION IF EXISTS etc.get_datum_tree(uuid);
+-- FUNCTION: etc.get_inode_tree(uuid)
+-- DROP FUNCTION IF EXISTS etc.get_inode_tree(uuid);
 
-CREATE OR REPLACE FUNCTION etc.get_datum_tree(
-	_datum_id uuid)
+CREATE OR REPLACE FUNCTION etc.get_inode_tree(
+	_inode_id uuid)
     RETURNS jsonb
     LANGUAGE 'plpgsql'
     COST 100
@@ -188,34 +190,34 @@ CREATE OR REPLACE FUNCTION etc.get_datum_tree(
 AS $BODY$
 BEGIN
 	RETURN json_build_object(
-		'datum_id',
-		datum_id,
+		'inode_id',
+		inode_id,
 		'name',
 		"name",
 		'children',
 		array(
-			SELECT etc.get_datum_tree(datum_id)
-			FROM etc.datum 
-			WHERE parent_id = _datum_id AND datum_id <> parent_id
+			SELECT etc.get_inode_tree(inode_id)
+			FROM etc.inode 
+			WHERE parent_inode_id = _inode_id AND inode_id <> parent_inode_id
 		)
 	)
-	FROM etc.datum
-	WHERE datum_id = _datum_id;
+	FROM etc.inode
+	WHERE inode_id = _inode_id;
 END;
 $BODY$;
 
-ALTER FUNCTION etc.get_datum_tree(uuid)
+ALTER FUNCTION etc.get_inode_tree(uuid)
     OWNER TO pg_database_owner;
 
-GRANT ALL ON FUNCTION etc.get_datum_tree(uuid) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.get_datum_tree(uuid) TO PUBLIC;
+GRANT ALL ON FUNCTION etc.get_inode_tree(uuid) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.get_inode_tree(uuid) TO PUBLIC;
 
--- Check: datum_type_id_check
--- ALTER TABLE etc.datum DROP CONSTRAINT IF EXISTS datum_type_id_check;
+-- Check: inode_inode_type_id_check
+-- ALTER TABLE etc.inode DROP CONSTRAINT IF EXISTS inode_inode_type_id_check;
 
 DO $$BEGIN
-IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'datum_type_id_check') THEN
-	ALTER TABLE etc.datum ADD CONSTRAINT datum_type_id_check CHECK (etc.datum_type_id_is_valid(type_id, parent_id));
+IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'inode_inode_type_id_check') THEN
+	ALTER TABLE etc.inode ADD CONSTRAINT inode_inode_type_id_check CHECK (etc.inode_inode_type_id_is_valid(inode_type_id, parent_inode_id));
 END IF;
 END$$;
 
@@ -224,12 +226,12 @@ END$$;
 
 CREATE TABLE IF NOT EXISTS etc.file
 (
-	datum_id uuid NOT NULL,
-    content_type text NOT NULL,
+	inode_id uuid NOT NULL,
+    content_inode_type text NOT NULL,
     data bytea NOT NULL,
-    CONSTRAINT file_pkey PRIMARY KEY (datum_id),
-    CONSTRAINT file_datum_id_fkey FOREIGN KEY (datum_id)
-        REFERENCES etc.datum (datum_id) MATCH SIMPLE
+    CONSTRAINT file_pkey PRIMARY KEY (inode_id),
+    CONSTRAINT file_inode_id_fkey FOREIGN KEY (inode_id)
+        REFERENCES etc.inode (inode_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )
@@ -251,7 +253,7 @@ CREATE OR REPLACE VIEW etc.database_definition
             c.table_name,
             c.ordinal_position AS "position",
             c.column_name AS name,
-            c.udt_name AS store_type,
+            c.udt_name AS store_inode_type,
                 CASE
                     WHEN c.is_nullable::text = 'YES'::text THEN true
                     ELSE false
@@ -271,7 +273,7 @@ CREATE OR REPLACE VIEW etc.database_definition
                     WHEN i.indisprimary THEN 2
                     WHEN i.indisunique THEN 1
                     ELSE 0
-                END AS index_type,
+                END AS index_inode_type,
             json_agg(c.column_name) AS columns
            FROM pg_namespace schema_ns
              JOIN pg_class index_class ON index_class.relnamespace = schema_ns.oid
@@ -342,18 +344,18 @@ GRANT SELECT ON TABLE etc.database_definition TO PUBLIC;
 
 -- DATA:
 
-INSERT INTO etc.type (type_id) values 
+INSERT INTO etc.inode_type (inode_type_id) values 
 	('Space'),
 	('Folder'),
 	('File')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.type_constraint (type_id, parent_type_id) values 
+INSERT INTO etc.inode_type_constraint (inode_type_id, parent_inode_type_id) values 
 	('Space', 'Root'),
 	('Folder', 'Space'), ('Folder', 'Folder'),
 	('File', 'Space'), ('File', 'Folder')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.datum (datum_id, parent_id, name, type_id) values
+INSERT INTO etc.inode (inode_id, parent_inode_id, name, inode_type_id) values
 	('3e544ebc-f30a-471f-a8ec-f9e3ac84f19a', '00000000-0000-0000-0000-000000000000', 'etc', 'Space')
 	ON CONFLICT DO NOTHING;

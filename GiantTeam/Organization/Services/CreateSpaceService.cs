@@ -17,7 +17,7 @@ namespace GiantTeam.Organization.Services
         [Required, StringLength(50)]
         public string OrganizationId { get; set; } = null!;
 
-        [Required, StringLength(50), DatumName]
+        [Required, StringLength(50), InodeName]
         public string SpaceName { get; set; } = null!;
 
         [Required, MinLength(1)]
@@ -26,7 +26,7 @@ namespace GiantTeam.Organization.Services
 
     public class CreateSpaceResult
     {
-        public Guid DatumId { get; set; }
+        public Guid InodeId { get; set; }
     }
 
     public class CreateSpaceService
@@ -74,17 +74,17 @@ namespace GiantTeam.Organization.Services
             await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(organization.DatabaseName);
             await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
 
-            var space = new Etc.Data.Datum()
+            var space = new Etc.Data.Inode()
             {
-                DatumId = Guid.NewGuid(),
-                ParentId = DatumId.Root,
+                InodeId = Guid.NewGuid(),
+                ParentInodeId = InodeId.Root,
                 Name = input.SpaceName,
-                TypeId = "Space",
+                InodeTypeId = "Space",
                 Created = DateTime.UtcNow,
             };
 
             validationService.Validate(space);
-            elevatedDbContext.Datums.Add(space);
+            elevatedDbContext.Inodes.Add(space);
             await elevatedDbContext.SaveChangesAsync();
 
             string schemaName = input.SpaceName;
@@ -110,7 +110,7 @@ namespace GiantTeam.Organization.Services
 
             return new()
             {
-                DatumId = space.DatumId,
+                InodeId = space.InodeId,
             };
         }
     }

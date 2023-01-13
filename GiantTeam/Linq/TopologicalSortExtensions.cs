@@ -2,7 +2,7 @@
 
 public static class TopologicalSortExtensions
 {
-    public static IEnumerable<T> TopologicalSort<T>(this IEnumerable<T> datums, IEnumerable<(T, T)> edges) where T : notnull
+    public static IEnumerable<T> TopologicalSort<T>(this IEnumerable<T> nodes, IEnumerable<(T, T)> edges) where T : notnull
     {
         // Empty list that will contain the sorted elements
         var sortedList = new List<T>();
@@ -10,20 +10,20 @@ public static class TopologicalSortExtensions
         // A copy of edges that will be manipulated
         var graph = edges.ToHashSet();
 
-        // The set of all datums with no incoming edges
-        var set = datums.Except(graph.Select(e => e.Item2)).ToHashSet(); //.Where(n => edges.All(e => !e.Item2.Equals(n))).ToHashSet();
+        // The set of all nodes with no incoming edges
+        var set = nodes.Except(graph.Select(e => e.Item2)).ToHashSet(); //.Where(n => edges.All(e => !e.Item2.Equals(n))).ToHashSet();
 
         // While set is not empty do
         while (set.Any())
         {
-            // Remove datum n from set
+            // Remove node n from set
             var n = set.First();
             set.Remove(n);
 
             // Add n to tail of sorted list
             sortedList.Add(n);
 
-            // For each datum m with an edge e from n to m do
+            // For each node m with an edge e from n to m do
             foreach (var e in graph.Where(e => e.Item1.Equals(n)).ToList())
             {
                 var m = e.Item2;
