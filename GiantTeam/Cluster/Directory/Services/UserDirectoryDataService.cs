@@ -17,7 +17,7 @@ namespace GiantTeam.Cluster.Directory.Services
                 Database = DirectoryHelpers.Database,
                 SearchPath = DirectoryHelpers.Schema,
                 Username = sessionService.User.DbLogin,
-                Password = sessionService.User.DbPassword
+                Password = sessionService.User.DbPassword(),
             }.ToString())
         {
         }

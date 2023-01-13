@@ -15,6 +15,9 @@ namespace GiantTeam.Cluster.Directory.Data
         [Required, StringLength(50), DatabaseName]
         public string DatabaseName { get; set; } = null!;
 
+        [RequiredGuid]
+        public Guid DatabaseOwnerOrganizationRoleId { get; set; }
+
         public DateTime Created { get; set; }
 
         public List<OrganizationRole>? Roles { get; set; }

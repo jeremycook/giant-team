@@ -13,13 +13,12 @@ export interface JoinOutput {
 }
 
 export interface SessionUser {
-    userId: string;
     sub: string;
     username: string;
     elevated: boolean;
+    userId: string;
     dbUser: string;
     dbLogin: string;
-    dbPassword: string;
     dbElevatedUser: string | null;
     dbElevatedLogin: string | null;
 }

@@ -35,7 +35,7 @@ namespace GiantTeam.UserData.Services
                 Database = databaseName,
                 SearchPath = defaultSchema,
                 Username = sessionService.User.DbElevatedLogin ?? throw new UnelevatedException(),
-                Password = sessionService.User.DbPassword,
+                Password = sessionService.User.DbPassword(),
             };
 
             return new(
@@ -54,7 +54,7 @@ namespace GiantTeam.UserData.Services
                 Database = databaseName,
                 SearchPath = defaultSchema,
                 Username = sessionService.User.DbLogin,
-                Password = sessionService.User.DbPassword,
+                Password = sessionService.User.DbPassword(),
             };
 
             return new(

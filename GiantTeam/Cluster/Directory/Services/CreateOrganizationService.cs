@@ -35,29 +35,38 @@ namespace GiantTeam.Cluster.Directory.Services
         private readonly ILogger<CreateOrganizationService> logger;
         private readonly ValidationService validationService;
         private readonly SecurityDataService securityDataService;
-        private readonly ManagerDirectoryDbContext managerDirectoryDb;
+        private readonly IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory;
         private readonly UserDataServiceFactory userDataFactory;
         private readonly UserDbContextFactory userDbContextFactory;
         private readonly SessionService sessionService;
+        private readonly CreateOrganizationRoleService createOrganizationRoleService;
+        private readonly GrantSpaceService grantSpaceService;
+        private readonly GrantTableService grantTableService;
         private readonly CreateSpaceService createSpaceService;
 
         public CreateOrganizationService(
             ILogger<CreateOrganizationService> logger,
             ValidationService validationService,
             SecurityDataService securityDataService,
-            ManagerDirectoryDbContext managerDirectoryDb,
+            IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory,
             UserDataServiceFactory userDataFactory,
             UserDbContextFactory userDbContextFactory,
             SessionService sessionService,
+            CreateOrganizationRoleService createOrganizationRoleService,
+            GrantSpaceService grantSpaceService,
+            GrantTableService grantTableService,
             CreateSpaceService createSpaceService)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.securityDataService = securityDataService;
-            this.managerDirectoryDb = managerDirectoryDb;
+            this.managerDirectoryDbContextFactory = managerDirectoryDbContextFactory;
             this.userDataFactory = userDataFactory;
             this.userDbContextFactory = userDbContextFactory;
             this.sessionService = sessionService;
+            this.createOrganizationRoleService = createOrganizationRoleService;
+            this.grantSpaceService = grantSpaceService;
+            this.grantTableService = grantTableService;
             this.createSpaceService = createSpaceService;
         }
 
@@ -76,130 +85,191 @@ namespace GiantTeam.Cluster.Directory.Services
 
         private async Task<CreateOrganizationResult> ProcessAsync(CreateOrganizationInput input)
         {
-            if (sessionService.User.DbElevatedUser is null)
+            if (!sessionService.User.Elevated || sessionService.User.DbElevatedUser is null)
             {
                 throw new UnauthorizedException("Elevated rights are required to create an organization. Please login with elevated rights.");
             }
 
-            if (input is null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
             validationService.Validate(input);
 
-            await using var dmtx = await managerDirectoryDb.Database.BeginTransactionAsync();
-
-            var owner = new OrganizationRole() { Name = "Owner", Created = DateTime.UtcNow };
-            var member = new OrganizationRole() { Name = "Member", Created = DateTime.UtcNow };
-            var guest = new OrganizationRole() { Name = "Guest", Created = DateTime.UtcNow };
-            var organization = new Data.Organization()
+            Data.Organization organization;
+            await using (var managerDirectoryDb = await managerDirectoryDbContextFactory.CreateDbContextAsync())
             {
-                OrganizationId = input.DatabaseName,
-                Name = input.Name,
-                DatabaseName = input.DatabaseName,
-                Created = DateTime.UtcNow,
-                Roles = new(new[]
+                await using var tx = await managerDirectoryDb.Database.BeginTransactionAsync();
+
+                var owner = new OrganizationRole()
                 {
-                    owner,
-                    member,
-                    guest,
-                }),
-            };
-
-            validationService.Validate(organization);
-            managerDirectoryDb.Organizations.Add(organization);
-            await managerDirectoryDb.SaveChangesAsync();
-
-            string databaseName = organization.DatabaseName;
-
-            var elevatedDirectoryDataService = userDataFactory.NewElevatedDataService(DirectoryHelpers.Database);
-            try
-            {
-                // Create the organization's initial roles.
-                // CREATEDB will be allowed until the organization database is created.
-                await securityDataService.ExecuteAsync(
-                    $"CREATE ROLE {Sql.Identifier(owner.DbRole)} WITH INHERIT CREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbElevatedUser)}",
-                    $"CREATE ROLE {Sql.Identifier(member.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbUser)}",
-                    $"CREATE ROLE {Sql.Identifier(guest.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION"
-                );
-
-                // Create the database as the new owner.
-                await elevatedDirectoryDataService.ExecuteAsync(
-                    $"SET ROLE {Sql.Identifier(owner.DbRole)}",
-                    $"CREATE DATABASE {Sql.Identifier(databaseName)}");
-
-                // Remove the CREATEDB privilege.
-                await securityDataService.ExecuteAsync($"ALTER ROLE {Sql.Identifier(owner.DbRole)} NOCREATEDB");
-
-                // Connect to the new database and initialize it.
-                await using var batch = new NpgsqlBatch()
+                    OrganizationRoleId = Guid.NewGuid(),
+                    Name = "Owner",
+                    Created = DateTime.UtcNow,
+                };
+                organization = new Data.Organization()
                 {
-                    BatchCommands =
+                    OrganizationId = input.DatabaseName,
+                    Name = input.Name,
+                    DatabaseName = input.DatabaseName,
+                    DatabaseOwnerOrganizationRoleId = owner.OrganizationRoleId,
+                    Created = DateTime.UtcNow,
+                    Roles = new(new[] { owner }),
+                };
+
+                validationService.ValidateAll(organization, owner);
+                managerDirectoryDb.Organizations.Add(organization);
+                await managerDirectoryDb.SaveChangesAsync();
+
+                string databaseName = organization.DatabaseName;
+
+                var elevatedDirectoryDataService = userDataFactory.NewElevatedDataService(DirectoryHelpers.Database);
+                try
+                {
+                    // Create the organization's initial roles.
+                    // CREATEDB will be allowed until the organization database is created.
+                    await securityDataService.ExecuteAsync(
+                        $"CREATE ROLE {Sql.Identifier(owner.DbRole)} WITH INHERIT CREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbElevatedUser)}"
+                    );
+
+                    // Create the database as the new owner.
+                    await elevatedDirectoryDataService.ExecuteAsync(
+                        $"SET ROLE {Sql.Identifier(owner.DbRole)}",
+                        $"CREATE DATABASE {Sql.Identifier(databaseName)}");
+
+                    // Remove the CREATEDB privilege.
+                    await securityDataService.ExecuteAsync($"ALTER ROLE {Sql.Identifier(owner.DbRole)} NOCREATEDB");
+
+                    // Connect to the new database with elevated rights
+                    var elevatedDatabaseService = userDataFactory.NewElevatedDataService(databaseName);
+
+                    // Initialize it
+                    await using (var setupDatabaseBatch = new NpgsqlBatch()
+                    {
+                        BatchCommands =
                     {
                         // Perform these actions as the database owner
                         Sql.Format($"SET ROLE {Sql.Identifier(owner.DbRole)}"),
-                        Sql.Format($"DROP SCHEMA IF EXISTS public CASCADE"),
                         Sql.Format($"GRANT ALL ON DATABASE {Sql.Identifier(databaseName)} TO pg_database_owner"),
-                        Sql.Format($"GRANT CONNECT, TEMPORARY ON DATABASE {Sql.Identifier(databaseName)} TO {Sql.Identifier(member.DbRole)}"),
-                        Sql.Format($"GRANT CONNECT ON DATABASE {Sql.Identifier(databaseName)} TO {Sql.Identifier(guest.DbRole)}"),
-
-                        // Switch to pg_database_owner
-                        Sql.Format($"SET ROLE pg_database_owner"),
                         Sql.Format($"REVOKE ALL ON DATABASE {Sql.Identifier(databaseName)} FROM public"),
-                        Sql.Format($"GRANT CONNECT ON DATABASE {Sql.Identifier(databaseName)} TO {Sql.Identifier(sessionService.User.DbUser)}"),
+                        Sql.Format($"DROP SCHEMA IF EXISTS public CASCADE"),
                     }
-                };
-                var elevatedDatabaseService = userDataFactory.NewElevatedDataService(databaseName);
-                await elevatedDatabaseService.ExecuteAsync(batch);
+                    })
+                    {
+                        await elevatedDatabaseService.ExecuteAsync(setupDatabaseBatch);
+                    }
 #pragma warning disable CS0618 // Type or member is obsolete
-                await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
+                    await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                // Set the name of the root datum to match
-                // the name of the organization from the directory.
-                await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName, "etc");
-                var root = await elevatedDbContext.Datums
-                    .SingleAsync(o => o.DatumId == DatumId.Root);
-                root.Name = input.Name;
-                await elevatedDbContext.SaveChangesAsync();
-
-                // Create the default Home space
-                await createSpaceService.CreateSpaceAsync(new()
+                    // Set the name of the root datum to match
+                    // the name of the organization in the directory.
+                    await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName, "etc");
+                    var root = await elevatedDbContext.Datums
+                        .SingleAsync(o => o.DatumId == DatumId.Root);
+                    root.Name = input.Name;
+                    await elevatedDbContext.SaveChangesAsync();
+                }
+                catch (Exception)
                 {
-                    DatabaseName = organization.DatabaseName,
-                    Name = "Home",
+                    try
+                    {
+                        await elevatedDirectoryDataService.ExecuteAsync(
+                            $"SET ROLE {Sql.Identifier(owner.DbRole)}",
+                            $"DROP DATABASE IF EXISTS {Sql.Identifier(databaseName)}");
+                    }
+                    catch (Exception cleanupException)
+                    {
+                        logger.LogInformation(cleanupException, "Suppressed drop database cleanup failure following error when creating {DatabaseName}.", databaseName);
+                    }
+
+                    try
+                    {
+                        await securityDataService.ExecuteAsync(
+                            $"DROP ROLE IF EXISTS {Sql.Identifier(owner.DbRole)}");
+                    }
+                    catch (Exception cleanupException)
+                    {
+                        logger.LogInformation(cleanupException, "Suppressed drop roles cleanup failure following error when creating {DatabaseName}.", databaseName);
+                    }
+
+                    throw;
+                }
+
+                await tx.CommitAsync();
+            } // Must close this connection so transactions can be opened to create roles, etc.
+
+            // Create non-elevated organization roles
+            var admin = await createOrganizationRoleService.CreateOrganizationRoleAsync(new()
+            {
+                OrganizationId = organization.OrganizationId,
+                RoleName = "Admin",
+                MemberDbRoles = new List<string>() { sessionService.User.DbUser },
+            });
+            var member = await createOrganizationRoleService.CreateOrganizationRoleAsync(new()
+            {
+                OrganizationId = organization.OrganizationId,
+                RoleName = "Member",
+                MemberDbRoles = new List<string>() { sessionService.User.DbUser },
+            });
+
+            // Grant access to the etc space
+            await grantSpaceService.GrantSpaceAsync(new()
+            {
+                OrganizationId = organization.OrganizationId,
+                SpaceName = "etc",
+                Grants = new()
+                {
+                    new()
+                    {
+                        OrganizationRoleId = admin.OrganizationRoleId,
+                        Privileges = new[] { GrantSpaceInputPrivilege.USAGE },
+                    },
+                    new()
+                    {
+                        OrganizationRoleId = member.OrganizationRoleId,
+                        Privileges = new[] { GrantSpaceInputPrivilege.USAGE },
+                    },
+                },
+            });
+            foreach (var tableName in new[] { "datum", "file" })
+            {
+                await grantTableService.GrantTableAsync(new()
+                {
+                    OrganizationId = organization.OrganizationId,
+                    SpaceName = "etc",
+                    TableName = tableName,
+                    Grants = new()
+                    {
+                        new()
+                        {
+                            OrganizationRoleId = admin.OrganizationRoleId,
+                            Privileges = new[] { GrantTableInputPrivilege.SELECT },
+                        },
+                        new()
+                        {
+                            OrganizationRoleId = member.OrganizationRoleId,
+                            Privileges = new[] { GrantTableInputPrivilege.SELECT },
+                        },
+                    },
                 });
             }
-            catch (Exception)
+
+            // Create the default Home space
+            await createSpaceService.CreateSpaceAsync(new()
             {
-                try
+                OrganizationId = organization.OrganizationId,
+                SpaceName = "Home",
+                Grants = new()
                 {
-                    await elevatedDirectoryDataService.ExecuteAsync(
-                        $"SET ROLE {Sql.Identifier(owner.DbRole)}",
-                        $"DROP DATABASE IF EXISTS {Sql.Identifier(databaseName)}");
-                }
-                catch (Exception cleanupException)
-                {
-                    logger.LogInformation(cleanupException, "Suppressed drop database cleanup failure following error when creating {DatabaseName}.", databaseName);
-                }
-
-                try
-                {
-                    await securityDataService.ExecuteAsync(
-                        $"DROP ROLE IF EXISTS {Sql.Identifier(owner.DbRole)}",
-                        $"DROP ROLE IF EXISTS {Sql.Identifier(member.DbRole)}",
-                        $"DROP ROLE IF EXISTS {Sql.Identifier(guest.DbRole)}");
-                }
-                catch (Exception cleanupException)
-                {
-                    logger.LogInformation(cleanupException, "Suppressed drop roles cleanup failure following error when creating {DatabaseName}.", databaseName);
-                }
-
-                throw;
-            }
-
-            await dmtx.CommitAsync();
+                    new()
+                    {
+                        OrganizationRoleId = admin.OrganizationRoleId,
+                        Privileges = new[] { GrantSpaceInputPrivilege.ALL },
+                    },
+                    new()
+                    {
+                        OrganizationRoleId = member.OrganizationRoleId,
+                        Privileges = new[] { GrantSpaceInputPrivilege.USAGE },
+                    },
+                },
+            });
 
             return new()
             {

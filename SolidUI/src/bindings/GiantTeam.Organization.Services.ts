@@ -13,8 +13,9 @@ export interface AlterDatabaseOutput {
 }
 
 export interface CreateSpaceInput {
-    databaseName: string;
-    name: string;
+    organizationId: string;
+    spaceName: string;
+    grants: GrantSpaceInputGrant[];
 }
 
 export interface CreateSpaceResult {
@@ -93,6 +94,52 @@ export interface FetchRecordsInputRangeFilter extends FetchRecordsInputFilter {
     lowerValue: string;
     upperValue: string;
     column: string;
+}
+
+export interface GrantSpaceInput {
+    organizationId: string;
+    spaceName: string;
+    grants: GrantSpaceInputGrant[];
+}
+
+export interface GrantSpaceInputGrant {
+    organizationRoleId: string;
+    privileges: GrantSpaceInputPrivilege[];
+}
+
+export enum GrantSpaceInputPrivilege {
+    USAGE = 0,
+    CREATE = 1,
+    ALL = 100,
+}
+
+export interface GrantSpaceResult {
+}
+
+export interface GrantTableInput {
+    organizationId: string;
+    spaceName: string;
+    tableName: string;
+    grants: GrantTableInputGrant[];
+}
+
+export interface GrantTableInputGrant {
+    organizationRoleId: string;
+    privileges: GrantTableInputPrivilege[];
+}
+
+export enum GrantTableInputPrivilege {
+    SELECT = 0,
+    INSERT = 1,
+    UPDATE = 2,
+    DELETE = 3,
+    TRUNCATE = 4,
+    REFERENCES = 5,
+    TRIGGER = 6,
+    ALL = 100,
+}
+
+export interface GrantTableResult {
 }
 
 export interface ImportDataInput {

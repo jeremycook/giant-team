@@ -3,8 +3,6 @@ using GiantTeam.Cluster.Directory.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Linq;
-using GiantTeam.Organization.Etc.Data;
-using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
 using Npgsql;
@@ -12,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organization.Services
 {
-    public class CreateSpaceInput
+    public class GrantSpaceInput
     {
         [Required, StringLength(50)]
         public string OrganizationId { get; set; } = null!;
@@ -24,34 +22,43 @@ namespace GiantTeam.Organization.Services
         public List<GrantSpaceInputGrant> Grants { get; set; } = null!;
     }
 
-    public class CreateSpaceResult
+    public class GrantSpaceInputGrant
     {
-        public Guid DatumId { get; set; }
+        public Guid OrganizationRoleId { get; set; }
+        public GrantSpaceInputPrivilege[] Privileges { get; set; } = null!;
     }
 
-    public class CreateSpaceService
+    public enum GrantSpaceInputPrivilege
     {
-        private readonly ILogger<CreateSpaceService> logger;
+        USAGE = 0,
+        CREATE = 1,
+        ALL = 100,
+    }
+
+    public class GrantSpaceResult
+    {
+    }
+
+    public class GrantSpaceService
+    {
+        private readonly ILogger<GrantSpaceService> logger;
         private readonly ValidationService validationService;
         private readonly FetchOrganizationService fetchOrganizationService;
-        private readonly UserDbContextFactory userDbContextFactory;
         private readonly UserDataServiceFactory userDataServiceFactory;
 
-        public CreateSpaceService(
-            ILogger<CreateSpaceService> logger,
+        public GrantSpaceService(
+            ILogger<GrantSpaceService> logger,
             ValidationService validationService,
             FetchOrganizationService fetchOrganizationService,
-            UserDbContextFactory userDbContextFactory,
             UserDataServiceFactory userDataServiceFactory)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.fetchOrganizationService = fetchOrganizationService;
-            this.userDbContextFactory = userDbContextFactory;
             this.userDataServiceFactory = userDataServiceFactory;
         }
 
-        public async Task<CreateSpaceResult> CreateSpaceAsync(CreateSpaceInput input)
+        public async Task<GrantSpaceResult> GrantSpaceAsync(GrantSpaceInput input)
         {
             try
             {
@@ -64,39 +71,23 @@ namespace GiantTeam.Organization.Services
             }
         }
 
-        private async Task<CreateSpaceResult> ProcessAsync(CreateSpaceInput input)
+        private async Task<GrantSpaceResult> ProcessAsync(GrantSpaceInput input)
         {
             validationService.Validate(input);
 
             var organization = await fetchOrganizationService.FetchOrganizationAsync(new() { OrganizationId = input.OrganizationId });
-
             var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organization.DatabaseName);
-            await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(organization.DatabaseName);
-            await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
-
-            var space = new Etc.Data.Datum()
-            {
-                DatumId = Guid.NewGuid(),
-                ParentId = DatumId.Root,
-                Name = input.SpaceName,
-                TypeId = "Space",
-                Created = DateTime.UtcNow,
-            };
-
-            validationService.Validate(space);
-            elevatedDbContext.Datums.Add(space);
-            await elevatedDbContext.SaveChangesAsync();
 
             string schemaName = input.SpaceName;
 
-            // Create the SCHEMA as the pg_database_owner.
+            // Grant the SCHEMA as the pg_database_owner.
             var commands = new List<Sql>()
             {
                 Sql.Format($"SET ROLE pg_database_owner"),
-                Sql.Format($"CREATE SCHEMA {Sql.Identifier(schemaName)}"),
             };
             commands.AddRange(input.Grants.SelectMany(p => new[]
             {
+                Sql.Format($"REVOKE ALL ON SCHEMA {Sql.Identifier(schemaName)} FROM {Sql.Identifier(DirectoryHelpers.OrganizationRole(p.OrganizationRoleId)!)}"),
                 Sql.Format($"GRANT {(p.Privileges.Contains(GrantSpaceInputPrivilege.ALL) ?
                     Sql.Raw(GrantSpaceInputPrivilege.ALL.ToString()) :
                     Sql.Raw(p.Privileges.Select(o => o.ToString()).Join(","))
@@ -105,12 +96,8 @@ namespace GiantTeam.Organization.Services
 
             await elevatedDataService.ExecuteAsync(commands);
 
-            // Commit the new Space record
-            await tx.CommitAsync();
-
             return new()
             {
-                DatumId = space.DatumId,
             };
         }
     }

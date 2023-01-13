@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "@solidjs/router";
 import { createEffect } from "solid-js";
 import { createMutable } from "solid-js/store";
 import { postCreateSpace } from "../../bindings/GiantTeam.Organization.Api.Controllers";
+import { GrantSpaceInputPrivilege } from "../../bindings/GiantTeam.Organization.Services";
 import { toast } from "../../partials/Toasts";
 import { FieldSetOptions, FieldStack } from "../../widgets/FieldStack";
 
@@ -33,8 +34,14 @@ export default function NewSpacePage() {
         e.preventDefault();
 
         const response = await postCreateSpace({
-            databaseName: location.state?.organization!,
-            name: data.name,
+            organizationId: location.state?.organization!,
+            spaceName: data.name,
+            grants: [
+                {
+                    organizationRoleId: 'TODO',
+                    privileges: [GrantSpaceInputPrivilege.USAGE],
+                }
+            ]
         });
 
         if (response.ok) {

@@ -21,9 +21,11 @@ namespace GiantTeam.Cluster.Directory.Helpers
             return dbLogin + ":e";
         }
 
-        public static string OrganizationRole(Guid organizationRoleId)
+        public static string? OrganizationRole(Guid organizationRoleId)
         {
-            return $"r:{organizationRoleId:n}";
+            return organizationRoleId != Guid.Empty ?
+                $"r:{organizationRoleId:n}" :
+                null;
         }
     }
 }

@@ -3,8 +3,6 @@ using GiantTeam.Cluster.Directory.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Linq;
-using GiantTeam.Organization.Etc.Data;
-using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
 using Npgsql;
@@ -12,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organization.Services
 {
-    public class CreateSpaceInput
+    public class GrantTableInput
     {
         [Required, StringLength(50)]
         public string OrganizationId { get; set; } = null!;
@@ -20,38 +18,55 @@ namespace GiantTeam.Organization.Services
         [Required, StringLength(50), DatumName]
         public string SpaceName { get; set; } = null!;
 
+        [Required, StringLength(50), DatumName]
+        public string TableName { get; set; } = null!;
+
         [Required, MinLength(1)]
-        public List<GrantSpaceInputGrant> Grants { get; set; } = null!;
+        public List<GrantTableInputGrant> Grants { get; set; } = null!;
     }
 
-    public class CreateSpaceResult
+    public class GrantTableInputGrant
     {
-        public Guid DatumId { get; set; }
+        public Guid OrganizationRoleId { get; set; }
+        public GrantTableInputPrivilege[] Privileges { get; set; } = null!;
     }
 
-    public class CreateSpaceService
+    public enum GrantTableInputPrivilege
     {
-        private readonly ILogger<CreateSpaceService> logger;
+        SELECT = 0,
+        INSERT = 1,
+        UPDATE = 2,
+        DELETE = 3,
+        TRUNCATE = 4,
+        REFERENCES = 5,
+        TRIGGER = 6,
+        ALL = 100,
+    }
+
+    public class GrantTableResult
+    {
+    }
+
+    public class GrantTableService
+    {
+        private readonly ILogger<GrantTableService> logger;
         private readonly ValidationService validationService;
         private readonly FetchOrganizationService fetchOrganizationService;
-        private readonly UserDbContextFactory userDbContextFactory;
         private readonly UserDataServiceFactory userDataServiceFactory;
 
-        public CreateSpaceService(
-            ILogger<CreateSpaceService> logger,
+        public GrantTableService(
+            ILogger<GrantTableService> logger,
             ValidationService validationService,
             FetchOrganizationService fetchOrganizationService,
-            UserDbContextFactory userDbContextFactory,
             UserDataServiceFactory userDataServiceFactory)
         {
             this.logger = logger;
             this.validationService = validationService;
             this.fetchOrganizationService = fetchOrganizationService;
-            this.userDbContextFactory = userDbContextFactory;
             this.userDataServiceFactory = userDataServiceFactory;
         }
 
-        public async Task<CreateSpaceResult> CreateSpaceAsync(CreateSpaceInput input)
+        public async Task<GrantTableResult> GrantTableAsync(GrantTableInput input)
         {
             try
             {
@@ -60,57 +75,38 @@ namespace GiantTeam.Organization.Services
             catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
             {
                 logger.LogError(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                throw new ValidationException($"An error occurred that prevented creation of the \"{input.SpaceName}\" space. {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
+                throw new ValidationException($"An error occurred that prevented granting access to the {input.SpaceName}.{input.TableName} table. {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
             }
         }
 
-        private async Task<CreateSpaceResult> ProcessAsync(CreateSpaceInput input)
+        private async Task<GrantTableResult> ProcessAsync(GrantTableInput input)
         {
             validationService.Validate(input);
 
             var organization = await fetchOrganizationService.FetchOrganizationAsync(new() { OrganizationId = input.OrganizationId });
-
             var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organization.DatabaseName);
-            await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(organization.DatabaseName);
-            await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
-
-            var space = new Etc.Data.Datum()
-            {
-                DatumId = Guid.NewGuid(),
-                ParentId = DatumId.Root,
-                Name = input.SpaceName,
-                TypeId = "Space",
-                Created = DateTime.UtcNow,
-            };
-
-            validationService.Validate(space);
-            elevatedDbContext.Datums.Add(space);
-            await elevatedDbContext.SaveChangesAsync();
 
             string schemaName = input.SpaceName;
+            string tableName = input.TableName;
 
-            // Create the SCHEMA as the pg_database_owner.
+            // Grant the SCHEMA as the pg_database_owner.
             var commands = new List<Sql>()
             {
                 Sql.Format($"SET ROLE pg_database_owner"),
-                Sql.Format($"CREATE SCHEMA {Sql.Identifier(schemaName)}"),
             };
             commands.AddRange(input.Grants.SelectMany(p => new[]
             {
-                Sql.Format($"GRANT {(p.Privileges.Contains(GrantSpaceInputPrivilege.ALL) ?
-                    Sql.Raw(GrantSpaceInputPrivilege.ALL.ToString()) :
+                Sql.Format($"REVOKE ALL ON TABLE {Sql.Identifier(schemaName, tableName)} FROM {Sql.Identifier(DirectoryHelpers.OrganizationRole(p.OrganizationRoleId)!)}"),
+                Sql.Format($"GRANT {(p.Privileges.Contains(GrantTableInputPrivilege.ALL) ?
+                    Sql.Raw(GrantTableInputPrivilege.ALL.ToString()) :
                     Sql.Raw(p.Privileges.Select(o => o.ToString()).Join(","))
-                )} ON SCHEMA {Sql.Identifier(schemaName)} TO {Sql.Identifier(DirectoryHelpers.OrganizationRole(p.OrganizationRoleId)!)}"),
+                )} ON TABLE {Sql.Identifier(schemaName, tableName)} TO {Sql.Identifier(DirectoryHelpers.OrganizationRole(p.OrganizationRoleId)!)}"),
             }));
 
             await elevatedDataService.ExecuteAsync(commands);
 
-            // Commit the new Space record
-            await tx.CommitAsync();
-
             return new()
             {
-                DatumId = space.DatumId,
             };
         }
     }

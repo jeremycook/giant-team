@@ -18,7 +18,7 @@ public class GiantTeamServiceBuilder : IServiceBuilder
 
         services.AddOrReplaceScopedFromAssembly(typeof(GiantTeamServiceBuilder).Assembly);
 
-        services.AddDbContextPool<ManagerDirectoryDbContext>((services, options) =>
+        services.AddPooledDbContextFactory<ManagerDirectoryDbContext>((services, options) =>
         {
             var giantTeamOptions = services.GetRequiredService<IOptions<GiantTeamOptions>>().Value;
             var connectionOptions = giantTeamOptions.DirectoryManagerConnection;

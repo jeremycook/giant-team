@@ -10,6 +10,16 @@ export interface CreateOrganizationResult {
     organizationId: string;
 }
 
+export interface CreateOrganizationRoleInput {
+    organizationId: string;
+    roleName: string;
+    memberDbRoles: string[];
+}
+
+export interface CreateOrganizationRoleResult {
+    organizationRoleId: string;
+}
+
 export interface FetchOrganizationInput {
     organizationId: string;
 }
@@ -18,5 +28,15 @@ export interface FetchOrganizationOutput {
     organizationId: string;
     name: string;
     databaseName: string;
+    databaseOwnerOrganizationRoleId: string;
     created: Date;
+    roles: FetchOrganizationOutputRole[];
+}
+
+export interface FetchOrganizationOutputRole {
+    organizationRoleId: string;
+    created: Date;
+    name: string;
+    description: string;
+    dbRole: string;
 }

@@ -153,6 +153,57 @@ namespace GiantTeam.Postgres
         }
 
         /// <summary>
+        /// Returns first column of the first row in the result set, or a null reference if the result set is empty.
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="DbException"></exception>
+        public async Task<object?> ScalarAsync(FormattableString sql)
+        {
+            return await ScalarAsync(Format(sql));
+        }
+
+        /// <summary>
+        /// Returns first column of the first row in the result set, or a null reference if the result set is empty.
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="DbException"></exception>
+        public async Task<object?> ScalarAsync(NpgsqlBatchCommand sql)
+        {
+            try
+            {
+                await using var dataSource = CreateDataSource();
+                await using var connection = await dataSource.OpenConnectionAsync();
+                await using var batch = connection.CreateBatch();
+                batch.BatchCommands.Add(sql);
+
+                if (batch.BatchCommands[0].StatementType == StatementType.Select)
+                {
+                    throw new ArgumentException($"The {nameof(sql)} argument must be a SELECT statement.", nameof(sql));
+                }
+
+                try
+                {
+                    return await batch.ExecuteScalarAsync();
+                }
+                catch (DbException ex)
+                {
+                    Logger.LogError(ex, "Error executing batch scalar query command {CommandText}", batch.BatchCommands[0].CommandText);
+                    throw;
+                }
+            }
+            catch (DbException ex)
+            {
+                Logger.LogError(ex, "Error executing scalar query {QueryText}", sql.ToString());
+                throw;
+            }
+
+        }
+
+        /// <summary>
         /// Returns one <typeparamref name="T"/> or <c>null</c>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -422,10 +473,10 @@ namespace GiantTeam.Postgres
             return item;
         }
 
-        [GeneratedRegex("^\\s+WHERE\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
+        [GeneratedRegex("^\\s*WHERE\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
         private static partial Regex WhereRegex();
 
-        [GeneratedRegex("^\\s+FROM\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
+        [GeneratedRegex("^\\s*FROM\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
         private static partial Regex FromRegex();
     }
 }

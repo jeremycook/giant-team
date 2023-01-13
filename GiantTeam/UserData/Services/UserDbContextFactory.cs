@@ -29,7 +29,7 @@ namespace GiantTeam.UserData.Services
                 Database = databaseName,
                 SearchPath = defaultSchema,
                 Username = sessionService.User.DbLogin,
-                Password = sessionService.User.DbPassword
+                Password = sessionService.User.DbPassword(),
             };
 
             var dbContextOptions = new DbContextOptionsBuilder<TDbContext>()
@@ -50,7 +50,7 @@ namespace GiantTeam.UserData.Services
                 Database = databaseName,
                 SearchPath = defaultSchema,
                 Username = sessionService.User.DbElevatedLogin,
-                Password = sessionService.User.DbPassword
+                Password = sessionService.User.DbPassword(),
             };
 
             var dbContextOptions = new DbContextOptionsBuilder<TDbContext>()

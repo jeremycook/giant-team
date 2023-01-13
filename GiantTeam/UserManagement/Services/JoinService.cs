@@ -32,18 +32,18 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private readonly ILogger<JoinService> logger;
-        private readonly ManagerDirectoryDbContext directoryManagerDb;
+        private readonly IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory;
         private readonly ClusterSecurityService security;
         private readonly ValidationService validationService;
 
         public JoinService(
             ILogger<JoinService> logger,
-            ManagerDirectoryDbContext directoryManagerDb,
+            IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory,
             ClusterSecurityService databaseSecurityService,
             ValidationService validationService)
         {
             this.logger = logger;
-            this.directoryManagerDb = directoryManagerDb;
+            this.managerDirectoryDbContextFactory = managerDirectoryDbContextFactory;
             this.security = databaseSecurityService;
             this.validationService = validationService;
         }
@@ -67,6 +67,8 @@ namespace GiantTeam.UserManagement.Services
                 UserId = user.UserId,
                 PasswordDigest = PasswordHelper.HashPlaintext(input.Password),
             };
+
+            await using var directoryManagerDb = await managerDirectoryDbContextFactory.CreateDbContextAsync();
 
             validationService.ValidateAll(user, userPassword);
             directoryManagerDb.Users.Add(user);

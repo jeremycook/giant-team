@@ -1,19 +1,20 @@
 ﻿using GiantTeam.Cluster.Directory.Data;
 using GiantTeam.Cluster.Security.Services;
 using GiantTeam.Crypto;
+using Microsoft.EntityFrameworkCore;
 
 namespace GiantTeam.UserManagement.Services
 {
     public class BuildSessionUserService
     {
-        private readonly ManagerDirectoryDbContext directoryManagerDb;
+        private readonly IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory;
         private readonly ClusterSecurityService securityService;
 
         public BuildSessionUserService(
-            ManagerDirectoryDbContext directoryManagerDb,
+            IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory,
             ClusterSecurityService securityService)
         {
-            this.directoryManagerDb = directoryManagerDb;
+            this.managerDirectoryDbContextFactory = managerDirectoryDbContextFactory;
             this.securityService = securityService;
         }
 
@@ -26,6 +27,8 @@ namespace GiantTeam.UserManagement.Services
         /// <exception cref="ArgumentException"></exception>
         public async Task<SessionUser> BuildSessionUserAsync(bool elevated, Guid userId, DateTime validUntil)
         {
+            await using var directoryManagerDb = await managerDirectoryDbContextFactory.CreateDbContextAsync();
+
             // Find the user
             User user =
                 await directoryManagerDb.Users.FindAsync(userId) ??
@@ -45,7 +48,7 @@ namespace GiantTeam.UserManagement.Services
             await securityService.CreateLoginAsync(
                 dbUser: user.DbUser,
                 dbLogin: sessionUser.DbLogin,
-                dbLoginPassword: sessionUser.DbPassword,
+                dbLoginPassword: sessionUser.DbPassword(),
                 passwordValidUntil: validUntil
             );
 
@@ -56,7 +59,7 @@ namespace GiantTeam.UserManagement.Services
                 await securityService.CreateLoginAsync(
                     dbUser: sessionUser.DbElevatedUser,
                     dbLogin: sessionUser.DbElevatedLogin,
-                    dbLoginPassword: sessionUser.DbPassword,
+                    dbLoginPassword: sessionUser.DbPassword(),
                     passwordValidUntil: validUntil
                 );
             }

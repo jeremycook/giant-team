@@ -1,21 +1,26 @@
-﻿using GiantTeam.ComponentModel;
+﻿using GiantTeam.Cluster.Directory.Data;
+using GiantTeam.Cluster.Directory.Helpers;
+using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Postgres;
+using GiantTeam.UserData.Services;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiantTeam.Cluster.Directory.Services
 {
     public class FetchOrganizationService
     {
         private readonly ValidationService validationService;
-        private readonly UserDirectoryDataService directoryDataService;
+        private readonly UserDirectoryDbContextFactory userDirectoryDbContextFactory;
 
         public FetchOrganizationService(
             ValidationService validationService,
-            UserDirectoryDataService directoryDataService)
+            UserDirectoryDbContextFactory userDirectoryDbContextFactory)
         {
             this.validationService = validationService;
-            this.directoryDataService = directoryDataService;
+            this.userDirectoryDbContextFactory = userDirectoryDbContextFactory;
         }
 
         /// <summary>
@@ -30,9 +35,13 @@ namespace GiantTeam.Cluster.Directory.Services
         {
             validationService.Validate(input);
 
-            var output = await directoryDataService
-                .SingleOrDefaultAsync<FetchOrganizationOutput>(Sql.Format($"FROM directory.organization WHERE organization_id = {input.OrganizationId}")) ??
-                throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
+            await using var db = userDirectoryDbContextFactory.NewDbContext();
+            var organization = await db.Organizations
+                .Include(o => o.Roles)
+                .SingleOrDefaultAsync(o => o.OrganizationId == input.OrganizationId)
+                ?? throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
+
+            var output = new FetchOrganizationOutput(organization);
 
             return output;
         }
@@ -46,9 +55,39 @@ namespace GiantTeam.Cluster.Directory.Services
 
     public class FetchOrganizationOutput
     {
+        public FetchOrganizationOutput(Data.Organization organization)
+        {
+            OrganizationId = organization.OrganizationId;
+            Name = organization.Name;
+            DatabaseName = organization.DatabaseName;
+            DatabaseOwnerOrganizationRoleId = organization.DatabaseOwnerOrganizationRoleId;
+            Created = organization.Created;
+            Roles = organization.Roles!.Select(r => new FetchOrganizationOutputRole(r)).ToArray();
+        }
+
         public string OrganizationId { get; set; } = null!;
         public string Name { get; set; } = null!;
         public string DatabaseName { get; set; } = null!;
-        public DateTimeOffset Created { get; private set; }
+        public Guid DatabaseOwnerOrganizationRoleId { get; set; }
+        public DateTime Created { get; set; }
+        public FetchOrganizationOutputRole[] Roles { get; set; }
+    }
+
+    public class FetchOrganizationOutputRole
+    {
+        public FetchOrganizationOutputRole(OrganizationRole role)
+        {
+            OrganizationRoleId = role.OrganizationRoleId;
+            Name = role.Name;
+            Description = role.Description;
+            DbRole = role.DbRole;
+            Created = role.Created;
+        }
+
+        public Guid OrganizationRoleId { get; set; }
+        public DateTime Created { get; set; }
+        public string Name { get; set; } = null!;
+        public string Description { get; set; } = string.Empty;
+        public string DbRole { get; set; } = string.Empty;
     }
 }

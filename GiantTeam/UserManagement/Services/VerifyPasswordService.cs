@@ -1,6 +1,7 @@
 ﻿using GiantTeam.Cluster.Directory.Data;
 using GiantTeam.Crypto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.UserManagement.Services
@@ -22,14 +23,14 @@ namespace GiantTeam.UserManagement.Services
         }
 
         private readonly ILogger<VerifyPasswordService> logger;
-        private readonly ManagerDirectoryDbContext db;
+        private readonly IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory;
 
         public VerifyPasswordService(
             ILogger<VerifyPasswordService> logger,
-            ManagerDirectoryDbContext db)
+            IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory)
         {
             this.logger = logger;
-            this.db = db;
+            this.managerDirectoryDbContextFactory = managerDirectoryDbContextFactory;
         }
 
         /// <summary>
@@ -42,6 +43,7 @@ namespace GiantTeam.UserManagement.Services
         /// <exception cref="ValidationException"></exception>
         public async Task<VerifyPasswordOutput> VerifyUsernameAndPasswordAsync(VerifyPasswordInput input)
         {
+            await using var db = await managerDirectoryDbContextFactory.CreateDbContextAsync();
             var userPassword = await (
                 from u in db.Users
                 join up in db.UserPasswords on u.UserId equals up.UserId

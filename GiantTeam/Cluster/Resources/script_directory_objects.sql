@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS directory.organization
     organization_id character varying(50) NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     database_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    database_owner_organization_role_id uuid NOT NULL,
     created timestamp with time zone NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text),
     CONSTRAINT organization_pkey PRIMARY KEY (organization_id),
     CONSTRAINT organization_database_name_key UNIQUE (database_name),
@@ -58,7 +59,7 @@ CREATE TABLE IF NOT EXISTS directory.organization_role
     created timestamp with time zone NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text),
     organization_id character varying(50) NOT NULL,
     name text COLLATE pg_catalog."default" NOT NULL,
-    db_role text COLLATE pg_catalog."default" NOT NULL,
+    db_role text COLLATE pg_catalog."default" NOT NULL GENERATED ALWAYS AS ('r:'::text || replace((organization_role_id)::text, '-'::text, ''::text)) STORED,
     description text COLLATE pg_catalog."default",
     CONSTRAINT organization_role_pkey PRIMARY KEY (organization_role_id),
     CONSTRAINT organization_role_organization_id_fkey FOREIGN KEY (organization_id)

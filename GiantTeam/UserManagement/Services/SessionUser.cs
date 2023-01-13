@@ -38,7 +38,7 @@ namespace GiantTeam.UserManagement.Services
             Elevated = elevated;
             DbUser = dbUser ?? throw new ArgumentNullException(nameof(dbUser));
             DbLogin = dbLogin ?? throw new ArgumentNullException(nameof(dbLogin));
-            DbPassword = dbPassword ?? throw new ArgumentNullException(nameof(dbPassword));
+            _dbPassword = dbPassword ?? throw new ArgumentNullException(nameof(dbPassword));
         }
 
         public ClaimsIdentity CreateIdentity(string authenticationType)
@@ -61,7 +61,7 @@ namespace GiantTeam.UserManagement.Services
             // Database claims
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbUser, DbUser));
             identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbLogin, DbLogin));
-            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbPassword, DbPassword));
+            identity.AddClaim(new(PrincipalHelper.ClaimTypes.DbPassword, DbPassword()));
 
             return identity;
         }
@@ -69,8 +69,7 @@ namespace GiantTeam.UserManagement.Services
         private Guid? _userId;
         private string? _dbElevatedUser;
         private string? _dbElevatedLogin;
-
-        public Guid UserId => _userId ??= Guid.Parse(Sub);
+        private readonly string _dbPassword;
 
         // Common
 
@@ -78,13 +77,20 @@ namespace GiantTeam.UserManagement.Services
         public string Username { get; }
         public bool Elevated { get; }
 
+        public Guid UserId => _userId ??= Guid.Parse(Sub);
+
         // Database
 
         public string DbUser { get; }
         public string DbLogin { get; }
-        public string DbPassword { get; }
 
         public string? DbElevatedUser => _dbElevatedUser ??= (Elevated ? DirectoryHelpers.ElevatedUserRole(DbUser) : null);
         public string? DbElevatedLogin => _dbElevatedLogin ??= (Elevated ? DirectoryHelpers.ElevatedLogin(DbLogin) : null);
+
+        /// <summary>
+        /// Protect against accidental serialization.
+        /// </summary>
+        /// <returns></returns>
+        public string DbPassword() => _dbPassword;
     }
 }
