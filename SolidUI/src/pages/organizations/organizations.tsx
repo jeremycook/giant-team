@@ -7,7 +7,7 @@ export default function OrganizationsPage() {
     <MainLayout>
       <h1>Organizations</h1>
 
-      <div class='flex gap-4'>
+      <div class='flex flex-wrap gap-4'>
         <MyOrganizations />
         <div class='card-new'>
           <A href='/organizations/new-organization'>New Organization</A>

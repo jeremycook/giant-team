@@ -3,11 +3,11 @@ export const combinePaths = (basePath: string, ...paths: string[]) => {
 }
 
 export const createHref = (href: string, params?: { [key: string]: string }) => {
-    return createUrl(href).toString();
+    return createUrl(href, params).toString();
 }
 
 export const createUrl = (href: string, params?: { [key: string]: string }) => {
-    const url = new URL(href + params ? '?' + new URLSearchParams(params).toString() : '', location.href);
+    const url = new URL(href + (params && Object.keys(params).length > 0 ? '?' + new URLSearchParams(params).toString() : ''), location.href);
     if (isLocalUrl(url)) {
         return url;
     }
@@ -20,15 +20,12 @@ export const relativeHref = (url: URL) => {
     return url.pathname + url.search + url.hash;
 }
 
-export function isLocalUrl(url?: string | URL | null) {
-    if (typeof url === 'string') {
-        const asUrl = new URL(url, location.href);
-        return asUrl.hostname === location.hostname;
+export function isLocalUrl(url?: URL | string | null): boolean {
+    if (url instanceof URL)
+        return url.host === location.host;
+    else if (typeof url === 'string') {
+        return isLocalUrl(new URL(url, location.href));
     }
-    else if (typeof url === 'undefined')
-        return false;
-    else if (url === null)
-        return false;
     else
-        return url.hostname === location.hostname;
+        return false;
 }
