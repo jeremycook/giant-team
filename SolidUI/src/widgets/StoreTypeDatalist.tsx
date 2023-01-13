@@ -5,16 +5,16 @@ import { createId } from "../helpers/htmlHelpers";
 import { Do } from "./Do";
 
 const storeTypeList = [
-    { value: StoreType.boolean, name: 'bool' },
-    { value: StoreType.bytea, name: 'data' },
-    { value: StoreType.date, name: 'date' },
-    { value: StoreType.timestampTz, name: 'moment' },
-    { value: StoreType.integer, name: 'int' },
-    { value: StoreType.jsonb, name: 'jsonb' },
-    { value: StoreType.text, name: 'text' },
-    { value: StoreType.time, name: 'time' },
-    { value: StoreType.uuid, name: 'uuid' },
-    { value: StoreType.boolean, name: 'yes/no' },
+    { value: StoreType.Boolean, name: 'bool' },
+    { value: StoreType.Bytea, name: 'data' },
+    { value: StoreType.Date, name: 'date' },
+    { value: StoreType.TimestampTz, name: 'moment' },
+    { value: StoreType.Integer, name: 'int' },
+    { value: StoreType.Jsonb, name: 'jsonb' },
+    { value: StoreType.Text, name: 'text' },
+    { value: StoreType.Time, name: 'time' },
+    { value: StoreType.Uuid, name: 'uuid' },
+    { value: StoreType.Boolean, name: 'yes/no' },
 ];
 
 export const storeTypeDatalistId = createId('datalist');

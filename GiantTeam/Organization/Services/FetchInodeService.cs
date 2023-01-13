@@ -5,17 +5,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organization.Services;
 
-public class ExploreService
+public class FetchInodeService
 {
     private readonly UserDbContextFactory userDbContextFactory;
 
-    public ExploreService(
+    public FetchInodeService(
         UserDbContextFactory userDbContextFactory)
     {
         this.userDbContextFactory = userDbContextFactory;
     }
 
-    public async Task<ExploreResult> ExploreAsync(ExploreInput input)
+    public async Task<FetchInodeResult> FetchInodeAsync(FetchInodeInput input)
     {
         using var db = userDbContextFactory.NewDbContext<EtcDbContext>(input.OrganizationId);
 
@@ -44,7 +44,7 @@ public class ExploreService
             })
             .SingleAsync();
 
-        var result = new ExploreResult()
+        var result = new FetchInodeResult()
         {
             Inode = inode,
         };
@@ -52,7 +52,7 @@ public class ExploreService
     }
 }
 
-public class ExploreInput
+public class FetchInodeInput
 {
     public string OrganizationId { get; set; } = null!;
 
@@ -64,7 +64,7 @@ public class ExploreInput
     public string Path { get; set; } = string.Empty;
 }
 
-public class ExploreResult
+public class FetchInodeResult
 {
     public Etc.Models.Inode Inode { get; set; } = null!;
 }

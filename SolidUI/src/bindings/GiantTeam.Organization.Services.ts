@@ -22,12 +22,12 @@ export interface CreateSpaceResult {
     inodeId: string;
 }
 
-export interface ExploreInput {
+export interface FetchInodeInput {
     organizationId: string;
     path: string;
 }
 
-export interface ExploreResult {
+export interface FetchInodeResult {
     inode: Inode;
 }
 

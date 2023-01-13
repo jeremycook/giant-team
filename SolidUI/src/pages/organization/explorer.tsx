@@ -1,16 +1,34 @@
-import { Show } from "solid-js";
-import { useOrganizationRouteData } from "./organization";
+import { RouteDataFuncArgs, useParams, useRouteData } from "@solidjs/router";
+import { createResource, Show } from "solid-js";
+import { postFetchInode } from "../../bindings/GiantTeam.Organization.Api.Controllers";
+import { FetchInodeResult } from "../../bindings/GiantTeam.Organization.Services";
+import { DataResponseResource } from "../../helpers/DataResponseResource";
+import { MainLayout } from "../../partials/MainLayout";
 import { Explorer } from "./partials/Explorer";
 
-export default function ExplorerPage() {
-    const org = useOrganizationRouteData();
+export class InodeRouteData extends DataResponseResource<FetchInodeResult>{ }
 
-    return <>
-        <Show when={org.data}>{() => {
+export function createInodeRouteData({ params }: RouteDataFuncArgs) {
+    const resourceReturn = createResource(
+        () => ({ organizationId: params.organization, path: params.path }),
+        (props) => postFetchInode(props)
+    );
+    return new InodeRouteData(resourceReturn);
+}
+
+export function useInodeRouteData() {
+    return useRouteData<InodeRouteData>();
+}
+
+export default function ExplorerPage() {
+    const inode = useInodeRouteData();
+    const params = useParams<{ organization: string }>();
+
+    return <MainLayout>
+        <Show when={inode.data?.inode}>{() => {
             return <>
-                <h1>{org.data!.name}</h1>
-                <Explorer organizationId={org.data!.organizationId} inode={org.data!.rootInode} />
+                <Explorer organizationId={params.organization} inode={inode.data!.inode} />
             </>
         }}</Show>
-    </>
+    </MainLayout>
 }

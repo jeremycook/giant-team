@@ -1,5 +1,5 @@
 import { postJson, DataResponse } from "../helpers/httpHelpers";
-import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, CreateSpaceResult, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, QueryDatabaseInput, ExploreInput, ExploreResult, FetchOrganizationDetailsInput, FetchOrganizationDetailsResult } from "./GiantTeam.Organization.Services";
+import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, CreateSpaceResult, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, QueryDatabaseInput, FetchOrganizationDetailsInput, FetchOrganizationDetailsResult, FetchInodeInput, FetchInodeResult } from "./GiantTeam.Organization.Services";
 import { QueryTable } from "./GiantTeam.Postgres.Models";
 
 // DO NOT MODIFY BELOW THIS LINE
@@ -11,8 +11,8 @@ export const postAlterDatabase = async (input: AlterDatabaseInput) =>
 export const postCreateSpace = async (input: CreateSpaceInput) =>
     await postJson('/api/organization/create-space', input) as DataResponse<CreateSpaceResult>;
 
-export const postExplore = async (input: ExploreInput) =>
-    await postJson('/api/organization/explore', input) as DataResponse<ExploreResult>;
+export const postFetchInode = async (input: FetchInodeInput) =>
+    await postJson('/api/organization/fetch-inode', input) as DataResponse<FetchInodeResult>;
 
 export const postFetchOrganizationDetails = async (input: FetchOrganizationDetailsInput) =>
     await postJson('/api/organization/fetch-organization-details', input) as DataResponse<FetchOrganizationDetailsResult>;

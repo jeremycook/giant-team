@@ -1,7 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Organization.Etc.Data;
-using GiantTeam.Organization.Etc.Models;
 using GiantTeam.UserData.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,12 +9,12 @@ public class FetchOrganizationDetailsService
 {
     private readonly ValidationService validationService;
     private readonly UserDirectoryDbContextFactory userDirectoryDbContextFactory;
-    private readonly ExploreService exploreService;
+    private readonly FetchInodeService exploreService;
 
     public FetchOrganizationDetailsService(
         ValidationService validationService,
         UserDirectoryDbContextFactory userDirectoryDbContextFactory,
-        ExploreService exploreService)
+        FetchInodeService exploreService)
     {
         this.validationService = validationService;
         this.userDirectoryDbContextFactory = userDirectoryDbContextFactory;
@@ -34,7 +32,7 @@ public class FetchOrganizationDetailsService
             .SingleOrDefaultAsync(o => o.OrganizationId == input.OrganizationId) ??
             throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
 
-        var rootResult = await exploreService.ExploreAsync(new()
+        var rootResult = await exploreService.FetchInodeAsync(new()
         {
             OrganizationId = input.OrganizationId,
             Path = "", // Root

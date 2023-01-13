@@ -1,7 +1,7 @@
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
-import { link } from "../../../helpers/link";
+import { hrefOf } from "../../../helpers/links";
 
 export function Explorer(props: { organizationId: string, inode: Inode }) {
     return <>
@@ -10,13 +10,15 @@ export function Explorer(props: { organizationId: string, inode: Inode }) {
         </p>
 
         <h1>
-            {props.inode.name} - {props.inode.path}
+            {props.inode.name}
         </h1>
 
-        <For each={props.inode.children}>{inode => (<>
-            <div class='card'>
-                <A href={link.inode(props.organizationId, inode.path)}>{inode.name}</A>
-            </div>
-        </>)}</For>
+        <div class='flex flex-wrap gap-4'>
+            <For each={props.inode.children}>{inode => (<>
+                <div class='card'>
+                    <A href={hrefOf.inode(props.organizationId, inode.path)}>{inode.name}</A>
+                </div>
+            </>)}</For>
+        </div>
     </>
 }

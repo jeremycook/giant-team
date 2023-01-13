@@ -11,6 +11,7 @@ import NotFoundPage from './pages/not-found';
 import MyPage from './pages/my/my';
 import OrganizationPage, { createOrganizationRouteData } from './pages/organization/organization';
 import OrganizationsPage from './pages/organizations/organizations';
+import ExplorerPage, { createInodeRouteData } from './pages/organization/explorer';
 
 export function AppRoutes() {
   return (
@@ -33,7 +34,8 @@ export function AppRoutes() {
         </Route>
 
         <Route path="/o/:organization" data={createOrganizationRouteData}>
-          <Route path='/*path' component={OrganizationPage} />
+          <Route path='/' component={OrganizationPage} />
+          <Route path='/*path' component={ExplorerPage} data={createInodeRouteData} />
         </Route>
 
       </Route>

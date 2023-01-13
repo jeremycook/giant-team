@@ -1,6 +1,6 @@
 import { createHref } from "./urlHelpers"
 
-export const link = {
+export const hrefOf = {
     inode: (organizationId: string, path: string) => {
         return createHref('/o/' + organizationId + '/' + path);
     }

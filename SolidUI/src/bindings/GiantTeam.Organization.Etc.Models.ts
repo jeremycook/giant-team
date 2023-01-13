@@ -18,6 +18,8 @@ export interface Inode {
 }
 
 export const InodeId = {
+    Root: '00000000-0000-0000-0000-000000000000',
+    Etc: '3e544ebc-f30a-471f-a8ec-f9e3ac84f19a',
 }
 
 export interface InodeType {
