@@ -139,24 +139,15 @@ namespace GiantTeam.Cluster.Directory.Services
                     // Connect to the new database with elevated rights
                     var elevatedDatabaseService = userDataFactory.NewElevatedDataService(databaseName);
 
-                    // Initialize it
-                    await using (var setupDatabaseBatch = new NpgsqlBatch()
-                    {
-                        BatchCommands =
-                    {
-                        // Perform these actions as the database owner
+                    // Perform these actions as the database owner
+                    await elevatedDatabaseService.ExecuteAsync(
                         Sql.Format($"SET ROLE {Sql.Identifier(owner.DbRole)}"),
                         Sql.Format($"GRANT ALL ON DATABASE {Sql.Identifier(databaseName)} TO pg_database_owner"),
                         Sql.Format($"REVOKE ALL ON DATABASE {Sql.Identifier(databaseName)} FROM public"),
-                        Sql.Format($"DROP SCHEMA IF EXISTS public CASCADE"),
-                    }
-                    })
-                    {
-                        await elevatedDatabaseService.ExecuteAsync(setupDatabaseBatch);
-                    }
-#pragma warning disable CS0618 // Type or member is obsolete
+                        Sql.Format($"DROP SCHEMA IF EXISTS public CASCADE")
+                    );
+
                     await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
-#pragma warning restore CS0618 // Type or member is obsolete
 
                     // Set the name of the root datum to match
                     // the name of the organization in the directory.

@@ -46,26 +46,26 @@ ALTER TABLE IF EXISTS etc.type_constraint
 GRANT ALL ON TABLE etc.type_constraint TO pg_database_owner;
 GRANT SELECT ON TABLE etc.type_constraint TO PUBLIC;
 
--- Table: etc.node
--- DROP TABLE IF EXISTS etc.node;
+-- Table: etc.datum
+-- DROP TABLE IF EXISTS etc.datum;
 
-CREATE TABLE IF NOT EXISTS etc.node
+CREATE TABLE IF NOT EXISTS etc.datum
 (
-    node_id uuid NOT NULL DEFAULT (gen_random_uuid()),
+    datum_id uuid NOT NULL DEFAULT (gen_random_uuid()),
     parent_id uuid NOT NULL,
     name character varying(248) NOT NULL,
     type_id text COLLATE pg_catalog."default" NOT NULL,
 	created timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
 	path text NOT NULL DEFAULT ('/*/' || gen_random_uuid()),
 	path_lower text NOT NULL GENERATED ALWAYS AS (lower(path)) STORED,
-    CONSTRAINT node_check CHECK ((node_id <> parent_id AND name ~ '^[^<>:"/\|?*]+$') OR (node_id = '00000000-0000-0000-0000-000000000000' AND parent_id = '00000000-0000-0000-0000-000000000000')),
-    CONSTRAINT node_pkey PRIMARY KEY (node_id),
-    CONSTRAINT node_key UNIQUE (path),
-    CONSTRAINT node_parent_id_fkey FOREIGN KEY (parent_id)
-        REFERENCES etc.node (node_id) MATCH SIMPLE
+    CONSTRAINT datum_check CHECK ((datum_id <> parent_id AND name ~ '^[^<>:"/\|?*]+$') OR (datum_id = '00000000-0000-0000-0000-000000000000' AND parent_id = '00000000-0000-0000-0000-000000000000')),
+    CONSTRAINT datum_pkey PRIMARY KEY (datum_id),
+    CONSTRAINT datum_key UNIQUE (path),
+    CONSTRAINT datum_parent_id_fkey FOREIGN KEY (parent_id)
+        REFERENCES etc.datum (datum_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
-    CONSTRAINT node_type_id_fkey FOREIGN KEY (type_id)
+    CONSTRAINT datum_type_id_fkey FOREIGN KEY (type_id)
         REFERENCES etc.type (type_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
@@ -73,71 +73,71 @@ CREATE TABLE IF NOT EXISTS etc.node
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS etc.node
+ALTER TABLE IF EXISTS etc.datum
     OWNER to pg_database_owner;
 
-GRANT ALL ON TABLE etc.node TO pg_database_owner;
+GRANT ALL ON TABLE etc.datum TO pg_database_owner;
 
--- FUNCTION: etc.node_type_id_is_valid(text, uuid)
--- DROP FUNCTION IF EXISTS etc.node_type_id_is_valid(text, uuid);
+-- FUNCTION: etc.datum_type_id_is_valid(text, uuid)
+-- DROP FUNCTION IF EXISTS etc.datum_type_id_is_valid(text, uuid);
 
-CREATE OR REPLACE FUNCTION etc.node_type_id_is_valid(
-	_node_type_id text,
-	_node_parent_id uuid)
+CREATE OR REPLACE FUNCTION etc.datum_type_id_is_valid(
+	_datum_type_id text,
+	_datum_parent_id uuid)
     RETURNS boolean
     LANGUAGE 'sql'
     COST 100
     STABLE STRICT PARALLEL SAFE 
 
 RETURN CASE
-	WHEN _node_type_id IS NULL OR _node_parent_id IS NULL THEN NULL
+	WHEN _datum_type_id IS NULL OR _datum_parent_id IS NULL THEN NULL
 	ELSE EXISTS (
 		SELECT 1 
-		FROM (etc.node parent_node 
-			  JOIN etc.type_constraint tc ON ((tc.parent_type_id = parent_node.type_id))) 
-		WHERE ((parent_node.node_id = node_type_id_is_valid._node_parent_id) 
-			   AND (tc.type_id = node_type_id_is_valid._node_type_id))
+		FROM (etc.datum parent_datum 
+			  JOIN etc.type_constraint tc ON ((tc.parent_type_id = parent_datum.type_id))) 
+		WHERE ((parent_datum.datum_id = datum_type_id_is_valid._datum_parent_id) 
+			   AND (tc.type_id = datum_type_id_is_valid._datum_type_id))
 	)
 END;
 
-ALTER FUNCTION etc.node_type_id_is_valid(text, uuid)
+ALTER FUNCTION etc.datum_type_id_is_valid(text, uuid)
     OWNER TO pg_database_owner;
 
-GRANT ALL ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.node_type_id_is_valid(text, uuid) TO PUBLIC;
+GRANT ALL ON FUNCTION etc.datum_type_id_is_valid(text, uuid) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.datum_type_id_is_valid(text, uuid) TO PUBLIC;
 
--- FUNCTION: etc.node_name_or_parent_id_upserting_trigger()
+-- FUNCTION: etc.datum_name_or_parent_id_upserting_trigger()
 
-CREATE OR REPLACE FUNCTION etc.node_name_or_parent_id_upserting_trigger()
+CREATE OR REPLACE FUNCTION etc.datum_name_or_parent_id_upserting_trigger()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE NOT LEAKPROOF
 AS $BODY$
     BEGIN
-		IF NEW.node_id = '00000000-0000-0000-0000-000000000000'::uuid THEN
+		IF NEW.datum_id = '00000000-0000-0000-0000-000000000000'::uuid THEN
 			IF NEW.path IS NULL OR NEW.path <> '' THEN
 				NEW.path = '';
 			END IF;
 		ELSIF NEW.parent_id IS NOT NULL THEN
-			NEW.path = (SELECT (CASE WHEN length(parent.path) > 0 THEN parent.path || '/' ELSE '' END) || NEW.name FROM etc.node parent WHERE parent.node_id = NEW.parent_id);
+			NEW.path = (SELECT (CASE WHEN length(parent.path) > 0 THEN parent.path || '/' ELSE '' END) || NEW.name FROM etc.datum parent WHERE parent.datum_id = NEW.parent_id);
 		END IF;
         RETURN NEW;
     END;
 $BODY$;
 
-GRANT ALL ON FUNCTION etc.node_name_or_parent_id_upserting_trigger() TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.node_name_or_parent_id_upserting_trigger() TO PUBLIC;
+GRANT ALL ON FUNCTION etc.datum_name_or_parent_id_upserting_trigger() TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.datum_name_or_parent_id_upserting_trigger() TO PUBLIC;
 
-CREATE OR REPLACE TRIGGER node_name_or_parent_id_upserting_trigger
+CREATE OR REPLACE TRIGGER datum_name_or_parent_id_upserting_trigger
     BEFORE INSERT OR UPDATE OF name, parent_id
-    ON etc.node
+    ON etc.datum
     FOR EACH ROW
-    EXECUTE FUNCTION etc.node_name_or_parent_id_upserting_trigger();
+    EXECUTE FUNCTION etc.datum_name_or_parent_id_upserting_trigger();
 
--- FUNCTION: etc.node_path_upserted_trigger()
+-- FUNCTION: etc.datum_path_upserted_trigger()
 
-CREATE OR REPLACE FUNCTION etc.node_path_upserted_trigger()
+CREATE OR REPLACE FUNCTION etc.datum_path_upserted_trigger()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
@@ -146,23 +146,23 @@ AS $BODY$
     BEGIN
 		-- Update children
 		-- All descendants will be updated via this trigger recursively firing as each path is changed
-		UPDATE etc.node
-		SET path = (CASE WHEN length(NEW.path) > 0 THEN NEW.path || '/' ELSE '' END) || node.name
-		WHERE node.parent_id = NEW.node_id AND node_id <> parent_id;
+		UPDATE etc.datum
+		SET path = (CASE WHEN length(NEW.path) > 0 THEN NEW.path || '/' ELSE '' END) || datum.name
+		WHERE datum.parent_id = NEW.datum_id AND datum_id <> parent_id;
         RETURN NEW;
     END;
 $BODY$;
 
-GRANT ALL ON FUNCTION etc.node_path_upserted_trigger() TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.node_path_upserted_trigger() TO PUBLIC;
+GRANT ALL ON FUNCTION etc.datum_path_upserted_trigger() TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.datum_path_upserted_trigger() TO PUBLIC;
 
-CREATE OR REPLACE TRIGGER node_path_upserted_trigger
+CREATE OR REPLACE TRIGGER datum_path_upserted_trigger
     AFTER INSERT OR UPDATE OF name, parent_id, path
-    ON etc.node
+    ON etc.datum
     FOR EACH ROW
-    EXECUTE FUNCTION etc.node_path_upserted_trigger();
+    EXECUTE FUNCTION etc.datum_path_upserted_trigger();
 
--- Insert Root node before applying the node_type_id_check
+-- Insert Root datum before applying the datum_type_id_check
 
 INSERT INTO etc.type (type_id) values 
 	('Root')
@@ -172,15 +172,15 @@ INSERT INTO etc.type_constraint (type_id, parent_type_id) values
 	('Root', 'Root')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.node (node_id, parent_id, name, type_id) values
+INSERT INTO etc.datum (datum_id, parent_id, name, type_id) values
 	('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'Root', 'Root')
 	ON CONFLICT DO NOTHING;
 
--- FUNCTION: etc.get_node_tree(uuid)
--- DROP FUNCTION IF EXISTS etc.get_node_tree(uuid);
+-- FUNCTION: etc.get_datum_tree(uuid)
+-- DROP FUNCTION IF EXISTS etc.get_datum_tree(uuid);
 
-CREATE OR REPLACE FUNCTION etc.get_node_tree(
-	_node_id uuid)
+CREATE OR REPLACE FUNCTION etc.get_datum_tree(
+	_datum_id uuid)
     RETURNS jsonb
     LANGUAGE 'plpgsql'
     COST 100
@@ -188,34 +188,34 @@ CREATE OR REPLACE FUNCTION etc.get_node_tree(
 AS $BODY$
 BEGIN
 	RETURN json_build_object(
-		'node_id',
-		node_id,
+		'datum_id',
+		datum_id,
 		'name',
 		"name",
 		'children',
 		array(
-			SELECT etc.get_node_tree(node_id)
-			FROM etc.node 
-			WHERE parent_id = _node_id AND node_id <> parent_id
+			SELECT etc.get_datum_tree(datum_id)
+			FROM etc.datum 
+			WHERE parent_id = _datum_id AND datum_id <> parent_id
 		)
 	)
-	FROM etc.node
-	WHERE node_id = _node_id;
+	FROM etc.datum
+	WHERE datum_id = _datum_id;
 END;
 $BODY$;
 
-ALTER FUNCTION etc.get_node_tree(uuid)
+ALTER FUNCTION etc.get_datum_tree(uuid)
     OWNER TO pg_database_owner;
 
-GRANT ALL ON FUNCTION etc.get_node_tree(uuid) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.get_node_tree(uuid) TO PUBLIC;
+GRANT ALL ON FUNCTION etc.get_datum_tree(uuid) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.get_datum_tree(uuid) TO PUBLIC;
 
--- Check: node_type_id_check
--- ALTER TABLE etc.node DROP CONSTRAINT IF EXISTS node_type_id_check;
+-- Check: datum_type_id_check
+-- ALTER TABLE etc.datum DROP CONSTRAINT IF EXISTS datum_type_id_check;
 
 DO $$BEGIN
-IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'node_type_id_check') THEN
-	ALTER TABLE etc.node ADD CONSTRAINT node_type_id_check CHECK (etc.node_type_id_is_valid(type_id, parent_id));
+IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'datum_type_id_check') THEN
+	ALTER TABLE etc.datum ADD CONSTRAINT datum_type_id_check CHECK (etc.datum_type_id_is_valid(type_id, parent_id));
 END IF;
 END$$;
 
@@ -224,12 +224,12 @@ END$$;
 
 CREATE TABLE IF NOT EXISTS etc.file
 (
-	node_id uuid NOT NULL,
+	datum_id uuid NOT NULL,
     content_type text NOT NULL,
     data bytea NOT NULL,
-    CONSTRAINT file_pkey PRIMARY KEY (node_id),
-    CONSTRAINT file_node_id_fkey FOREIGN KEY (node_id)
-        REFERENCES etc.node (node_id) MATCH SIMPLE
+    CONSTRAINT file_pkey PRIMARY KEY (datum_id),
+    CONSTRAINT file_datum_id_fkey FOREIGN KEY (datum_id)
+        REFERENCES etc.datum (datum_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )
@@ -354,6 +354,6 @@ INSERT INTO etc.type_constraint (type_id, parent_type_id) values
 	('File', 'Space'), ('File', 'Folder')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.node (node_id, parent_id, name, type_id) values
+INSERT INTO etc.datum (datum_id, parent_id, name, type_id) values
 	('3e544ebc-f30a-471f-a8ec-f9e3ac84f19a', '00000000-0000-0000-0000-000000000000', 'etc', 'Space')
 	ON CONFLICT DO NOTHING;
