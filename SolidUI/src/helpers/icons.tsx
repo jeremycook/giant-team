@@ -38,6 +38,7 @@ import sortAsc from '@iconify-icons/fluent/text-sort-ascending-16-regular';
 import sortDesc from '@iconify-icons/fluent/text-sort-descending-16-regular';
 import sparkles from '@iconify-icons/fluent/sparkle-16-filled';
 import sparklesOutline from '@iconify-icons/fluent/sparkle-16-regular';
+import spinner from '@iconify-icons/fluent/arrow-clockwise-12-filled';
 import warning from '@iconify-icons/fluent/warning-12-regular';
 
 export const AlertIcon = (props: any) => <Icon icon={alert} aria-hidden {...props} />;
@@ -79,4 +80,5 @@ export const SortAscIcon = (props: any) => <Icon icon={sortAsc} aria-hidden {...
 export const SortDescIcon = (props: any) => <Icon icon={sortDesc} aria-hidden {...props} />;
 export const SparklesIcon = (props: any) => <Icon icon={sparkles} aria-hidden {...props} />;
 export const SparklesOutlineIcon = (props: any) => <Icon icon={sparklesOutline} aria-hidden {...props} />;
+export const SpinnerIcon = (props: any) => <Icon icon={spinner} aria-hidden {...props} />;
 export const WarningIcon = (props: any) => <Icon icon={warning} aria-hidden {...props} />;

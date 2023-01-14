@@ -14,7 +14,12 @@ export interface Inode {
     name: string;
     created: Date;
     path: string;
+    childrenConstraints: InodeChildConstraint[];
     children: Inode[] | null;
+}
+
+export interface InodeChildConstraint {
+    inodeTypeId: string;
 }
 
 export const InodeId = {

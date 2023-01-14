@@ -44,12 +44,18 @@ public class FetchOrganizationDetailsService
             Name = org.Name,
             DatabaseName = org.DatabaseName,
             Created = org.Created,
+            Apps = new FetchOrganizationDetailsApp[]
+            {
+                //new() { AppId = "Explorer", Name = "Explorer", InodeTypeIds = new[] { "Root", "Space", "Folder" } },
+                new() { AppId = "File", Name = "File", InodeTypeIds = new[] { "File" } },
+                new() { AppId = "Table", Name = "Table", InodeTypeIds = new[] { "Table" } },
+            },
             Roles = org.Roles!.Select(r => new FetchOrganizationDetailsRole()
             {
                 Name = r.Name,
                 DbRole = r.DbRole,
             }).ToArray(),
-            RootInode = rootResult.Inode,
+            Inode = rootResult.Inode,
         };
         return result;
     }
@@ -66,8 +72,22 @@ public class FetchOrganizationDetailsResult
     public string Name { get; init; } = null!;
     public string DatabaseName { get; init; } = null!;
     public DateTime Created { get; init; }
+    public FetchOrganizationDetailsApp[] Apps { get; init; } = null!;
     public FetchOrganizationDetailsRole[] Roles { get; init; } = null!;
-    public Etc.Models.Inode RootInode { get; init; } = null!;
+    /// <summary>
+    /// The Root Inode.
+    /// </summary>
+    public Etc.Models.Inode Inode { get; init; } = null!;
+}
+
+public class FetchOrganizationDetailsApp
+{
+    public string AppId { get; init; } = null!;
+    public string Name { get; init; } = null!;
+    /// <summary>
+    /// <see cref="Etc.Models.InodeType.InodeTypeId"/>s this app can handle.
+    /// </summary>
+    public string[] InodeTypeIds { get; init; } = null!;
 }
 
 public class FetchOrganizationDetailsRole

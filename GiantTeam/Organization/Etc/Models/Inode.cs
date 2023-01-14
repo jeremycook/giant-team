@@ -18,5 +18,7 @@ public class Inode
 
     public string Path { get; set; } = null!;
 
+    public List<InodeChildConstraint> ChildrenConstraints { get; set; } = null!;
+
     public List<Inode>? Children { get; set; }
 }

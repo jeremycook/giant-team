@@ -1,10 +1,10 @@
-import { Outlet } from "@solidjs/router";
-import { Show } from "solid-js";
+import { Outlet, Route } from "@solidjs/router";
+import { JSX, Show } from "solid-js";
 import { Login } from "../pages/login";
 import { CardLayout } from "../partials/CardLayout";
 import { user } from "../utils/session";
 
-export const ProtectedRoute = () => {
+export const ProtectedRouteComponent = () => {
     return <Show when={user.isAuthenticated}
         fallback={<>
             <CardLayout>
@@ -18,4 +18,10 @@ export const ProtectedRoute = () => {
     </Show>
 }
 
-export default { ProtectedRoute };
+export const ProtectedRoute = (props: { children?: JSX.Element }) => {
+    return <Route path='' component={ProtectedRouteComponent}>
+        {props.children}
+    </Route>
+}
+
+export default { ProtectedRouteComponent };

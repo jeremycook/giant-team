@@ -12,6 +12,7 @@ import MyPage from './pages/my/my';
 import OrganizationPage, { createOrganizationRouteData } from './pages/organization/organization';
 import OrganizationsPage from './pages/organizations/organizations';
 import ExplorerPage, { createInodeRouteData } from './pages/organization/explorer';
+import OrganizationLayout from './pages/organization/partials/OrganizationLayout';
 
 export function AppRoutes() {
   return (
@@ -25,7 +26,8 @@ export function AppRoutes() {
       <Route path="/login" component={LoginPage} />
       <Route path="/logout" component={LogoutPage} />
 
-      <Route path='' component={ProtectedRoute}>
+      <ProtectedRoute>
+
         <Route path="/my" component={MyPage} />
 
         <Route path="/organizations">
@@ -33,12 +35,12 @@ export function AppRoutes() {
           <Route path='/new-organization' component={NewOrganizationPage} />
         </Route>
 
-        <Route path="/o/:organization" data={createOrganizationRouteData}>
+        <Route path="/o/:organization" component={OrganizationLayout} data={createOrganizationRouteData}>
           <Route path='/' component={OrganizationPage} />
           <Route path='/*path' component={ExplorerPage} data={createInodeRouteData} />
         </Route>
 
-      </Route>
+      </ProtectedRoute>
     </Routes>
   )
 };

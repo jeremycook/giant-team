@@ -1,4 +1,5 @@
 ﻿using GiantTeam.Organization.Etc.Data;
+using GiantTeam.Organization.Etc.Models;
 using GiantTeam.UserData.Services;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -29,6 +30,15 @@ public class FetchInodeService
                 Name = o.Name,
                 Created = o.Created,
                 Path = o.Path,
+                ChildrenConstraints = (
+                    from con in db.InodeTypeConstraints
+                    where con.ParentInodeTypeId == o.InodeTypeId && con.InodeTypeId != con.ParentInodeTypeId
+                    orderby con.InodeTypeId
+                    select new InodeChildConstraint()
+                    {
+                        InodeTypeId = con.InodeTypeId,
+                    }
+                ).ToList(),
                 Children = o.Children!
                     .Where(c => c.InodeId != c.ParentInodeId)
                     .Select(c => new Etc.Models.Inode()
@@ -39,6 +49,15 @@ public class FetchInodeService
                         Name = c.Name,
                         Created = c.Created,
                         Path = c.Path,
+                        ChildrenConstraints = (
+                            from con in db.InodeTypeConstraints
+                            where con.ParentInodeTypeId == c.InodeTypeId && con.InodeTypeId != con.ParentInodeTypeId
+                            orderby con.InodeTypeId
+                            select new InodeChildConstraint()
+                            {
+                                InodeTypeId = con.InodeTypeId,
+                            }
+                        ).ToList(),
                         Children = null,
                     }).ToList()
             })

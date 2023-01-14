@@ -31,6 +31,12 @@ export interface FetchInodeResult {
     inode: Inode;
 }
 
+export interface FetchOrganizationDetailsApp {
+    appId: string;
+    name: string;
+    inodeTypeIds: string[];
+}
+
 export interface FetchOrganizationDetailsInput {
     organizationId: string;
 }
@@ -40,8 +46,9 @@ export interface FetchOrganizationDetailsResult {
     name: string;
     databaseName: string;
     created: Date;
+    apps: FetchOrganizationDetailsApp[];
     roles: FetchOrganizationDetailsRole[];
-    rootInode: Inode;
+    inode: Inode;
 }
 
 export interface FetchOrganizationDetailsRole {

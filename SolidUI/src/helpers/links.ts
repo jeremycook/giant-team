@@ -1,7 +1,12 @@
 import { createHref } from "./urlHelpers"
 
+const app = (appId: string, organizationId: string, path: string) =>
+    inode(organizationId, path) + '?' + new URLSearchParams({ app: appId }).toString();
+
+const inode = (organizationId: string, path: string) =>
+    createHref('/o/' + organizationId + (path.length > 0 ? '/' + path : ''));
+
 export const hrefOf = {
-    inode: (organizationId: string, path: string) => {
-        return createHref('/o/' + organizationId + '/' + path);
-    }
+    app,
+    inode,
 }

@@ -1,9 +1,10 @@
-import { RouteDataFuncArgs, useParams, useRouteData } from "@solidjs/router";
-import { createResource, Show } from "solid-js";
+import { RouteDataFuncArgs, useRouteData } from "@solidjs/router";
+import { createResource } from "solid-js";
 import { postFetchInode } from "../../bindings/GiantTeam.Organization.Api.Controllers";
 import { FetchInodeResult } from "../../bindings/GiantTeam.Organization.Services";
 import { DataResponseResource } from "../../helpers/DataResponseResource";
-import { MainLayout } from "../../partials/MainLayout";
+import { ShowItem } from "../../widgets/ShowItem";
+import { useOrganizationRouteData } from "./organization";
 import { Explorer } from "./partials/Explorer";
 
 export class InodeRouteData extends DataResponseResource<FetchInodeResult>{ }
@@ -21,14 +22,12 @@ export function useInodeRouteData() {
 }
 
 export default function ExplorerPage() {
+    const org = useOrganizationRouteData();
     const inode = useInodeRouteData();
-    const params = useParams<{ organization: string }>();
 
-    return <MainLayout>
-        <Show when={inode.data?.inode}>{() => {
-            return <>
-                <Explorer organizationId={params.organization} inode={inode.data!.inode} />
-            </>
-        }}</Show>
-    </MainLayout>
+    return <ShowItem when={org.data}>{org =>
+        <ShowItem when={inode.data?.inode}>{inode =>
+            <Explorer organization={org} inode={inode} />
+        }</ShowItem>
+    }</ShowItem>
 }
