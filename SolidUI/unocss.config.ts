@@ -112,7 +112,7 @@ export function createConfig(): VitePluginConfig {
 
         'oval': 'rounded rounded-500px',
 
-        'stack': 'flex flex-col bg-white border shadow rounded-1',
+        'stack': 'flex flex-col',
         'stack-item': 'px-2 py-1 max-w-sm overflow-x-hidden overflow-ellipsis whitespace-nowrap block',
 
         'bg-ok': 'bg-green-500',

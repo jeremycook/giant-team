@@ -69,6 +69,21 @@ h6 {
     font-weight: bold;
 }
 
+/* main::-webkit-scrollbar {
+    background-color: #eeeeee66;
+    box-shadow: 0 0 2px #66666666 inset;
+}
+
+main::-webkit-scrollbar-button {
+}
+
+main::-webkit-scrollbar-track {
+}
+
+main::-webkit-scrollbar-thumb {
+    background-color: #66666666;
+} */
+
 /* Links and link-like */
 
 a,
@@ -77,6 +92,7 @@ button {
     display: inline-block;
     opacity: .8;
     text-decoration: none;
+    text-align: unset;
 }
 
 button {

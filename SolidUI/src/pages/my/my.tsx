@@ -12,7 +12,7 @@ export default function MyPage() {
             </p>
 
             <h2>My Organizations</h2>
-            <div class='flex gap-4'>
+            <div class='flex flex-wrap gap-4'>
                 <MyOrganizations />
                 <div class='card-new'>
                     <Anchor href='/organizations/new-organization'>New Organization</Anchor>

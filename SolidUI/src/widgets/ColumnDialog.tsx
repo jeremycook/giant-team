@@ -1,7 +1,7 @@
 import { For } from 'solid-js';
 import { produce, SetStoreFunction, Store } from 'solid-js/store';
 import { Sort, FetchRecordsInputRangeFilter } from '../bindings/GiantTeam.Organization.Services';
-import { EyeIcon, EyeOffIcon, FilterAddIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../helpers/icons';
+import { EyeIcon, EyeOffIcon, FilterAddIcon, LeftIcon, OffIcon, RightIcon, SortAscIcon, SortDescIcon } from '../partials/Icons';
 import { Meta, MetaColumn } from './SmartTable';
 
 export interface ColumnDialogProps {

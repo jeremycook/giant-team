@@ -1,6 +1,6 @@
 import { Show } from 'solid-js';
 import { user } from '../utils/session';
-import { InfoIcon } from '../helpers/icons';
+import { InfoIcon } from '../partials/Icons';
 import { FieldStack, FieldSetOptions } from '../widgets/FieldStack';
 import { createMutable } from 'solid-js/store';
 import { Anchor } from '../partials/Anchor';

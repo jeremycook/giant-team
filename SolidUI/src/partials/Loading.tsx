@@ -1,5 +1,5 @@
 import { ParentProps } from "solid-js";
-import { SpinnerIcon } from "../helpers/icons";
+import { SpinnerIcon } from "./Icons";
 
 export function Loading(props: ParentProps) {
     return <>

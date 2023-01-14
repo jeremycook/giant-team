@@ -2,7 +2,7 @@ import { useNavigate, useParams } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
 import { setTitle } from '../../utils/page';
 import { createId, stringifyBlob } from '../../helpers/htmlHelpers';
-import { WarningIcon } from '../../helpers/icons';
+import { WarningIcon } from '../../partials/Icons';
 import { postImportData } from '../../bindings/GiantTeam.Organization.Api.Controllers';
 
 export default function ImportDataPage() {

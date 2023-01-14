@@ -9,38 +9,34 @@ import LogoutPage from './pages/logout';
 import NewOrganizationPage from './pages/organizations/new-organization';
 import NotFoundPage from './pages/not-found';
 import MyPage from './pages/my/my';
-import OrganizationPage, { createOrganizationRouteData } from './pages/organization/organization';
+import { createOrganizationDetailsResource } from "./pages/organization/OrganizationOperator";
 import OrganizationsPage from './pages/organizations/organizations';
-import ExplorerPage, { createInodeRouteData } from './pages/organization/explorer';
-import OrganizationLayout from './pages/organization/partials/OrganizationLayout';
+import OrganizationPage from './pages/organization/organization';
 
 export function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="**" component={NotFoundPage} />
+    return (
+        <Routes>
+            <Route path="**" component={NotFoundPage} />
 
-      <Route path="/" component={HomePage} />
+            <Route path="/" component={HomePage} />
 
-      <Route path="/access-denied" component={AccessDeniedPage} />
-      <Route path="/join" component={JoinPage} />
-      <Route path="/login" component={LoginPage} />
-      <Route path="/logout" component={LogoutPage} />
+            <Route path="/access-denied" component={AccessDeniedPage} />
+            <Route path="/join" component={JoinPage} />
+            <Route path="/login" component={LoginPage} />
+            <Route path="/logout" component={LogoutPage} />
 
-      <ProtectedRoute>
+            <ProtectedRoute>
 
-        <Route path="/my" component={MyPage} />
+                <Route path="/my" component={MyPage} />
 
-        <Route path="/organizations">
-          <Route path='/' component={OrganizationsPage} />
-          <Route path='/new-organization' component={NewOrganizationPage} />
-        </Route>
+                <Route path="/organizations">
+                    <Route path='/' component={OrganizationsPage} />
+                    <Route path='/new-organization' component={NewOrganizationPage} />
+                </Route>
 
-        <Route path="/o/:organization" component={OrganizationLayout} data={createOrganizationRouteData}>
-          <Route path='/' component={OrganizationPage} />
-          <Route path='/*path' component={ExplorerPage} data={createInodeRouteData} />
-        </Route>
+                <Route path="/o/:organization/*path" component={OrganizationPage} data={props => createOrganizationDetailsResource({ organization: props.params.organization })} />
 
-      </ProtectedRoute>
-    </Routes>
-  )
+            </ProtectedRoute>
+        </Routes>
+    )
 };

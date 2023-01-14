@@ -1,7 +1,9 @@
 import { createEffect, createSignal, JSX, onCleanup, onMount, ParentProps } from "solid-js";
 import { Portal } from "solid-js/web";
 import { constrainToViewport } from "../helpers/htmlHelpers";
-import { DismissIcon, MoveIcon } from "../helpers/icons";
+import { DismissIcon } from "../partials/Icons";
+
+let globalZIndex = 0;
 
 export enum DialogAnchor {
     topLeft,
@@ -18,18 +20,25 @@ export interface DialogProps {
 
 export default function Dialog(props: DialogProps & ParentProps) {
     let ref: HTMLDivElement = null as any;
-    let moveRef: HTMLButtonElement = null as any;
+    let moveRef: HTMLDivElement = null as any;
 
     const [mounted, setMounted] = createSignal(0);
     const [left, setLeft] = createSignal(0);
     const [top, setTop] = createSignal(0);
+    const [zIndex, setZIndex] = createSignal(++globalZIndex);
+    const [grabbing, setGrabbing] = createSignal(false);
 
     let mouseDown = false;
     let offsetLeft = 0, offsetTop = 0;
-    const onmousedown = function (this: HTMLButtonElement, mouse: MouseEvent): void {
+    const onmousedown = function (this: HTMLDivElement, mouse: MouseEvent): void {
         offsetLeft = ref.offsetLeft - mouse.clientX;
         offsetTop = ref.offsetTop - mouse.clientY;
         mouseDown = true;
+        setGrabbing(true);
+
+        if (zIndex() < globalZIndex) {
+            setZIndex(++globalZIndex);
+        }
     };
     const onmouseup = () => {
         if (mouseDown) {
@@ -42,6 +51,7 @@ export default function Dialog(props: DialogProps & ParentProps) {
             });
             setLeft(constrained.left);
             setTop(constrained.top);
+            setGrabbing(false);
         }
         mouseDown = false;
     };
@@ -59,6 +69,8 @@ export default function Dialog(props: DialogProps & ParentProps) {
 
         setMounted(m => m + 1);
     });
+
+createEffect(() => console.log(zIndex()));
 
     createEffect(() => {
         mounted();
@@ -100,11 +112,8 @@ export default function Dialog(props: DialogProps & ParentProps) {
 
     return (
         <Portal mount={props.mount ?? document.body}>
-            <div ref={ref} class='card p-0 absolute min-w-300px max-w-100% max-h-100%' style={{ left: left() + 'px', top: top() + 'px' }} role='dialog'>
-                <div class='flex gap-1 mb px-2 py-1 paint-gray-100 color-gray-600'>
-                    <button ref={moveRef} class='cursor-grab invisible md:visible' aria-hidden>
-                        <MoveIcon />
-                    </button>
+            <div ref={ref} class='card b b-solid shadow-xl p-0 absolute min-w-300px max-w-100% max-h-100%' classList={{ grabbing: grabbing() }} style={{ left: left() + 'px', top: top() + 'px', "z-index": zIndex() }} role='dialog'>
+                <div ref={moveRef} class='rounded-t cursor-grab flex gap-1 mb px-2 py-1 paint-gray-100 color-gray-600'>
                     <strong class='text-xl grow text-center'>{props.title}</strong>
                     <button type='button' onclick={props.onDismiss} aria-label="Close Dialog">
                         <DismissIcon />

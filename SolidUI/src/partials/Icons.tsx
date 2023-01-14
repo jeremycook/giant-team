@@ -1,6 +1,8 @@
 import { Icon } from '@iconify-icon/solid';
 import alert from '@iconify-icons/fluent/alert-12-filled';
 import alertOutline from '@iconify-icons/fluent/alert-12-regular';
+import apps from '@iconify-icons/fluent/apps-16-filled';
+import appsOutline from '@iconify-icons/fluent/apps-16-regular';
 import arrowDownCircle from '@iconify-icons/fluent/arrow-circle-down-12-filled';
 import arrowDownCircleOutline from '@iconify-icons/fluent/arrow-circle-down-12-regular';
 import arrowUpCircle from '@iconify-icons/fluent/arrow-circle-up-12-filled';
@@ -43,6 +45,8 @@ import warning from '@iconify-icons/fluent/warning-12-regular';
 
 export const AlertIcon = (props: any) => <Icon icon={alert} aria-hidden {...props} />;
 export const AlertOutlineIcon = (props: any) => <Icon icon={alertOutline} aria-hidden {...props} />;
+export const AppsIcon = (props: any) => <Icon icon={apps} aria-hidden {...props} />;
+export const AppsOutlineIcon = (props: any) => <Icon icon={appsOutline} aria-hidden {...props} />;
 export const ArrowDownCircleIcon = (props: any) => <Icon icon={arrowDownCircle} aria-hidden {...props} />;
 export const ArrowDownCircleOutlineIcon = (props: any) => <Icon icon={arrowDownCircleOutline} aria-hidden {...props} />;
 export const ArrowUpCircleIcon = (props: any) => <Icon icon={arrowUpCircle} aria-hidden {...props} />;

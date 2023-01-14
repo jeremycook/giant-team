@@ -12,9 +12,9 @@ export function Section(props: { name: string } & ParentProps) {
 
 export function RenderSection(props: { name: string }) {
     const sectionContext = useSectionContext();
-    return (<>
+    return <>
         {sectionContext.get(props.name)}
-    </>)
+    </>
 }
 
 export class SectionContextValue {

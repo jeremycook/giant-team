@@ -1,6 +1,6 @@
 import { batch, createSignal, For, JSX, Match, Show, Switch } from "solid-js"
 import { createMutable } from "solid-js/store"
-import { DismissIcon, InfoIcon } from "../helpers/icons";
+import { DismissIcon, InfoIcon } from "./Icons";
 
 type NotificationTypeEnum = 'info' | 'success' | 'warning' | 'error';
 

@@ -47,6 +47,8 @@ public class FetchOrganizationDetailsService
             Apps = new FetchOrganizationDetailsApp[]
             {
                 //new() { AppId = "Explorer", Name = "Explorer", InodeTypeIds = new[] { "Root", "Space", "Folder" } },
+                new() { AppId = "Space", Name = "Space", InodeTypeIds = new[] { "Space" } },
+                new() { AppId = "Folder", Name = "Folder", InodeTypeIds = new[] { "Folder" } },
                 new() { AppId = "File", Name = "File", InodeTypeIds = new[] { "File" } },
                 new() { AppId = "Table", Name = "Table", InodeTypeIds = new[] { "Table" } },
             },
