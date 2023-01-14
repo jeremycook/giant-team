@@ -4,7 +4,9 @@ import { hrefOf } from "../../../helpers/links";
 import { AppsIcon, AppsOutlineIcon } from "../../../partials/Icons";
 import { Section } from "../../../partials/Section";
 import { ShowItem } from "../../../widgets/ShowItem";
-import { InodeResource, OrganizationDetailsResource, ProcessOperator } from "../OrganizationOperator";
+import { ProcessOperator } from "../ProcessOperator";
+import { InodeResource } from "../InodeResource";
+import { OrganizationDetailsResource } from "../OrganizationDetailsResource";
 
 export function Explorer(props: { processOperator: ProcessOperator, organization: OrganizationDetailsResource, inode: InodeResource }) {
 

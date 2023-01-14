@@ -9,7 +9,7 @@ import LogoutPage from './pages/logout';
 import NewOrganizationPage from './pages/organizations/new-organization';
 import NotFoundPage from './pages/not-found';
 import MyPage from './pages/my/my';
-import { createOrganizationDetailsResource } from "./pages/organization/OrganizationOperator";
+import { createOrganizationDetailsResource } from "./pages/organization/OrganizationDetailsResource";
 import OrganizationsPage from './pages/organizations/organizations';
 import OrganizationPage from './pages/organization/organization';
 

@@ -1,5 +1,7 @@
 import { Explorer } from "./partials/Explorer";
-import { InodeResource, OrganizationDetailsResource, ProcessOperator } from "./OrganizationOperator";
+import { ProcessOperator } from "./ProcessOperator";
+import { InodeResource } from "./InodeResource";
+import { OrganizationDetailsResource } from "./OrganizationDetailsResource";
 import { useParams, useRouteData } from "@solidjs/router";
 import { createEffect, createResource, For, Suspense } from "solid-js";
 import { Loading } from "../../partials/Loading";
