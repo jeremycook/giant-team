@@ -12,6 +12,7 @@ import { postFetchInode } from "../../bindings/GiantTeam.Organization.Api.Contro
 import { Dynamic } from "solid-js/web";
 import { apps } from "../../apps";
 import Dialog from "../../widgets/Dialog";
+import { ShowItem } from "../../widgets/ShowItem";
 
 export default function OrganizationPage() {
     const params = useParams();
@@ -38,12 +39,14 @@ export default function OrganizationPage() {
                 <Explorer organization={organization} processOperator={processOperator} inode={inode} />
             </Suspense>
 
-            <For each={processOperator.processes}>{(process, i) => <Dialog
-                title={process.app.name + ': ' + process.inode.name}
-                onDismiss={() => processOperator.terminateByIndex(i())}
-            >
-                <Dynamic component={apps[process.app.appId].component} {...{ app: process.app, inode: process.inode }} />
-            </Dialog>}</For>
+            <ShowItem when={organization.data}>{org => <>
+                <For each={processOperator.processes}>{(process, i) => <Dialog
+                    title={process.app.name + ': ' + process.inode.name}
+                    onDismiss={() => processOperator.terminateByIndex(i())}
+                >
+                    <Dynamic component={apps[process.app.appId].component} {...{ organization: org, inode: process.inode }} />
+                </Dialog>}</For>
+            </>}</ShowItem>
 
         </MainLayout >
     </SectionedLayout>

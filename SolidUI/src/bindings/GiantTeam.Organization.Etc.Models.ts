@@ -36,6 +36,14 @@ export interface InodeTypeConstraint {
     parentInodeTypeId: string;
 }
 
+export const InodeTypeId = {
+    Root: 'Root',
+    Space: 'Space',
+    Folder: 'Folder',
+    File: 'File',
+    Table: 'Table',
+}
+
 export interface Space {
     inode: Inode;
 }

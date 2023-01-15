@@ -1,4 +1,6 @@
-﻿using GiantTeam.Organization.Etc.Data;
+﻿using GiantTeam.ComponentModel;
+using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.UserData.Services;
 using Microsoft.EntityFrameworkCore;
@@ -8,16 +10,28 @@ namespace GiantTeam.Organization.Services;
 
 public class FetchInodeService
 {
+    private readonly ValidationService validationService;
     private readonly UserDbContextFactory userDbContextFactory;
 
     public FetchInodeService(
+        ValidationService validationService,
         UserDbContextFactory userDbContextFactory)
     {
+        this.validationService = validationService;
         this.userDbContextFactory = userDbContextFactory;
     }
 
+    /// <summary>
+    /// Returns the <see cref="Etc.Data.Inode"/> with its immediate children from
+    /// the organization at the provided path.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    /// <exception cref="NotFoundException"></exception>
     public async Task<FetchInodeResult> FetchInodeAsync(FetchInodeInput input)
     {
+        validationService.Validate(input);
+
         using var db = userDbContextFactory.NewDbContext<EtcDbContext>(input.OrganizationId);
 
         Etc.Models.Inode inode = await db.Inodes
@@ -61,7 +75,8 @@ public class FetchInodeService
                         Children = null,
                     }).ToList()
             })
-            .SingleAsync();
+            .SingleOrDefaultAsync()
+            ?? throw new NotFoundException($"\"{input.Path}\" not found in the \"{input.OrganizationId}\" organization.");
 
         var result = new FetchInodeResult()
         {

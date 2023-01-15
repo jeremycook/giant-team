@@ -77,6 +77,7 @@ ALTER TABLE IF EXISTS etc.inode
     OWNER to pg_database_owner;
 
 GRANT ALL ON TABLE etc.inode TO pg_database_owner;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE etc.inode TO PUBLIC;
 
 -- FUNCTION: etc.inode_inode_type_id_is_valid(text, uuid)
 -- DROP FUNCTION IF EXISTS etc.inode_inode_type_id_is_valid(text, uuid);
@@ -227,7 +228,7 @@ END$$;
 CREATE TABLE IF NOT EXISTS etc.file
 (
 	inode_id uuid NOT NULL,
-    content_inode_type text NOT NULL,
+    content_type text NOT NULL,
     data bytea NOT NULL,
     CONSTRAINT file_pkey PRIMARY KEY (inode_id),
     CONSTRAINT file_inode_id_fkey FOREIGN KEY (inode_id)
@@ -241,6 +242,7 @@ ALTER TABLE IF EXISTS etc.file
     OWNER to pg_database_owner;
 
 GRANT ALL ON TABLE etc.file TO pg_database_owner;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE etc.inode TO PUBLIC;
 
 -- VIEW: etc.database_definition
 -- DROP VIEW etc.database_definition;

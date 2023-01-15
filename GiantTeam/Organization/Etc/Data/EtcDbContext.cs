@@ -31,6 +31,7 @@ public class EtcDbContext : DbContext
         modelBuilder.HasDefaultSchema("etc");
 
         modelBuilder.Entity<Inode>().HasMany(o => o.Children).WithOne().HasForeignKey(o => o.ParentInodeId).OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<File>().HasOne(o => o.Inode).WithOne().HasPrincipalKey<Inode>(o => o.InodeId).OnDelete(DeleteBehavior.Cascade);
     }
 
     // Tables

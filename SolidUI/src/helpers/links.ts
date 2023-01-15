@@ -9,4 +9,5 @@ const inode = (organizationId: string, path: string) =>
 export const hrefOf = {
     app,
     inode,
+    uploadApi: '/api/organization/upload',
 }

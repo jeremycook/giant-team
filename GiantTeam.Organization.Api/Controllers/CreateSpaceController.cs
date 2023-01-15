@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GiantTeam.Organization.Api.Controllers;
 
+[ApiController]
 public class CreateSpaceController : ControllerBase
 {
     [HttpPost("/api/organization/[Controller]")]
