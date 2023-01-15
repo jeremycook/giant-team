@@ -68,12 +68,6 @@ namespace GiantTeam.Organization.Services
         {
             validationService.Validate(input);
 
-            var organization = await fetchOrganizationService.FetchOrganizationAsync(new() { OrganizationId = input.OrganizationId });
-
-            var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organization.DatabaseName);
-            await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(organization.DatabaseName);
-            await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
-
             var space = new Etc.Data.Inode()
             {
                 InodeId = Guid.NewGuid(),
@@ -84,6 +78,9 @@ namespace GiantTeam.Organization.Services
             };
 
             validationService.Validate(space);
+
+            await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.OrganizationId);
+            await using var tx = await elevatedDbContext.Database.BeginTransactionAsync();
             elevatedDbContext.Inodes.Add(space);
             await elevatedDbContext.SaveChangesAsync();
 
@@ -103,6 +100,7 @@ namespace GiantTeam.Organization.Services
                 )} ON SCHEMA {Sql.Identifier(schemaName)} TO {Sql.Identifier(DirectoryHelpers.OrganizationRole(p.OrganizationRoleId)!)}"),
             }));
 
+            var elevatedDataService = userDataServiceFactory.NewElevatedDataService(input.OrganizationId);
             await elevatedDataService.ExecuteAsync(commands);
 
             // Commit the new Space record

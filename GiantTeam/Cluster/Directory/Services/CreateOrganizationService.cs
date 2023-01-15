@@ -36,6 +36,7 @@ namespace GiantTeam.Cluster.Directory.Services
         private readonly ValidationService validationService;
         private readonly SecurityDataService securityDataService;
         private readonly IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory;
+        private readonly UserDirectoryDataServiceFactory userDirectoryDataServiceFactory;
         private readonly UserDataServiceFactory userDataFactory;
         private readonly UserDbContextFactory userDbContextFactory;
         private readonly SessionService sessionService;
@@ -49,6 +50,7 @@ namespace GiantTeam.Cluster.Directory.Services
             ValidationService validationService,
             SecurityDataService securityDataService,
             IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory,
+            UserDirectoryDataServiceFactory userDirectoryDataServiceFactory,
             UserDataServiceFactory userDataFactory,
             UserDbContextFactory userDbContextFactory,
             SessionService sessionService,
@@ -61,6 +63,7 @@ namespace GiantTeam.Cluster.Directory.Services
             this.validationService = validationService;
             this.securityDataService = securityDataService;
             this.managerDirectoryDbContextFactory = managerDirectoryDbContextFactory;
+            this.userDirectoryDataServiceFactory = userDirectoryDataServiceFactory;
             this.userDataFactory = userDataFactory;
             this.userDbContextFactory = userDbContextFactory;
             this.sessionService = sessionService;
@@ -119,7 +122,7 @@ namespace GiantTeam.Cluster.Directory.Services
 
                 string databaseName = organization.DatabaseName;
 
-                var elevatedDirectoryDataService = userDataFactory.NewElevatedDataService(DirectoryHelpers.Database);
+                var elevatedDirectoryDataService = userDirectoryDataServiceFactory.NewElevatedDataService();
                 try
                 {
                     // Create the organization's initial roles.
@@ -139,7 +142,7 @@ namespace GiantTeam.Cluster.Directory.Services
                     // Connect to the new database with elevated rights
                     var elevatedDatabaseService = userDataFactory.NewElevatedDataService(databaseName);
 
-                    // Perform these actions as the database owner
+                    // These actions must be performed as the database owner
                     await elevatedDatabaseService.ExecuteAsync(
                         Sql.Format($"SET ROLE {Sql.Identifier(owner.DbRole)}"),
                         Sql.Format($"GRANT ALL ON DATABASE {Sql.Identifier(databaseName)} TO pg_database_owner"),
@@ -151,11 +154,10 @@ namespace GiantTeam.Cluster.Directory.Services
 
                     // Set the name of the root inode to match
                     // the name of the organization in the directory.
-                    await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(input.DatabaseName, "etc");
-                    var root = await elevatedDbContext.Inodes
-                        .SingleAsync(o => o.InodeId == InodeId.Root);
-                    root.Name = input.Name;
-                    await elevatedDbContext.SaveChangesAsync();
+                    await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(organization.OrganizationId);
+                    await elevatedDbContext.Inodes
+                        .Where(o => o.InodeId == InodeId.Root)
+                        .ExecuteUpdateAsync(o => o.SetProperty(p => p.Name, input.Name));
                 }
                 catch (Exception)
                 {

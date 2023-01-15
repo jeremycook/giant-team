@@ -1,4 +1,4 @@
-import { createSignal, JSX, Match, Show, Switch } from "solid-js"
+import { createSignal, Match, Show, Switch } from "solid-js"
 import { AppInfo, AppProps } from "."
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
 import { hrefOf } from "../helpers/links";
@@ -6,56 +6,61 @@ import { log } from "../helpers/logging";
 import { toast } from "../partials/Toasts";
 
 export function FileApp(props: AppProps) {
-    let filesRef: HTMLInputElement = null as any;
+    let ref: HTMLInputElement = null as any;
 
-    const [errored, setErrored] = createSignal(false);
-
+    const [showRetry, setShowRetry] = createSignal(false);
 
     const onSubmitForm = async (e: SubmitEvent) => {
         e.preventDefault();
 
-        if (!filesRef.files?.length) {
+        if (!ref.files?.length) {
             return;
         }
 
         const formData = new FormData();
         formData.set('organizationid', props.organization.organizationId);
         formData.set('path', props.inode.path);
-        Object.values(filesRef.files)
+        Object.values(ref.files)
             .forEach(f => formData.append('files', f));
 
-        setErrored(false);
+        setShowRetry(false);
 
         try {
+            // TODO: Show upload progress
             const response = await fetch(hrefOf.uploadApi, {
                 method: "post",
                 body: formData,
             });
 
             if (response.ok) {
-                toast.success('Success!');
+                // TODO: refresh inode
+                ref.value = '';
+                toast.success('The upload succeeded!');
+                // TODO: close self?
             }
             else {
                 toast.error('Something went wrong.');
-                setErrored(true);
+                setShowRetry(true);
             }
         }
         catch (error) {
             log.error('An error occurred while uploading files: {Error}', error as any);
             toast.error('Something went wrong.');
-            setErrored(true);
+            setShowRetry(true);
         }
 
     };
     return <>
         <Switch fallback={<>
-            You cannot upload files here. Files can be uploaded into Folders.
+            Files cannot be uploaded here.
         </>}>
+            <Match when={props.inode.inodeTypeId === InodeTypeId.File}>
+                TODO: File viewer/editor
+            </Match>
             <Match when={props.inode.childrenConstraints.some(c => c.inodeTypeId === InodeTypeId.File)}>
-                {/* Present the upload interface */}
                 <form class='flex gap-1' onsubmit={onSubmitForm}>
-                    <input ref={filesRef} type='file' multiple required onchange={e => e.currentTarget.form?.requestSubmit()} />
-                    <Show when={errored()}>
+                    <input ref={ref} type='file' multiple required onchange={e => e.currentTarget.form?.requestSubmit()} />
+                    <Show when={showRetry()}>
                         <button class='button'>
                             Retry
                         </button>

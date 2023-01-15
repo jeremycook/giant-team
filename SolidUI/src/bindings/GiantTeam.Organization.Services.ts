@@ -12,6 +12,16 @@ export interface AlterDatabaseInput {
 export interface AlterDatabaseOutput {
 }
 
+export interface CreateFolderInput {
+    organizationId: string;
+    parentInodeId: string;
+    folderName: string;
+}
+
+export interface CreateFolderResult {
+    inodeId: string;
+}
+
 export interface CreateSpaceInput {
     organizationId: string;
     spaceName: string;

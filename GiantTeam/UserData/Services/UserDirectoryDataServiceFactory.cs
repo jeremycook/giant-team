@@ -1,4 +1,5 @@
-﻿using GiantTeam.Cluster.Directory.Services;
+﻿using GiantTeam.Cluster.Directory.Helpers;
+using GiantTeam.Cluster.Directory.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.Postgres;
 using GiantTeam.Startup;
@@ -9,14 +10,14 @@ using Npgsql;
 namespace GiantTeam.UserData.Services
 {
     [Service]
-    public class UserDataServiceFactory
+    public class UserDirectoryDataServiceFactory
     {
         private readonly ILoggerFactory logger;
         private readonly IOptions<GiantTeamOptions> giantTeamOptions;
         private readonly GetDatabaseNameService getDatabaseNameService;
         private readonly SessionService sessionService;
 
-        public UserDataServiceFactory(
+        public UserDirectoryDataServiceFactory(
             ILoggerFactory logger,
             IOptions<GiantTeamOptions> giantTeamOptions,
             GetDatabaseNameService getDatabaseNameService,
@@ -32,14 +33,12 @@ namespace GiantTeam.UserData.Services
         /// Create a new elevated <see cref="PgDataService"/> connection to <paramref name="organizationId"/>.
         /// </summary>
         /// <param name="organizationId"></param>
-        public PgDataService NewElevatedDataService(string organizationId, string defaultSchema = "")
+        public PgDataService NewElevatedDataService()
         {
-            var databaseName = getDatabaseNameService.GetDatabaseName(organizationId);
-
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder(giantTeamOptions.Value.UserConnectionString)
             {
-                Database = databaseName,
-                SearchPath = defaultSchema,
+                Database = DirectoryHelpers.Database,
+                SearchPath = DirectoryHelpers.Schema,
                 Username = sessionService.User.DbElevatedLogin ?? throw new UnelevatedException(),
                 Password = sessionService.User.DbPassword(),
             };
@@ -53,14 +52,12 @@ namespace GiantTeam.UserData.Services
         /// Create a new regular <see cref="PgDataService"/> connection to <paramref name="databaseName"/>.
         /// </summary>
         /// <param name="databaseName"></param>
-        public PgDataService NewDataService(string organizationId, string defaultSchema = "")
+        public PgDataService NewDataService()
         {
-            var databaseName = getDatabaseNameService.GetDatabaseName(organizationId);
-
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder(giantTeamOptions.Value.UserConnectionString)
             {
-                Database = databaseName,
-                SearchPath = defaultSchema,
+                Database = DirectoryHelpers.Database,
+                SearchPath = DirectoryHelpers.Schema,
                 Username = sessionService.User.DbLogin,
                 Password = sessionService.User.DbPassword(),
             };
