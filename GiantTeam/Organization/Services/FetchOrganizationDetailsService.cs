@@ -1,5 +1,6 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Models;
 using GiantTeam.UserData.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,12 +33,6 @@ public class FetchOrganizationDetailsService
             .SingleOrDefaultAsync(o => o.OrganizationId == input.OrganizationId) ??
             throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
 
-        var rootResult = await exploreService.FetchInodeAsync(new()
-        {
-            OrganizationId = input.OrganizationId,
-            Path = "", // Root
-        });
-
         var result = new FetchOrganizationDetailsResult()
         {
             OrganizationId = org.OrganizationId,
@@ -57,7 +52,6 @@ public class FetchOrganizationDetailsService
                 Name = r.Name,
                 DbRole = r.DbRole,
             }).ToArray(),
-            Inode = rootResult.Inode,
         };
         return result;
     }

@@ -1,8 +1,7 @@
 import { Switch, Match } from "solid-js";
 import { AppInfo, AppProps } from "."
 import { postCreateSpace } from "../bindings/GiantTeam.Organization.Api.Controllers";
-import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
-import { GrantSpaceInputPrivilege } from "../bindings/GiantTeam.Organization.Services";
+import { Inode, InodeTypeId, SchemaPermissionId } from "../bindings/GiantTeam.Organization.Etc.Models"
 import { toast } from "../partials/Toasts";
 
 export function SpaceApp(props: AppProps) {
@@ -14,8 +13,8 @@ export function SpaceApp(props: AppProps) {
         const response = await postCreateSpace({
             organizationId: props.organization.organizationId,
             spaceName: ref.value,
-            grants: [
-                { organizationRoleId: 'TODO', privileges: [GrantSpaceInputPrivilege.ALL] }
+            accessControlList: [
+                { dbRole: 'TODO', permissions: [SchemaPermissionId.R_USAGE, SchemaPermissionId.A_CREATE] }
             ]
         });
 

@@ -21,21 +21,45 @@ public class FetchInodeService
         this.userDbContextFactory = userDbContextFactory;
     }
 
-    /// <summary>
-    /// Returns the <see cref="Etc.Data.Inode"/> with its immediate children from
-    /// the organization at the provided path.
-    /// </summary>
-    /// <param name="input"></param>
-    /// <returns></returns>
-    /// <exception cref="NotFoundException"></exception>
-    public async Task<FetchInodeResult> FetchInodeAsync(FetchInodeInput input)
+    public async Task<Etc.Models.Inode> FetchInodeAsync(FetchInodeInput input)
     {
         validationService.Validate(input);
 
-        using var db = userDbContextFactory.NewDbContext<EtcDbContext>(input.OrganizationId);
+        return await FetchInodeAsync(input.OrganizationId, input.InodeId);
+    }
 
-        Etc.Models.Inode inode = await db.Inodes
-            .Where(o => o.PathLower == input.Path.ToLower())
+    public async Task<Etc.Models.Inode> FetchInodeAsync(string organizationId, Guid inodeId)
+    {
+        return await FetchInodeAsync(organizationId, inodeId, null);
+    }
+
+    public async Task<Etc.Models.Inode> FetchInodeByPathAsync(FetchInodeByPathInput input)
+    {
+        validationService.Validate(input);
+
+        return await FetchInodeByPathAsync(input.OrganizationId, input.Path);
+    }
+
+    public async Task<Etc.Models.Inode> FetchInodeByPathAsync(string organizationId, string path)
+    {
+        return await FetchInodeAsync(organizationId, null, path);
+    }
+
+    private async Task<Etc.Models.Inode> FetchInodeAsync(string organizationId, Guid? nodeId, string? path)
+    {
+
+        using var db = userDbContextFactory.NewDbContext<EtcDbContext>(organizationId);
+
+        IQueryable<Etc.Data.Inode> query;
+
+        if (nodeId is not null)
+            query = db.Inodes.Where(o => o.InodeId == nodeId);
+        else if (path is not null)
+            query = db.Inodes.Where(o => o.Path == path.ToLower());
+        else
+            throw new InvalidOperationException($"The nodeId or path must be provided.");
+
+        var inode = await query
             .Select(o => new Etc.Models.Inode()
             {
                 InodeTypeId = o.InodeTypeId,
@@ -75,19 +99,27 @@ public class FetchInodeService
                         Children = null,
                     }).ToList()
             })
-            .SingleOrDefaultAsync()
-            ?? throw new NotFoundException($"\"{input.Path}\" not found in the \"{input.OrganizationId}\" organization.");
+            .SingleOrDefaultAsync();
 
-        var result = new FetchInodeResult()
-        {
-            Inode = inode,
-        };
-        return result;
+        if (inode is null)
+            throw new NotFoundException($"Inode not found.");
+
+        return inode;
     }
 }
 
 public class FetchInodeInput
 {
+    [Required]
+    public string OrganizationId { get; set; } = null!;
+
+    [RequiredGuid]
+    public Guid InodeId { get; set; }
+}
+
+public class FetchInodeByPathInput
+{
+    [Required]
     public string OrganizationId { get; set; } = null!;
 
     /// <summary>
@@ -95,10 +127,5 @@ public class FetchInodeInput
     /// are all valid paths. "/", "Space/" and "/Space" are not valid.
     /// </summary>
     [Required(AllowEmptyStrings = true)]
-    public string Path { get; set; } = string.Empty;
-}
-
-public class FetchInodeResult
-{
-    public Etc.Models.Inode Inode { get; set; } = null!;
+    public string Path { get; set; } = null!;
 }

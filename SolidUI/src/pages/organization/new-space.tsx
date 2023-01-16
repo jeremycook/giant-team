@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "@solidjs/router";
 import { createEffect } from "solid-js";
 import { createMutable } from "solid-js/store";
 import { postCreateSpace } from "../../bindings/GiantTeam.Organization.Api.Controllers";
-import { GrantSpaceInputPrivilege } from "../../bindings/GiantTeam.Organization.Services";
+import { SchemaPermissionId } from "../../bindings/GiantTeam.Organization.Etc.Models";
 import { toast } from "../../partials/Toasts";
 import { FieldSetOptions, FieldStack } from "../../widgets/FieldStack";
 
@@ -36,11 +36,8 @@ export default function NewSpacePage() {
         const response = await postCreateSpace({
             organizationId: location.state?.organization!,
             spaceName: data.name,
-            grants: [
-                {
-                    organizationRoleId: 'TODO',
-                    privileges: [GrantSpaceInputPrivilege.USAGE],
-                }
+            accessControlList: [
+                { dbRole: 'TODO', permissions: [SchemaPermissionId.R_USAGE, SchemaPermissionId.A_CREATE] }
             ]
         });
 

@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace GiantTeam.Organization.Api.Controllers;
 
 [ApiController]
-public class FetchInodeController : ControllerBase
+public class FetchInodeByPathController : ControllerBase
 {
     [HttpPost("/api/organization/[Controller]")]
     public async Task<Inode> Post(
         [FromServices] FetchInodeService service,
-        FetchInodeInput input)
+        FetchInodeByPathInput input)
     {
-        return await service.FetchInodeAsync(input);
+        return await service.FetchInodeByPathAsync(input);
     }
 }

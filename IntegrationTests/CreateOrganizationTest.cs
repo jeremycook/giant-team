@@ -5,11 +5,11 @@ using static GiantTeam.UserManagement.Services.JoinService;
 
 namespace IntegrationTests;
 
-public class CreateOrganization : IClassFixture<WebApplicationFactory<WebApp.Program>>
+public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp.Program>>
 {
     private readonly WebApplicationFactory<WebApp.Program> _factory;
 
-    public CreateOrganization(WebApplicationFactory<WebApp.Program> factory)
+    public CreateOrganizationTest(WebApplicationFactory<WebApp.Program> factory)
     {
         _factory = factory;
     }

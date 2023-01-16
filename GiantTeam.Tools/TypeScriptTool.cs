@@ -28,14 +28,19 @@ namespace GiantTeam.Tools
         static readonly Dictionary<Type, string> types = new()
         {
             { typeof(object), "any" },
+
             { typeof(bool), "boolean" },
+
             { typeof(DateTime), "Date" },
             { typeof(DateTimeOffset), "Date" },
+
             { typeof(decimal), "number" },
             { typeof(double), "number" },
             { typeof(float), "number" },
             { typeof(int), "number" },
             { typeof(long), "number" },
+
+            { typeof(char), "string" },
             { typeof(Guid), "string" },
             { typeof(string), "string" },
         };

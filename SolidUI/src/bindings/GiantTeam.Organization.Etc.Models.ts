@@ -12,10 +12,16 @@ export interface Inode {
     inodeId: string;
     parentInodeId: string;
     name: string;
+    uglyName: string;
     created: Date;
     path: string;
     childrenConstraints: InodeChildConstraint[];
     children: Inode[] | null;
+}
+
+export interface InodeAccess {
+    dbRole: string;
+    permissions: string[];
 }
 
 export interface InodeChildConstraint {
@@ -42,6 +48,27 @@ export const InodeTypeId = {
     Folder: 'Folder',
     File: 'File',
     Table: 'Table',
+}
+
+export const PermissionId = {
+    Read: 'r',
+    Append: 'a',
+    Write: 'w',
+    Delete: 'd',
+    Drop: 'D',
+    Execute: 'x',
+    Alter: 'N',
+    ControlAccess: 'C',
+    Ownership: 'o',
+}
+
+export const SchemaPermissionId = {
+    ALL: 'ALL',
+    CREATE: 'CREATE',
+    USAGE: 'USAGE',
+    R_USAGE: 'r',
+    A_CREATE: 'a',
+    Map: 'System.Collections.Generic.Dictionary`2[System.Char,System.String[]]',
 }
 
 export interface Space {

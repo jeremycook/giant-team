@@ -1,11 +1,9 @@
-﻿using GiantTeam.Cluster.Directory.Helpers;
-using GiantTeam.Cluster.Directory.Services;
-using GiantTeam.ComponentModel;
+﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Linq;
+using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
-using Npgsql;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organization.Services
@@ -15,24 +13,11 @@ namespace GiantTeam.Organization.Services
         [Required, StringLength(50)]
         public string OrganizationId { get; set; } = null!;
 
-        [Required, StringLength(50), InodeName]
-        public string SpaceName { get; set; } = null!;
+        [RequiredGuid]
+        public Guid InodeId { get; set; }
 
-        [Required, MinLength(1)]
-        public List<GrantSpaceInputGrant> Grants { get; set; } = null!;
-    }
-
-    public class GrantSpaceInputGrant
-    {
-        public Guid OrganizationRoleId { get; set; }
-        public GrantSpaceInputPrivilege[] Privileges { get; set; } = null!;
-    }
-
-    public enum GrantSpaceInputPrivilege
-    {
-        USAGE = 0,
-        CREATE = 1,
-        ALL = 100,
+        [Required]
+        public Etc.Models.InodeAccess[] AccessControlList { get; set; } = null!;
     }
 
     public class GrantSpaceResult
@@ -43,56 +28,69 @@ namespace GiantTeam.Organization.Services
     {
         private readonly ILogger<GrantSpaceService> logger;
         private readonly ValidationService validationService;
-        private readonly FetchOrganizationService fetchOrganizationService;
+        private readonly FetchInodeService fetchInodeService;
         private readonly UserDataServiceFactory userDataServiceFactory;
 
         public GrantSpaceService(
             ILogger<GrantSpaceService> logger,
             ValidationService validationService,
-            FetchOrganizationService fetchOrganizationService,
+            FetchInodeService fetchInodeService,
             UserDataServiceFactory userDataServiceFactory)
         {
             this.logger = logger;
             this.validationService = validationService;
-            this.fetchOrganizationService = fetchOrganizationService;
+            this.fetchInodeService = fetchInodeService;
             this.userDataServiceFactory = userDataServiceFactory;
         }
 
         public async Task<GrantSpaceResult> GrantSpaceAsync(GrantSpaceInput input)
         {
-            try
-            {
-                return await ProcessAsync(input);
-            }
-            catch (Exception exception) when (exception.GetBaseException() is PostgresException ex)
-            {
-                logger.LogError(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-                throw new ValidationException($"An error occurred that prevented creation of the \"{input.SpaceName}\" space. {ex.MessageText.TrimEnd('.')}. {ex.Detail}", ex);
-            }
-        }
-
-        private async Task<GrantSpaceResult> ProcessAsync(GrantSpaceInput input)
-        {
             validationService.Validate(input);
 
-            var organization = await fetchOrganizationService.FetchOrganizationAsync(new() { OrganizationId = input.OrganizationId });
-            var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organization.DatabaseName);
+            var space = await fetchInodeService.FetchInodeAsync(input.OrganizationId, input.InodeId);
+            if (space.InodeTypeId != InodeTypeId.Space)
+            {
+                throw new InvalidOperationException("The inode is not a space.");
+            }
 
-            string schemaName = input.SpaceName;
+            var result = await GrantSpaceAsync(input.OrganizationId, space.InodeId, space.UglyName, input.AccessControlList);
+
+            return result;
+        }
+
+        public async Task<GrantSpaceResult> GrantSpaceAsync(
+            string organizationId,
+            Guid inodeId,
+            string schemaName,
+            Etc.Models.InodeAccess[] accessControlList)
+        {
+            var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organizationId);
 
             // Grant the SCHEMA as the pg_database_owner.
             var commands = new List<Sql>()
             {
                 Sql.Format($"SET ROLE pg_database_owner"),
             };
-            commands.AddRange(input.Grants.SelectMany(p => new[]
+
+            foreach (var access in accessControlList)
             {
-                Sql.Format($"REVOKE ALL ON SCHEMA {Sql.Identifier(schemaName)} FROM {Sql.Identifier(DirectoryHelpers.OrganizationRole(p.OrganizationRoleId)!)}"),
-                Sql.Format($"GRANT {(p.Privileges.Contains(GrantSpaceInputPrivilege.ALL) ?
-                    Sql.Raw(GrantSpaceInputPrivilege.ALL.ToString()) :
-                    Sql.Raw(p.Privileges.Select(o => o.ToString()).Join(","))
-                )} ON SCHEMA {Sql.Identifier(schemaName)} TO {Sql.Identifier(DirectoryHelpers.OrganizationRole(p.OrganizationRoleId)!)}"),
-            }));
+                commands.Add(Sql.Format($"""
+INSERT INTO etc.inode_access (inode_id, db_role, permissions) VALUES ({inodeId}, {access.DbRole}, {access.Permissions})
+    ON CONFLICT ON CONSTRAINT inode_access_pkey
+    DO UPDATE SET permissions = {access.Permissions}
+"""));
+                commands.Add(Sql.Format($"REVOKE ALL ON SCHEMA {Sql.Identifier(schemaName)} FROM {Sql.Identifier(access.DbRole)}"));
+
+                var schemaPrivileges = access.Permissions
+                    .SelectMany(permission => SchemaPermissionId.Map.TryGetValue(permission, out var value) ? value : Array.Empty<string>())
+                    .Distinct()
+                    .ToArray();
+
+                if (schemaPrivileges.Any())
+                {
+                    commands.Add(Sql.Format($"GRANT {Sql.Raw(schemaPrivileges.Join(','))} ON SCHEMA {Sql.Identifier(schemaName)} TO {Sql.Identifier(access.DbRole)}"));
+                }
+            }
 
             await elevatedDataService.ExecuteAsync(commands);
 

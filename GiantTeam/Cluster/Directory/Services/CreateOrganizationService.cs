@@ -150,6 +150,7 @@ namespace GiantTeam.Cluster.Directory.Services
                         Sql.Format($"DROP SCHEMA IF EXISTS public CASCADE")
                     );
 
+                    // Run the standard organization initialization script
                     await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
 
                     // Set the name of the root inode to match
@@ -186,7 +187,7 @@ namespace GiantTeam.Cluster.Directory.Services
                 }
 
                 await tx.CommitAsync();
-            } // Must close this connection so transactions can be opened to create roles, etc.
+            } // These connections must be closed so that subsequent transactions can be opened to create roles, etc.
 
             // Create non-elevated organization roles
             var admin = await createOrganizationRoleService.CreateOrganizationRoleAsync(new()
@@ -202,64 +203,83 @@ namespace GiantTeam.Cluster.Directory.Services
                 MemberDbRoles = new List<string>() { sessionService.User.DbUser },
             });
 
-            // Grant access to the etc space
-            await grantSpaceService.GrantSpaceAsync(new()
-            {
-                OrganizationId = organization.OrganizationId,
-                SpaceName = "etc",
-                Grants = new()
-                {
-                    new()
-                    {
-                        OrganizationRoleId = admin.OrganizationRoleId,
-                        Privileges = new[] { GrantSpaceInputPrivilege.USAGE },
-                    },
-                    new()
-                    {
-                        OrganizationRoleId = member.OrganizationRoleId,
-                        Privileges = new[] { GrantSpaceInputPrivilege.USAGE },
-                    },
-                },
-            });
-            foreach (var tableName in new[] { "inode", "file" })
-            {
-                await grantTableService.GrantTableAsync(new()
-                {
-                    OrganizationId = organization.OrganizationId,
-                    SpaceName = "etc",
-                    TableName = tableName,
-                    Grants = new()
-                    {
-                        new()
-                        {
-                            OrganizationRoleId = admin.OrganizationRoleId,
-                            Privileges = new[] { GrantTableInputPrivilege.SELECT },
-                        },
-                        new()
-                        {
-                            OrganizationRoleId = member.OrganizationRoleId,
-                            Privileges = new[] { GrantTableInputPrivilege.SELECT },
-                        },
-                    },
-                });
-            }
+            //// Grant access to the etc space
+            //await grantSpaceService.GrantSpaceAsync(new()
+            //{
+            //    OrganizationId = organization.OrganizationId,
+            //    InodeId = InodeId.Etc,
+            //    AccessControlList = new()
+            //    {
+            //        new()
+            //        {
+            //            DbRole = admin.DbRole,
+            //            Permissions = new[] { PermissionId.Read },
+            //        },
+            //        new()
+            //        {
+            //            DbRole = admin.DbRole,
+            //            Permissions = new[] { PermissionId.Read },
+            //        },
+            //    },
+            //});
+            //// Grant access to the etc space
+            //await grantSpaceService.GrantSpaceAsync(new()
+            //{
+            //    OrganizationId = organization.OrganizationId,
+            //    InodeId = InodeId.Etc,
+            //    AccessControlList = new()
+            //    {
+            //        new()
+            //        {
+            //            DbRole = admin.DbRole,
+            //            Permissions = new[] { PermissionId.Read },
+            //        },
+            //        new()
+            //        {
+            //            DbRole = admin.DbRole,
+            //            Permissions = new[] { PermissionId.Read },
+            //        },
+            //    },
+            //});
+            //foreach (var tableName in new[] { "inode", "file" })
+            //{
+            //    await grantTableService.GrantTableAsync(new()
+            //    {
+            //        OrganizationId = organization.OrganizationId,
+            //        SpaceName = "etc",
+            //        TableName = tableName,
+            //        Grants = new()
+            //        {
+            //            new()
+            //            {
+            //                OrganizationRoleId = admin.OrganizationRoleId,
+            //                Privileges = new[] { GrantTableInputPrivilege.SELECT },
+            //            },
+            //            new()
+            //            {
+            //                OrganizationRoleId = member.OrganizationRoleId,
+            //                Privileges = new[] { GrantTableInputPrivilege.SELECT },
+            //            },
+            //        },
+            //    });
+            //}
 
             // Create the default Home space
             await createSpaceService.CreateSpaceAsync(new()
             {
                 OrganizationId = organization.OrganizationId,
                 SpaceName = "Home",
-                Grants = new()
+                AccessControlList = new Organization.Etc.Models.InodeAccess[]
                 {
                     new()
                     {
-                        OrganizationRoleId = admin.OrganizationRoleId,
-                        Privileges = new[] { GrantSpaceInputPrivilege.ALL },
+                        DbRole = admin.DbRole,
+                        Permissions = "ra".ToCharArray(),
                     },
                     new()
                     {
-                        OrganizationRoleId = member.OrganizationRoleId,
-                        Privileges = new[] { GrantSpaceInputPrivilege.USAGE },
+                        DbRole = member.DbRole,
+                        Permissions = "r".ToCharArray(),
                     },
                 },
             });

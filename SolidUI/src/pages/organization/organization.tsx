@@ -8,7 +8,7 @@ import { Loading } from "../../partials/Loading";
 import { MainLayout } from "../../partials/MainLayout";
 import { RenderSection } from "../../partials/Section";
 import SectionedLayout from "../../partials/SectionedLayout";
-import { postFetchInode } from "../../bindings/GiantTeam.Organization.Api.Controllers";
+import { postFetchInodeByPath } from "../../bindings/GiantTeam.Organization.Api.Controllers";
 import { Dynamic } from "solid-js/web";
 import { apps } from "../../apps";
 import Dialog from "../../widgets/Dialog";
@@ -22,13 +22,13 @@ export default function OrganizationPage() {
 
     const resourceReturn = createResource(
         () => ({ organizationId: params.organization, path: params.path ?? '' }),
-        (props) => postFetchInode(props)
+        (props) => postFetchInodeByPath(props)
     );
     const inode = new InodeResource(resourceReturn);
 
     createEffect(() => {
-        if (inode.data?.inode.name) {
-            document.title = inode.data.inode.name;
+        if (inode.data?.name) {
+            document.title = inode.data.name;
         }
     })
 

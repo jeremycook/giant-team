@@ -2,6 +2,8 @@
 using GiantTeam.Cluster.Security.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.DatabaseDefinition.Models;
+using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Organization.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
@@ -118,12 +120,11 @@ WHERE datname = current_database()
                 await securityDataService.ExecuteAsync(
                     $"CREATE ROLE {Sql.Identifier(newRole.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.IdentifierList(input.MemberDbRoles)}");
 
-                // Grant connect to database
-                await elevatedDataService.ExecuteAsync(new[]
-                {
-                    Sql.Format($"SET ROLE {Sql.Identifier(ownerDbRole)}"),
-                    Sql.Format($"GRANT CONNECT ON DATABASE {Sql.Identifier(organization.DatabaseName)} TO {Sql.Identifier(newRole.DbRole)}"),
-                });
+                // Grant connect to database and read root node
+                await elevatedDataService.ExecuteAsync(
+                    $"SET ROLE {Sql.Identifier(ownerDbRole)}",
+                    $"GRANT CONNECT ON DATABASE {Sql.Identifier(organization.DatabaseName)} TO {Sql.Identifier(newRole.DbRole)}",
+                    $"INSERT INTO etc.inode_access (inode_id, db_role, permissions) VALUES ({InodeId.Root}, {newRole.DbRole}, {new[] { PermissionId.Read }})");
             }
             catch (Exception)
             {
@@ -145,6 +146,7 @@ WHERE datname = current_database()
             return new()
             {
                 OrganizationRoleId = newRole.OrganizationRoleId,
+                DbRole = newRole.DbRole,
             };
         }
     }
@@ -164,5 +166,6 @@ WHERE datname = current_database()
     public class CreateOrganizationRoleResult
     {
         public Guid OrganizationRoleId { get; set; }
+        public string DbRole { get; set; } = null!;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using GiantTeam.Text;
 using Npgsql;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Drawing;
 using System.Reflection;
 
 namespace GiantTeam.Postgres
@@ -59,7 +60,13 @@ namespace GiantTeam.Postgres
                 }
             }
 
-            parameterValues = tempValues.Select((val, i) => new NpgsqlParameter() { Value = val }).ToArray();
+            parameterValues = tempValues
+                .Select(val => val switch
+                {
+                    char[] charArray => new NpgsqlParameter() { Value = charArray, NpgsqlDbType = NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.InternalChar },
+                    _ => new NpgsqlParameter() { Value = val },
+                })
+                .ToArray();
             return string.Format(format, args: formatArgs.ToArray());
         }
 

@@ -14,6 +14,8 @@ public class Inode
     [StringLength(248), InodeName]
     public string Name { get; set; } = null!;
 
+    public string UglyName { get; set; } = null!;
+
     public DateTime Created { get; set; }
 
     public string Path { get; set; } = null!;

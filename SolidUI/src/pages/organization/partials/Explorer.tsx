@@ -10,13 +10,13 @@ import { OrganizationDetailsResource } from "../OrganizationDetailsResource";
 
 export function Explorer(props: { processOperator: ProcessOperator, organization: OrganizationDetailsResource, inode: InodeResource }) {
 
-    const segments = () => props.inode.data && props.inode.data.inode.path.length > 0 ?
-        props.inode.data.inode.path.split('/').reduce((prev, name) => ([{ name, path: prev[prev.length - 1]?.path + '/' + name }, ...prev]), [] as { name: string, path: string }[]) :
+    const segments = () => props.inode.data && props.inode.data.path.length > 0 ?
+        props.inode.data.path.split('/').reduce((prev, name) => ([{ name, path: prev[prev.length - 1]?.path + '/' + name }, ...prev]), [] as { name: string, path: string }[]) :
         [];
 
     return <>
         <ShowItem when={props.organization.data}>{org => <>
-            <ShowItem when={props.inode.data?.inode}>{inode => <>
+            <ShowItem when={props.inode.data}>{inode => <>
 
                 <Section name='navbar-start'>
 

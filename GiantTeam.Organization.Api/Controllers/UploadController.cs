@@ -19,11 +19,11 @@ public class UploadController : ControllerBase
         [FromServices] UserDbContextFactory userDbContextFactory,
         [FromForm] UploadInput input)
     {
-        var inode = (await fetchInodeService.FetchInodeAsync(new()
+        var inode = await fetchInodeService.FetchInodeByPathAsync(new()
         {
             OrganizationId = input.OrganizationId,
             Path = input.Path,
-        })).Inode;
+        });
 
         if (!inode.ChildrenConstraints.Any(c => c.InodeTypeId == InodeTypeId.File))
         {
@@ -102,8 +102,11 @@ public class UploadInput
 {
     [Required]
     public string OrganizationId { get; set; } = null!;
+
+    // TODO: Change Path to InodeId
     [Required]
     public string Path { get; set; } = null!;
+
     [Required, MinLength(1)]
     public IFormFileCollection Files { get; set; } = null!;
 }

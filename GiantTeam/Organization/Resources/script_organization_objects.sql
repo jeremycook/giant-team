@@ -54,11 +54,14 @@ CREATE TABLE IF NOT EXISTS etc.inode
     inode_id uuid NOT NULL DEFAULT (gen_random_uuid()),
     parent_inode_id uuid NOT NULL,
     name character varying(248) NOT NULL,
+    ugly_name character varying(248) NOT NULL,
     inode_type_id text COLLATE pg_catalog."default" NOT NULL,
 	created timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
 	path text NOT NULL DEFAULT ('/*/' || gen_random_uuid()),
-	path_lower text NOT NULL GENERATED ALWAYS AS (lower(path)) STORED,
-    CONSTRAINT inode_check CHECK ((inode_id <> parent_inode_id AND name ~ '^[^<>:"/\|?*]+$') OR (inode_id = '00000000-0000-0000-0000-000000000000' AND parent_inode_id = '00000000-0000-0000-0000-000000000000')),
+    CONSTRAINT inode_check CHECK (
+		name ~ '^[^<>:"/\|?*]+$'
+		AND ((inode_id <> parent_inode_id AND ugly_name ~ '^[^<>:"/\|?*]+$') OR (inode_id = '00000000-0000-0000-0000-000000000000' AND parent_inode_id = '00000000-0000-0000-0000-000000000000' AND ugly_name = ''))
+	),
     CONSTRAINT inode_pkey PRIMARY KEY (inode_id),
     CONSTRAINT inode_key UNIQUE (path),
     CONSTRAINT inode_parent_inode_id_fkey FOREIGN KEY (parent_inode_id)
@@ -122,7 +125,7 @@ AS $BODY$
 				NEW.path = '';
 			END IF;
 		ELSIF NEW.parent_inode_id IS NOT NULL THEN
-			NEW.path = (SELECT (CASE WHEN length(parent.path) > 0 THEN parent.path || '/' ELSE '' END) || NEW.name FROM etc.inode parent WHERE parent.inode_id = NEW.parent_inode_id);
+			NEW.path = (SELECT (CASE WHEN length(parent.path) > 0 THEN parent.path || '/' ELSE '' END) || NEW.ugly_name FROM etc.inode parent WHERE parent.inode_id = NEW.parent_inode_id);
 		END IF;
         RETURN NEW;
     END;
@@ -150,7 +153,7 @@ AS $BODY$
 		-- Update children
 		-- All descendants will be updated via this trigger recursively firing as each path is changed
 		UPDATE etc.inode
-		SET path = (CASE WHEN length(NEW.path) > 0 THEN NEW.path || '/' ELSE '' END) || inode.name
+		SET path = (CASE WHEN length(NEW.path) > 0 THEN NEW.path || '/' ELSE '' END) || inode.ugly_name
 		WHERE inode.parent_inode_id = NEW.inode_id AND inode_id <> parent_inode_id;
         RETURN NEW;
     END;
@@ -175,8 +178,8 @@ INSERT INTO etc.inode_type_constraint (inode_type_id, parent_inode_type_id) valu
 	('Root', 'Root')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.inode (inode_id, parent_inode_id, name, inode_type_id) values
-	('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'Root', 'Root')
+INSERT INTO etc.inode (inode_id, parent_inode_id, inode_type_id, name, ugly_name) values
+	('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'Root', 'New Organization', '')
 	ON CONFLICT DO NOTHING;
 
 -- FUNCTION: etc.get_inode_tree(uuid)
@@ -222,6 +225,128 @@ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'inode_inode_type_id_
 END IF;
 END$$;
 
+-- Table: etc.permission
+-- DROP TABLE IF EXISTS etc.permission;
+
+CREATE TABLE IF NOT EXISTS etc.permission
+(
+    permission_id text COLLATE pg_catalog."default" NOT NULL,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT permission_pkey PRIMARY KEY (permission_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS etc.permission
+    OWNER to pg_database_owner;
+
+INSERT INTO etc.permission (permission_id, name) VALUES 
+	('r', 'Read file, list directory contents, select rows from table'),
+	('a', 'Append data to end of file, create file in directory, insert rows into table'),
+	('w', 'Write data into file, create subdirectory in directory, update rows in table'),
+	('d', 'Delete file, delete directory, delete rows from table'),
+	('D', 'Remove children from the directory, drop table'),
+	('x', 'Execute file, change directory'),
+	('N', 'Write the named attributes of the file/directory, alter the table'),
+	('C', 'Modify inode access'),
+	('o', 'Change inode ownership')
+	ON CONFLICT DO NOTHING;
+
+-- Table: etc.inode_access
+-- DROP TABLE IF EXISTS etc.inode_access;
+
+CREATE TABLE IF NOT EXISTS etc.inode_access
+(
+    inode_id uuid NOT NULL,
+    db_role text COLLATE pg_catalog."default" NOT NULL,
+    permissions char[] COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT inode_access_pkey PRIMARY KEY (inode_id, db_role),
+    CONSTRAINT inode_access_inode_id_fkey FOREIGN KEY (inode_id)
+        REFERENCES etc.inode (inode_id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT inode_access_db_role_check CHECK (has_database_privilege(db_role::name, current_database()::text, 'CONNECT'::text))
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS etc.inode_access
+    OWNER to pg_database_owner;
+
+GRANT ALL ON TABLE etc.inode_access TO pg_database_owner;
+
+GRANT SELECT ON TABLE etc.inode_access TO PUBLIC;
+
+-- Index: inode_access_permissions_index
+-- DROP INDEX IF EXISTS etc.inode_access_permissions_index;
+
+CREATE INDEX IF NOT EXISTS inode_access_permissions_index
+    ON etc.inode_access USING gin
+    (permissions COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+
+-- FUNCTION: etc.inode_access_granted(uuid, char[])
+-- DROP FUNCTION IF EXISTS etc.inode_access_granted(uuid, char[]);
+
+CREATE OR REPLACE FUNCTION etc.inode_access_granted(
+	_inode_id uuid,
+	_permissions char[])
+    RETURNS boolean
+    LANGUAGE 'sql'
+    COST 100
+    STABLE STRICT PARALLEL SAFE 
+
+RETURN ( EXISTS (SELECT 1 FROM etc.inode_access WHERE (_inode_id = inode_id AND (inode_access_granted._permissions <@ inode_access.permissions) AND (pg_has_role(CURRENT_USER, (inode_access.db_role)::name, 'USAGE'::text) OR pg_has_role(CURRENT_USER, 'pg_database_owner'::name, 'USAGE'::text))) LIMIT 1));
+
+ALTER FUNCTION etc.inode_access_granted(uuid, char[])
+    OWNER TO pg_database_owner;
+
+GRANT EXECUTE ON FUNCTION etc.inode_access_granted(uuid, char[]) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.inode_access_granted(uuid, char[]) TO PUBLIC;
+
+-- POLICY: inode_select_rls
+-- DROP POLICY IF EXISTS inode_select_rls ON etc.inode;
+
+CREATE POLICY inode_select_rls
+    ON etc.inode
+    AS PERMISSIVE
+    FOR SELECT
+    TO public
+    USING (etc.inode_access_granted(inode_id, ARRAY['r'::text]));
+
+-- POLICY: inode_insert_rls
+-- DROP POLICY IF EXISTS inode_insert_rls ON etc.inode;
+
+CREATE POLICY inode_insert_rls
+    ON etc.inode
+    AS PERMISSIVE
+    FOR INSERT
+    TO public
+    WITH CHECK (etc.inode_access_granted(inode_id, ARRAY['a'::text]));
+
+-- POLICY: inode_update_rls
+-- DROP POLICY IF EXISTS inode_update_rls ON etc.inode;
+
+CREATE POLICY inode_update_rls
+    ON etc.inode
+    AS PERMISSIVE
+    FOR UPDATE
+    TO public
+    USING (etc.inode_access_granted(inode_id, ARRAY['w'::text]));
+
+-- POLICY: inode_delete_rls
+-- DROP POLICY IF EXISTS inode_delete_rls ON etc.inode;
+
+CREATE POLICY inode_delete_rls
+    ON etc.inode
+    AS PERMISSIVE
+    FOR DELETE
+    TO public
+    USING (etc.inode_access_granted(inode_id, ARRAY['d'::text]));
+
+ALTER TABLE IF EXISTS etc.inode
+    ENABLE ROW LEVEL SECURITY;
+
 -- Table: etc.file
 -- DROP TABLE IF EXISTS etc.file;
 
@@ -243,6 +368,49 @@ ALTER TABLE IF EXISTS etc.file
 
 GRANT ALL ON TABLE etc.file TO pg_database_owner;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE etc.inode TO PUBLIC;
+
+-- POLICY: file_select_rls
+-- DROP POLICY IF EXISTS file_select_rls ON etc.file;
+
+CREATE POLICY file_select_rls
+    ON etc.file
+    AS PERMISSIVE
+    FOR SELECT
+    TO public
+    USING (etc.inode_access_granted(inode_id, ARRAY['r'::text]));
+
+-- POLICY: file_insert_rls
+-- DROP POLICY IF EXISTS file_insert_rls ON etc.file;
+
+CREATE POLICY file_insert_rls
+    ON etc.file
+    AS PERMISSIVE
+    FOR INSERT
+    TO public
+    WITH CHECK (etc.inode_access_granted(inode_id, ARRAY['a'::text]));
+
+-- POLICY: file_update_rls
+-- DROP POLICY IF EXISTS file_update_rls ON etc.file;
+
+CREATE POLICY file_update_rls
+    ON etc.file
+    AS PERMISSIVE
+    FOR UPDATE
+    TO public
+    USING (etc.inode_access_granted(inode_id, ARRAY['w'::text]));
+
+-- POLICY: file_delete_rls
+-- DROP POLICY IF EXISTS file_delete_rls ON etc.file;
+
+CREATE POLICY file_delete_rls
+    ON etc.file
+    AS PERMISSIVE
+    FOR DELETE
+    TO public
+    USING (etc.inode_access_granted(inode_id, ARRAY['d'::text]));
+
+ALTER TABLE IF EXISTS etc.file
+    ENABLE ROW LEVEL SECURITY;
 
 -- VIEW: etc.database_definition
 -- DROP VIEW etc.database_definition;
@@ -358,6 +526,6 @@ INSERT INTO etc.inode_type_constraint (inode_type_id, parent_inode_type_id) valu
 	('File', 'Space'), ('File', 'Folder')
 	ON CONFLICT DO NOTHING;
 
-INSERT INTO etc.inode (inode_id, parent_inode_id, name, inode_type_id) values
-	('3e544ebc-f30a-471f-a8ec-f9e3ac84f19a', '00000000-0000-0000-0000-000000000000', 'etc', 'Space')
+INSERT INTO etc.inode (inode_id, parent_inode_id, inode_type_id, name, ugly_name) values
+	('3e544ebc-f30a-471f-a8ec-f9e3ac84f19a', '00000000-0000-0000-0000-000000000000', 'Space', 'etc', 'etc')
 	ON CONFLICT DO NOTHING;

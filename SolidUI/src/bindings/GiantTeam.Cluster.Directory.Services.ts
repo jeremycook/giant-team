@@ -18,6 +18,7 @@ export interface CreateOrganizationRoleInput {
 
 export interface CreateOrganizationRoleResult {
     organizationRoleId: string;
+    dbRole: string;
 }
 
 export interface FetchOrganizationInput {
