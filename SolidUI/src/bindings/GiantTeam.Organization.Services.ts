@@ -172,8 +172,8 @@ export interface ImportDataOutput {
     table: string;
 }
 
-export interface QueryDatabaseInput {
-    databaseName: string;
+export interface QueryOrganizationInput {
+    organizationId: string;
     sql: string;
 }
 

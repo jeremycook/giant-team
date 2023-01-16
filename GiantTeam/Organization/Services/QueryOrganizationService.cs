@@ -8,45 +8,44 @@ using System.Text.RegularExpressions;
 
 namespace GiantTeam.Organization.Services;
 
-public class QueryDatabaseService
+public class QueryOrganizationService
 {
-    private readonly ILogger<QueryDatabaseService> logger;
+    private readonly ILogger<QueryOrganizationService> logger;
     private readonly ValidationService validationService;
-    private readonly UserDataServiceFactory organizationDataFactory;
+    private readonly UserDataServiceFactory userDataServiceFactory;
 
-    public QueryDatabaseService(
-        ILogger<QueryDatabaseService> logger,
+    public QueryOrganizationService(
+        ILogger<QueryOrganizationService> logger,
         ValidationService validationService,
-        UserDataServiceFactory organizationDataFactory)
+        UserDataServiceFactory userDataServiceFactory)
     {
         this.logger = logger;
         this.validationService = validationService;
-        this.organizationDataFactory = organizationDataFactory;
+        this.userDataServiceFactory = userDataServiceFactory;
     }
 
-    public async Task<QueryTable> QueryDatabaseAsync(QueryDatabaseInput input)
+    public async Task<QueryTable> QueryOrganizationAsync(QueryOrganizationInput input)
     {
         validationService.Validate(input);
 
         try
         {
-            var dataService = organizationDataFactory.NewDataService(input.DatabaseName);
+            var dataService = userDataServiceFactory.NewDataService(input.OrganizationId);
             QueryTable output = await dataService.QueryTableAsync(Sql.Raw(input.Sql));
             return output;
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
+            throw new NotFoundException("Database not found.");
         }
-
-        throw new NotFoundException("Database not found.");
     }
 }
 
-public class QueryDatabaseInput
+public class QueryOrganizationInput
 {
-    [Required, DatabaseName]
-    public string DatabaseName { get; set; } = null!;
+    [Required]
+    public string OrganizationId { get; set; } = null!;
 
     [Required, Regex("^\\s*SELECT\\s.+$", RegexOptions.IgnoreCase | RegexOptions.Multiline, ErrorMessage = "The {0} must start with \"SELECT\".")]
     public string Sql { get; set; } = null!;

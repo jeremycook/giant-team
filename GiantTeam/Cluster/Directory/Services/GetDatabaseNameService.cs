@@ -41,6 +41,8 @@ namespace GiantTeam.Cluster.Directory.Services
                     .Select(o => o.DatabaseName)
                     .SingleOrDefault()
                     ?? throw new NotFoundException($"The \"{organizationId}\" organization was not found.");
+
+                DumbCache[organizationId] = databaseName;
             }
 
             return databaseName;

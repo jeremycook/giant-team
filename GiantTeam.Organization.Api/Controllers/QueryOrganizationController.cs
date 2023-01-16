@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace GiantTeam.Organization.Api.Controllers;
 
 [ApiController]
-public class QueryDatabaseController : ControllerBase
+public class QueryOrganizationController : ControllerBase
 {
     [HttpPost("/api/organization/[Controller]")]
     public async Task<QueryTable> Post(
-        [FromServices] QueryDatabaseService service,
-        QueryDatabaseInput input)
+        [FromServices] QueryOrganizationService service,
+        QueryOrganizationInput input)
     {
-        return await service.QueryDatabaseAsync(input);
+        return await service.QueryOrganizationAsync(input);
     }
 }

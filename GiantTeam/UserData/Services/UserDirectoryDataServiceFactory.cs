@@ -14,18 +14,15 @@ namespace GiantTeam.UserData.Services
     {
         private readonly ILoggerFactory logger;
         private readonly IOptions<GiantTeamOptions> giantTeamOptions;
-        private readonly GetDatabaseNameService getDatabaseNameService;
         private readonly SessionService sessionService;
 
         public UserDirectoryDataServiceFactory(
             ILoggerFactory logger,
             IOptions<GiantTeamOptions> giantTeamOptions,
-            GetDatabaseNameService getDatabaseNameService,
             SessionService sessionService)
         {
             this.logger = logger;
             this.giantTeamOptions = giantTeamOptions;
-            this.getDatabaseNameService = getDatabaseNameService;
             this.sessionService = sessionService;
         }
 

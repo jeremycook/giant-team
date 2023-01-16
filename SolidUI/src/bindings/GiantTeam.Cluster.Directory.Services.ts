@@ -40,3 +40,11 @@ export interface FetchOrganizationOutputRole {
     description: string;
     dbRole: string;
 }
+
+export interface FetchOrganizationsOutput {
+    organizations: FetchOrganizationOutput[];
+}
+
+export interface QueryDirectoryInput {
+    sql: string;
+}

@@ -1,12 +1,9 @@
 ﻿using GiantTeam.Cluster.Directory.Data;
-using GiantTeam.Cluster.Directory.Helpers;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiantTeam.Cluster.Directory.Services
 {
@@ -24,7 +21,7 @@ namespace GiantTeam.Cluster.Directory.Services
         }
 
         /// <summary>
-        /// Returns organization information from the directory.
+        /// Returns organization information from the directory if the user has access to it.
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -87,7 +84,7 @@ namespace GiantTeam.Cluster.Directory.Services
         public Guid OrganizationRoleId { get; set; }
         public DateTime Created { get; set; }
         public string Name { get; set; } = null!;
-        public string Description { get; set; } = string.Empty;
-        public string DbRole { get; set; } = string.Empty;
+        public string Description { get; set; } = null!;
+        public string DbRole { get; set; } = null!;
     }
 }
