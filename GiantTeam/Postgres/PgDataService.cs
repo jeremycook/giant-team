@@ -19,7 +19,7 @@ namespace GiantTeam.Postgres
             ConnectionString = connectionString;
         }
 
-        public override NpgsqlDataSource CreateDataSource()
+        public override NpgsqlDataSource AcquireDataSource()
         {
             _builder ??= new NpgsqlDataSourceBuilder(ConnectionString)
                 .UseBase64RootCertificateConvention();

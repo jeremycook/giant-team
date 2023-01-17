@@ -156,18 +156,18 @@ namespace GiantTeam.Postgres
             return Raw(PgQuote.Literal(moment));
         }
 
-        private static readonly Dictionary<Assembly, SqlMetadata[]> _assemblySqlMetadatasCache = new();
-        private static readonly Dictionary<Type, SqlMetadata> _sqlmetadataCache = new();
+        private static readonly Dictionary<Assembly, SqlMetadataBase[]> _assemblySqlMetadatasCache = new();
+        private static readonly Dictionary<Type, SqlMetadataBase> _sqlmetadataCache = new();
         private static readonly Dictionary<Type, Sql> _tableNameCache = new();
         private static readonly Dictionary<Type, Sql> _columnNameCache = new();
         private static readonly Dictionary<Type, PropertyInfo[]> _insertPropertiesCache = new();
 
-        public static SqlMetadata GetSqlMetadata<TTable>()
+        public static SqlMetadataBase GetSqlMetadata<TTable>()
         {
             return GetSqlMetadata(typeof(TTable));
         }
 
-        public static SqlMetadata GetSqlMetadata(Type tableType)
+        public static SqlMetadataBase GetSqlMetadata(Type tableType)
         {
             if (!_sqlmetadataCache.TryGetValue(tableType, out var sqlMetadata))
             {
@@ -176,16 +176,16 @@ namespace GiantTeam.Postgres
                     _assemblySqlMetadatasCache[tableType.Assembly] =
                     candidates =
                         tableType.Assembly.GetTypes()
-                        .Where(t => t.IsAssignableTo(typeof(SqlMetadata)))
+                        .Where(t => t.IsAssignableTo(typeof(SqlMetadataBase)) && !t.IsAbstract)
                         .OrderByDescending(t => t.FullName) // sort longest name to shortest
-                        .Select(t => (SqlMetadata)Activator.CreateInstance(t)!)
+                        .Select(t => (SqlMetadataBase)Activator.CreateInstance(t)!)
                         .ToArray();
                 }
 
                 _sqlmetadataCache[tableType] =
                 sqlMetadata =
-                    candidates.FirstOrDefault(c => c.GetType().Namespace!.StartsWith(tableType.Namespace!))
-                    ?? new SqlMetadata();
+                    candidates.FirstOrDefault(c => tableType.Namespace!.StartsWith(c.GetType().Namespace!))
+                    ?? throw new InvalidOperationException($"Failed to find implementation of {typeof(SqlMetadataBase)} class for {tableType}.");
             }
 
             return sqlMetadata;
@@ -221,15 +221,77 @@ namespace GiantTeam.Postgres
             {
                 var sqlMetadata = GetSqlMetadata(type);
 
+                if (!_insertPropertiesCache.TryGetValue(type, out var properties))
+                {
+                    _insertPropertiesCache[type] =
+                    properties =
+                        sqlMetadata.GetColumnProperties(type);
+                }
+
                 _columnNameCache[type] =
                 sql =
-                    Raw(PgQuote.IdentifierList(type.GetProperties().Select(sqlMetadata.GetColumnName)));
+                    Raw(PgQuote.IdentifierList(properties.Select(sqlMetadata.GetColumnName)));
             }
 
             return sql;
         }
 
-        public static Sql Insert<TTable>(TTable row, SqlMetadata? sqlMetadata = null)
+        public static Sql Insert<TTable>(TTable row, SqlMetadataBase? sqlMetadata = null)
+        {
+            var type = typeof(TTable);
+            sqlMetadata ??= GetSqlMetadata(type);
+
+            if (!_insertPropertiesCache.TryGetValue(type, out var properties))
+            {
+                _insertPropertiesCache[type] =
+                properties =
+                    sqlMetadata.GetColumnProperties(type);
+            }
+
+            var columns = properties
+                .Select(p => (Name: sqlMetadata.GetColumnName(p), Value: p.GetValue(row)))
+                .ToDictionary(o => o.Name, o => o.Value);
+
+            var arguments = columns.Values
+                .Prepend(IdentifierList(columns.Keys))
+                .Prepend(GetTableIdentifier(type))
+                .ToArray();
+
+            var sql = new Sql("INSERT INTO {0} ({1}) VALUES (" + Enumerable.Range(2, columns.Count).Select(i => "{" + i + "}").Join(',') + ")", arguments);
+
+            return sql;
+        }
+
+        // TODO: public static Sql Update<TTable>(TTable row, SqlMetadata? sqlMetadata = null)
+        //{
+        //    var type = typeof(TTable);
+        //    sqlMetadata ??= GetSqlMetadata(type);
+
+        //    if (!_insertPropertiesCache.TryGetValue(type, out var properties))
+        //    {
+        //        properties = type
+        //            .GetProperties()
+        //            .Where(p =>
+        //                p.GetSetMethod() != null &&
+        //                (!p.PropertyType.IsClass || p.PropertyType == typeof(string))
+        //            )
+        //            .ToArray();
+        //        _insertPropertiesCache[type] = properties;
+        //    }
+
+        //    var columns = properties
+        //        .SelectMany(p => new[] { sqlMetadata.GetColumnIdentifier(p), p.GetValue(row) });
+
+        //    var arguments = columns
+        //        .Prepend(GetTableIdentifier(type))
+        //        .ToArray();
+
+        //    var sql = new Sql("UPDATE {0} SET " + Enumerable.Range(1, columns.Count()).Select(i => 2 * i).Select(i => "{" + i + "} = {" + (i + 1) + "}").Join(','), arguments);
+
+        //    return sql;
+        //}
+
+        public static Sql Delete<TTable>(TTable row, SqlMetadataBase? sqlMetadata = null)
         {
             var type = typeof(TTable);
             sqlMetadata ??= GetSqlMetadata(type);
@@ -247,15 +309,15 @@ namespace GiantTeam.Postgres
             }
 
             var columns = properties
-                .Select(p => (Name: sqlMetadata.GetColumnName(p), Value: p.GetValue(row)))
-                .ToDictionary(o => o.Name, o => o.Value);
+                .Select(p => (Identifier: sqlMetadata.GetColumnIdentifier(p), Value: p.GetValue(row)))
+                .ToArray();
 
-            var arguments = columns.Values
-                .Prepend(IdentifierList(columns.Keys))
+            var arguments = columns
+                .SelectMany(p => p.Value is null ? new[] { p.Identifier } : new[] { p.Identifier, p.Value })
                 .Prepend(GetTableIdentifier(type))
                 .ToArray();
 
-            var sql = new Sql("INSERT INTO {0} ({1}) VALUES (" + Enumerable.Range(2, columns.Count).Select(i => "{" + i + "}").Join(',') + ")", arguments);
+            var sql = new Sql("DELETE FROM {0} WHERE (" + columns.Select((col, i) => "{" + ((2 * i) + 1) + "} " + (col.Value is null ? "IS NULL" : "= {" + ((2 * i) + 2) + "}")).Join(" AND ") + ")", arguments);
 
             return sql;
         }

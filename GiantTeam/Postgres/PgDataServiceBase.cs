@@ -13,9 +13,25 @@ namespace GiantTeam.Postgres
         protected abstract ILogger Logger { get; }
         protected abstract string ConnectionString { get; }
 
-        public virtual NpgsqlDataSource CreateDataSource()
+        private NpgsqlDataSource? _dataSource;
+
+        public async ValueTask<PgDataServiceScope> BeginScopeAsync(CancellationToken cancellationToken = default)
         {
-            return NpgsqlDataSource.Create(ConnectionString);
+            if (_dataSource is not null)
+            {
+                throw new InvalidOperationException($"A scope has already been started.");
+            }
+
+            _dataSource = NpgsqlDataSource.Create(ConnectionString);
+            var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+            var transaction = await connection.BeginTransactionAsync(cancellationToken);
+
+            return new(connection, transaction, () => { _dataSource = null; return ValueTask.CompletedTask; });
+        }
+
+        public virtual NpgsqlDataSource AcquireDataSource()
+        {
+            return _dataSource ?? NpgsqlDataSource.Create(ConnectionString);
         }
 
         /// <summary>
@@ -64,7 +80,7 @@ namespace GiantTeam.Postgres
         /// <exception cref="DbException"></exception>
         public async Task<int> ExecuteAsync(NpgsqlBatch batch)
         {
-            await using var dataSource = CreateDataSource();
+            await using var dataSource = AcquireDataSource();
             await using var connection = await dataSource.OpenConnectionAsync();
             batch.Connection = connection;
             try
@@ -86,7 +102,7 @@ namespace GiantTeam.Postgres
         /// <exception cref="DbException"></exception>
         public async Task<int> ExecuteUnsanitizedAsync(string unsanitizedSql)
         {
-            await using var dataSource = CreateDataSource();
+            await using var dataSource = AcquireDataSource();
             await using var connection = await dataSource.OpenConnectionAsync();
             await using var cmd = connection.CreateCommand();
             cmd.CommandText = unsanitizedSql;
@@ -110,7 +126,7 @@ namespace GiantTeam.Postgres
         /// <exception cref="DbException"></exception>
         public async Task<QueryTable> QueryTableAsync(Sql sql)
         {
-            await using var dataSource = CreateDataSource();
+            await using var dataSource = AcquireDataSource();
             await using var batch = dataSource.CreateBatch();
             batch.BatchCommands.Add(sql);
 
@@ -174,7 +190,7 @@ namespace GiantTeam.Postgres
         {
             try
             {
-                await using var dataSource = CreateDataSource();
+                await using var dataSource = AcquireDataSource();
                 await using var connection = await dataSource.OpenConnectionAsync();
                 await using var batch = connection.CreateBatch();
                 batch.BatchCommands.Add(sql);
@@ -202,6 +218,12 @@ namespace GiantTeam.Postgres
 
         }
 
+        public async Task<T?> SingleOrDefaultAsync<T>(FormattableString sql)
+            where T : new()
+        {
+            return await SingleOrDefaultAsync<T>(Format(sql));
+        }
+
         /// <summary>
         /// Returns one <typeparamref name="T"/> or <c>null</c>.
         /// </summary>
@@ -212,7 +234,7 @@ namespace GiantTeam.Postgres
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="DbException"></exception>
         public async Task<T?> SingleOrDefaultAsync<T>(Sql? sql = null)
-            where T : new()
+        where T : new()
         {
             if (sql is null)
             {
@@ -262,6 +284,12 @@ namespace GiantTeam.Postgres
             }
         }
 
+        public async Task<T> SingleAsync<T>(FormattableString sql)
+            where T : new()
+        {
+            return await SingleAsync<T>(Format(sql));
+        }
+
         /// <summary>
         /// Returns one <typeparamref name="T"/>.
         /// </summary>
@@ -272,7 +300,7 @@ namespace GiantTeam.Postgres
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="DbException"></exception>
         public async Task<T> SingleAsync<T>(Sql? sql = null)
-            where T : new()
+        where T : new()
         {
             if (sql is null)
             {
@@ -327,6 +355,12 @@ namespace GiantTeam.Postgres
 
         }
 
+        public async Task<List<T>> ListAsync<T>(FormattableString sql)
+            where T : new()
+        {
+            return await ListAsync<T>(Format(sql));
+        }
+
         /// <summary>
         /// Returns a list of <typeparamref name="T"/>.
         /// </summary>
@@ -344,15 +378,20 @@ namespace GiantTeam.Postgres
             {
                 sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)}");
             }
+            else if (FromRegex().IsMatch(sql.Unsanitized))
+            {
+                // FROM clause
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql}");
+            }
             else if (WhereRegex().IsMatch(sql.Unsanitized))
             {
                 // WHERE clause
                 sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql}");
             }
-            else if (FromRegex().IsMatch(sql.Unsanitized))
+            else if (OrderByRegex().IsMatch(sql.Unsanitized))
             {
-                // FROM clause
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql}");
+                // ORDER BY clause
+                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql}");
             }
 
             var list = new List<T>();
@@ -385,7 +424,7 @@ namespace GiantTeam.Postgres
         {
             // TODO: LRU cache stuff like the column schema
 
-            await using var dataSource = CreateDataSource();
+            await using var dataSource = AcquireDataSource();
             await using var batch = dataSource.CreateBatch();
             batch.BatchCommands.Add(sql);
 
@@ -422,7 +461,7 @@ namespace GiantTeam.Postgres
         /// <exception cref="ArgumentException"></exception>
         public async IAsyncEnumerable<T> QueryAsync<T>(Sql sql, Func<NpgsqlDataReader, T> itemFactory)
         {
-            await using var dataSource = CreateDataSource();
+            await using var dataSource = AcquireDataSource();
             await using var batch = dataSource.CreateBatch();
             batch.BatchCommands.Add(sql);
 
@@ -472,10 +511,13 @@ namespace GiantTeam.Postgres
             return item;
         }
 
+        [GeneratedRegex("^\\s*FROM\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
+        private static partial Regex FromRegex();
+
         [GeneratedRegex("^\\s*WHERE\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
         private static partial Regex WhereRegex();
 
-        [GeneratedRegex("^\\s*FROM\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
-        private static partial Regex FromRegex();
+        [GeneratedRegex("^\\s*ORDER BY\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
+        private static partial Regex OrderByRegex();
     }
 }

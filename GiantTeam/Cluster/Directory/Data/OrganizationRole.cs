@@ -20,7 +20,7 @@ namespace GiantTeam.Cluster.Directory.Data
         [StringLength(50), RoleName]
         public string Name { get; set; } = null!;
 
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string DbRole { get => _dbRole ??= DirectoryHelpers.OrganizationRole(OrganizationRoleId)!; private set => _dbRole = value; }

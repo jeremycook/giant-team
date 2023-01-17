@@ -35,7 +35,7 @@ namespace GiantTeam.Cluster.Directory.Services
         private readonly ILogger<CreateOrganizationService> logger;
         private readonly ValidationService validationService;
         private readonly SecurityDataService securityDataService;
-        private readonly IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory;
+        private readonly DirectoryManagementDataService directoryManagementDataService;
         private readonly UserDirectoryDataServiceFactory userDirectoryDataServiceFactory;
         private readonly UserDataServiceFactory userDataFactory;
         private readonly UserDbContextFactory userDbContextFactory;
@@ -49,7 +49,7 @@ namespace GiantTeam.Cluster.Directory.Services
             ILogger<CreateOrganizationService> logger,
             ValidationService validationService,
             SecurityDataService securityDataService,
-            IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory,
+            DirectoryManagementDataService directoryManagementDataService,
             UserDirectoryDataServiceFactory userDirectoryDataServiceFactory,
             UserDataServiceFactory userDataFactory,
             UserDbContextFactory userDbContextFactory,
@@ -62,7 +62,7 @@ namespace GiantTeam.Cluster.Directory.Services
             this.logger = logger;
             this.validationService = validationService;
             this.securityDataService = securityDataService;
-            this.managerDirectoryDbContextFactory = managerDirectoryDbContextFactory;
+            this.directoryManagementDataService = directoryManagementDataService;
             this.userDirectoryDataServiceFactory = userDirectoryDataServiceFactory;
             this.userDataFactory = userDataFactory;
             this.userDbContextFactory = userDbContextFactory;
@@ -86,6 +86,13 @@ namespace GiantTeam.Cluster.Directory.Services
             }
         }
 
+        enum Actions
+        {
+            InsertedOrganizationRecords,
+            CreatedOwnerRole,
+            CreatedDatabase,
+            CreatedOrganizationRole,
+        }
         private async Task<CreateOrganizationResult> ProcessAsync(CreateOrganizationInput input)
         {
             if (!sessionService.User.Elevated || sessionService.User.DbElevatedUser is null)
@@ -95,205 +102,151 @@ namespace GiantTeam.Cluster.Directory.Services
 
             validationService.Validate(input);
 
-            var owner = new OrganizationRole()
-            {
-                OrganizationRoleId = Guid.NewGuid(),
-                Name = "Owner",
-                Created = DateTime.UtcNow,
-            };
             var organization = new Data.Organization()
             {
                 OrganizationId = Guid.NewGuid(),
                 Name = input.Name,
                 DatabaseName = input.DatabaseName,
-                DatabaseOwnerOrganizationRoleId = owner.OrganizationRoleId,
+                DatabaseOwnerOrganizationRoleId = Guid.NewGuid(),
                 Created = DateTime.UtcNow,
-                Roles = new(new[] { owner }),
+                Roles = null,
             };
-            await using (var managerDirectoryDb = await managerDirectoryDbContextFactory.CreateDbContextAsync())
+            var owner = new OrganizationRole()
             {
-                validationService.ValidateAll(organization, owner);
-                managerDirectoryDb.Organizations.Add(organization);
-                await managerDirectoryDb.SaveChangesAsync();
-
-                string databaseName = organization.DatabaseName;
-
-                var elevatedDirectoryDataService = userDirectoryDataServiceFactory.NewElevatedDataService();
-                try
-                {
-                    // Create the organization's initial roles.
-                    // CREATEDB will be allowed until the organization database is created.
-                    await securityDataService.ExecuteAsync(
-                        $"CREATE ROLE {Sql.Identifier(owner.DbRole)} WITH INHERIT CREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbElevatedUser)}"
-                    );
-
-                    // Create the database as the new owner.
-                    await elevatedDirectoryDataService.ExecuteAsync(
-                        $"SET ROLE {Sql.Identifier(owner.DbRole)}",
-                        $"CREATE DATABASE {Sql.Identifier(databaseName)}");
-
-                    // Remove the CREATEDB privilege.
-                    await securityDataService.ExecuteAsync($"ALTER ROLE {Sql.Identifier(owner.DbRole)} NOCREATEDB");
-
-                    // Connect to the new database with elevated rights
-                    var elevatedDatabaseService = userDataFactory.NewElevatedDataService(organization.OrganizationId);
-
-                    // These actions must be performed as the database owner
-                    await elevatedDatabaseService.ExecuteAsync(
-                        Sql.Format($"SET ROLE {Sql.Identifier(owner.DbRole)}"),
-                        Sql.Format($"GRANT ALL ON DATABASE {Sql.Identifier(databaseName)} TO pg_database_owner"),
-                        Sql.Format($"REVOKE ALL ON DATABASE {Sql.Identifier(databaseName)} FROM public"),
-                        Sql.Format($"DROP SCHEMA IF EXISTS public CASCADE")
-                    );
-
-                    // Run the standard organization initialization script
-                    await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
-
-                    // Set the name of the root inode to match
-                    // the name of the organization in the directory.
-                    await using var elevatedDbContext = userDbContextFactory.NewElevatedDbContext<EtcDbContext>(organization.OrganizationId);
-                    await elevatedDbContext.Inodes
-                        .Where(o => o.InodeId == InodeId.Root)
-                        .ExecuteUpdateAsync(o => o.SetProperty(p => p.Name, input.Name));
-                }
-                catch (Exception)
-                {
-                    try
-                    {
-                        await managerDirectoryDb
-                            .Organizations
-                            .Where(o => o.OrganizationId == organization.OrganizationId)
-                            .ExecuteDeleteAsync();
-                    }
-                    catch (Exception cleanupException)
-                    {
-                        logger.LogWarning(cleanupException, "Cleanup failure following {DatabaseName} creation attempt", databaseName);
-                    }
-
-                    try
-                    {
-                        await elevatedDirectoryDataService.ExecuteAsync(
-                            $"SET ROLE {Sql.Identifier(owner.DbRole)}",
-                            $"DROP DATABASE IF EXISTS {Sql.Identifier(databaseName)}");
-                    }
-                    catch (Exception cleanupException)
-                    {
-                        logger.LogWarning(cleanupException, "Cleanup failure following {DatabaseName} creation attempt", databaseName);
-                    }
-
-                    try
-                    {
-                        await securityDataService.ExecuteAsync(
-                            $"DROP ROLE IF EXISTS {Sql.Identifier(owner.DbRole)}");
-                    }
-                    catch (Exception cleanupException)
-                    {
-                        logger.LogWarning(cleanupException, "Cleanup failure following {DatabaseName} creation attempt", databaseName);
-                    }
-
-                    throw;
-                }
-            } // These connections must be closed so that subsequent transactions can be opened to create roles, etc.
-
-            // Create non-elevated organization roles
-            var admin = await createOrganizationRoleService.CreateOrganizationRoleAsync(new()
-            {
+                OrganizationRoleId = organization.DatabaseOwnerOrganizationRoleId,
                 OrganizationId = organization.OrganizationId,
-                RoleName = "Admin",
-                MemberDbRoles = new List<string>() { sessionService.User.DbUser },
-            });
-            var member = await createOrganizationRoleService.CreateOrganizationRoleAsync(new()
-            {
-                OrganizationId = organization.OrganizationId,
-                RoleName = "Member",
-                MemberDbRoles = new List<string>() { sessionService.User.DbUser },
-            });
-
-            //// Grant access to the etc space
-            //await grantSpaceService.GrantSpaceAsync(new()
-            //{
-            //    OrganizationId = organization.OrganizationId,
-            //    InodeId = InodeId.Etc,
-            //    AccessControlList = new()
-            //    {
-            //        new()
-            //        {
-            //            DbRole = admin.DbRole,
-            //            Permissions = new[] { PermissionId.Read },
-            //        },
-            //        new()
-            //        {
-            //            DbRole = admin.DbRole,
-            //            Permissions = new[] { PermissionId.Read },
-            //        },
-            //    },
-            //});
-            //// Grant access to the etc space
-            //await grantSpaceService.GrantSpaceAsync(new()
-            //{
-            //    OrganizationId = organization.OrganizationId,
-            //    InodeId = InodeId.Etc,
-            //    AccessControlList = new()
-            //    {
-            //        new()
-            //        {
-            //            DbRole = admin.DbRole,
-            //            Permissions = new[] { PermissionId.Read },
-            //        },
-            //        new()
-            //        {
-            //            DbRole = admin.DbRole,
-            //            Permissions = new[] { PermissionId.Read },
-            //        },
-            //    },
-            //});
-            //foreach (var tableName in new[] { "inode", "file" })
-            //{
-            //    await grantTableService.GrantTableAsync(new()
-            //    {
-            //        OrganizationId = organization.OrganizationId,
-            //        SpaceName = "etc",
-            //        TableName = tableName,
-            //        Grants = new()
-            //        {
-            //            new()
-            //            {
-            //                OrganizationRoleId = admin.OrganizationRoleId,
-            //                Privileges = new[] { GrantTableInputPrivilege.SELECT },
-            //            },
-            //            new()
-            //            {
-            //                OrganizationRoleId = member.OrganizationRoleId,
-            //                Privileges = new[] { GrantTableInputPrivilege.SELECT },
-            //            },
-            //        },
-            //    });
-            //}
-
-            // Create the default Home space
-            await createSpaceService.CreateSpaceAsync(new()
-            {
-                OrganizationId = organization.OrganizationId,
-                SpaceName = "Home",
-                AccessControlList = new Organization.Etc.Models.InodeAccess[]
-                {
-                    new()
-                    {
-                        DbRole = admin.DbRole,
-                        Permissions = "ra".ToCharArray(),
-                    },
-                    new()
-                    {
-                        DbRole = member.DbRole,
-                        Permissions = "r".ToCharArray(),
-                    },
-                },
-            });
-
-            return new()
-            {
-                OrganizationId = organization.OrganizationId,
+                Name = "Owner",
+                Created = DateTime.UtcNow,
+                Description = null,
             };
+            validationService.ValidateAll(organization, owner);
+
+            var elevatedDirectoryDataService = userDirectoryDataServiceFactory.NewElevatedDataService();
+            var changes = new List<(Actions Actions, object? Data)>();
+            try
+            {
+                await directoryManagementDataService.ExecuteAsync(
+                    Sql.Insert(organization),
+                    Sql.Insert(owner));
+                changes.Add((Actions.InsertedOrganizationRecords, new object[] { organization, owner }));
+
+                // Create the organization's initial roles.
+                // CREATEDB will be allowed until the organization database is created.
+                await securityDataService.ExecuteAsync(
+                    $"CREATE ROLE {Sql.Identifier(owner.DbRole)} WITH INHERIT CREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.Identifier(sessionService.User.DbElevatedUser)}");
+                changes.Add((Actions.CreatedOwnerRole, owner.DbRole));
+
+                // Create the database as the new owner.
+                // Database creation cannot run in a transaction
+                await elevatedDirectoryDataService.ExecuteAsync(
+                    $"SET ROLE {Sql.Identifier(owner.DbRole)}",
+                    $"CREATE DATABASE {Sql.Identifier(organization.DatabaseName)}");
+                changes.Add((Actions.CreatedDatabase, organization.DatabaseName));
+
+                // Remove the CREATEDB privilege.
+                await securityDataService.ExecuteAsync($"ALTER ROLE {Sql.Identifier(owner.DbRole)} NOCREATEDB");
+
+                // Now we can connect to the new database with elevated rights
+                var elevatedDatabaseService = userDataFactory.NewElevatedDataService(organization.OrganizationId);
+
+                // These actions must be performed as the database owner
+                await elevatedDatabaseService.ExecuteAsync(
+                    Sql.Format($"SET ROLE {Sql.Identifier(owner.DbRole)}"),
+                    Sql.Format($"GRANT ALL ON DATABASE {Sql.Identifier(organization.DatabaseName)} TO pg_database_owner"),
+                    Sql.Format($"REVOKE ALL ON DATABASE {Sql.Identifier(organization.DatabaseName)} FROM public"),
+                    Sql.Format($"DROP SCHEMA IF EXISTS public CASCADE"));
+
+                // Run the standard organization initialization script
+                await elevatedDatabaseService.ExecuteUnsanitizedAsync(OrganizationResources.ScriptOrganizationObjectsSql);
+
+                // Set the name of the root inode to match
+                // the name of the organization in the directory.
+                await elevatedDatabaseService.ExecuteAsync(
+                    $"UPDATE etc.inode SET name = {input.Name} WHERE inode_id = {InodeId.Root}");
+
+                // Create non-elevated organization roles
+                var admin = await createOrganizationRoleService.CreateOrganizationRoleAsync(new()
+                {
+                    OrganizationId = organization.OrganizationId,
+                    RoleName = "Admin",
+                    MemberDbRoles = new List<string>() { sessionService.User.DbUser },
+                });
+                changes.Add((Actions.CreatedOrganizationRole, admin));
+
+                var member = await createOrganizationRoleService.CreateOrganizationRoleAsync(new()
+                {
+                    OrganizationId = organization.OrganizationId,
+                    RoleName = "Member",
+                    MemberDbRoles = new List<string>() { sessionService.User.DbUser },
+                });
+                changes.Add((Actions.CreatedOrganizationRole, member));
+
+                // Create the default Home space
+                await createSpaceService.CreateSpaceAsync(new()
+                {
+                    OrganizationId = organization.OrganizationId,
+                    SpaceName = "Home",
+                    AccessControlList = new Organization.Etc.Models.InodeAccess[]
+                    {
+                        new () { DbRole = admin.DbRole, Permissions = "ra".ToCharArray() },
+                        new () { DbRole = member.DbRole, Permissions = "r".ToCharArray() },
+                    },
+                });
+
+                return new()
+                {
+                    OrganizationId = organization.OrganizationId,
+                };
+            }
+            catch (Exception)
+            {
+                // Unwind changes in reverse order
+                changes.Reverse();
+                foreach (var change in changes)
+                {
+                    try
+                    {
+                        switch (change.Actions)
+                        {
+                            case Actions.InsertedOrganizationRecords:
+                                await directoryManagementDataService.ExecuteAsync(
+                                    Sql.Delete(owner),
+                                    Sql.Delete(organization));
+                                break;
+
+                            case Actions.CreatedOwnerRole:
+                                await securityDataService.ExecuteAsync(
+                                    $"DROP ROLE IF EXISTS {Sql.Identifier(owner.DbRole)}");
+                                break;
+
+                            case Actions.CreatedDatabase:
+                                await elevatedDirectoryDataService.ExecuteAsync(
+                                    $"SET ROLE {Sql.Identifier(owner.DbRole)}",
+                                    $"DROP DATABASE IF EXISTS {Sql.Identifier(organization.DatabaseName)}");
+                                break;
+
+                            case Actions.CreatedOrganizationRole when change.Data is CreateOrganizationRoleResult role:
+                                var elevatedDatabaseService = userDataFactory.NewElevatedDataService(organization.OrganizationId);
+                                await elevatedDatabaseService.ExecuteAsync(
+                                    $"REVOKE CONNECT ON DATABASE {Sql.Identifier(organization.DatabaseName)} FROM {Sql.Identifier(role.DbRole)}");
+                                await securityDataService.ExecuteAsync(
+                                    $"DROP ROLE IF EXISTS {Sql.Identifier(role.DbRole)}");
+                                await directoryManagementDataService.ExecuteAsync(
+                                    $"DELETE FROM directory.organization_role WHERE organization_role_id = {role.OrganizationRoleId}");
+                                break;
+
+                            default:
+                                throw new NotImplementedException(change.ToString());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Failed to unwind {Change}", change.Actions);
+                    }
+                }
+
+                throw;
+            }
         }
     }
 }

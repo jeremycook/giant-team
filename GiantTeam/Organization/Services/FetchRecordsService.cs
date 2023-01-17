@@ -38,7 +38,7 @@ public class FetchRecordsService
         validationService.Validate(input);
 
         var dataService = userDataFactory.NewDataService(input.OrganizationId, input.Schema);
-        await using var dataSource = dataService.CreateDataSource();
+        await using var dataSource = dataService.AcquireDataSource();
         await using var connection = await dataSource.OpenConnectionAsync();
 
         var (columnSchema, selectedColumns) = await GetColumnSchemaAsync(input, connection);

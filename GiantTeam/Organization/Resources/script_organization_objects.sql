@@ -11,6 +11,27 @@ GRANT USAGE ON SCHEMA etc TO PUBLIC;
 
 SET search_path = etc;
 
+-- Table: etc.role
+-- DROP TABLE IF EXISTS etc.role;
+
+CREATE TABLE IF NOT EXISTS etc.role
+(
+    role_id character varying(50) NOT NULL, -- TODO: Check that it matches 'r:...' and is a member of this database
+	name text NOT NULL,
+	created timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+    CONSTRAINT role_check CHECK (role_id ~ '^r:[0-9a-f]+$'),
+    CONSTRAINT role_pkey PRIMARY KEY (role_id),
+    CONSTRAINT role_key UNIQUE (name)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS etc.role
+    OWNER to pg_database_owner;
+
+GRANT ALL ON TABLE etc.role TO pg_database_owner;
+GRANT SELECT ON TABLE etc.role TO PUBLIC;
+
 -- Table: etc.inode_type
 -- DROP TABLE IF EXISTS etc.inode_type;
 

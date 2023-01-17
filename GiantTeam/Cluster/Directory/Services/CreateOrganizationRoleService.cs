@@ -2,14 +2,11 @@
 using GiantTeam.Cluster.Security.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.DatabaseDefinition.Models;
 using GiantTeam.Organization.Etc.Models;
-using GiantTeam.Organization.Services;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
 using GiantTeam.UserManagement.Services;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
 
@@ -111,37 +108,25 @@ WHERE datname = current_database()
                 Name = input.RoleName,
                 Created = DateTime.UtcNow,
             };
-            try
-            {
-                validationService.Validate(newRole);
-                managerDirectoryDb.OrganizationRoles.Add(newRole);
-                await managerDirectoryDb.SaveChangesAsync();
 
-                await securityDataService.ExecuteAsync(
-                    $"CREATE ROLE {Sql.Identifier(newRole.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.IdentifierList(input.MemberDbRoles)}");
+            validationService.Validate(newRole);
+            managerDirectoryDb.OrganizationRoles.Add(newRole);
+            await managerDirectoryDb.SaveChangesAsync();
 
-                // Grant connect to database and read root node
-                await elevatedDataService.ExecuteAsync(
-                    $"SET ROLE {Sql.Identifier(ownerDbRole)}",
-                    $"GRANT CONNECT ON DATABASE {Sql.Identifier(organization.DatabaseName)} TO {Sql.Identifier(newRole.DbRole)}",
-                    $"INSERT INTO etc.inode_access (inode_id, db_role, permissions) VALUES ({InodeId.Root}, {newRole.DbRole}, {new[] { PermissionId.Read }})");
-            }
-            catch (Exception)
-            {
-                try
-                {
-                    await securityDataService.ExecuteAsync(
-                        $"DROP ROLE IF EXISTS {Sql.Identifier(newRole.DbRole)}");
-                }
-                catch (Exception cleanupException)
-                {
-                    logger.LogInformation(cleanupException, "Suppressed drop roles cleanup failure following error when creating {OrganizationRole} for {OrganizationId}.", input.RoleName, input.OrganizationId);
-                }
+            await using var securityScope = await securityDataService.BeginScopeAsync();
+            await securityDataService.ExecuteAsync(
+                $"CREATE ROLE {Sql.Identifier(newRole.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.IdentifierList(input.MemberDbRoles)}");
 
-                throw;
-            }
+            // Grant connect to database and read root node
+            await using var elevatedScope = await elevatedDataService.BeginScopeAsync();
+            await elevatedDataService.ExecuteAsync(
+                $"SET ROLE {Sql.Identifier(ownerDbRole)}",
+                $"GRANT CONNECT ON DATABASE {Sql.Identifier(organization.DatabaseName)} TO {Sql.Identifier(newRole.DbRole)}",
+                $"INSERT INTO etc.inode_access (inode_id, db_role, permissions) VALUES ({InodeId.Root}, {newRole.DbRole}, {new[] { PermissionId.Read }})");
 
             await tx.CommitAsync();
+            await securityScope.Transaction.CommitAsync();
+            await elevatedScope.Transaction.CommitAsync();
 
             return new()
             {
