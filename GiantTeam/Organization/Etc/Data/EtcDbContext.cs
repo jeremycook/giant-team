@@ -5,6 +5,8 @@ namespace GiantTeam.Organization.Etc.Data;
 
 public class EtcDbContext : DbContext
 {
+    public static readonly string Schema = "etc";
+
     public EtcDbContext(DbContextOptions<EtcDbContext> options) : base(options)
     {
         Inodes = Set<Inode>();
@@ -28,7 +30,7 @@ public class EtcDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("etc");
+        modelBuilder.HasDefaultSchema(Schema);
 
         modelBuilder.Entity<Inode>().HasMany(o => o.Children).WithOne().HasForeignKey(o => o.ParentInodeId).OnDelete(DeleteBehavior.NoAction);
         modelBuilder.Entity<File>().HasOne(o => o.Inode).WithOne().HasPrincipalKey<Inode>(o => o.InodeId).OnDelete(DeleteBehavior.Cascade);

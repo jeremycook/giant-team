@@ -79,10 +79,7 @@ public class CreateSpaceService
             await elevatedDataService.ExecuteAsync(
                 Sql.Format($"SET ROLE pg_database_owner"),
                 Sql.Format($"CREATE SCHEMA {Sql.Identifier(schemaName)}"),
-                Sql.Format($"""
-INSERT INTO etc.inode (inode_id, parent_inode_id, inode_type_id, name, ugly_name, created) VALUES
-    ({space.InodeId},{space.ParentInodeId},{space.InodeTypeId},{space.Name},{space.UglyName},{space.Created})
-"""));
+                Sql.Insert(space));
 
             await grantSpaceService.GrantSpaceAsync(
                 input.OrganizationId,

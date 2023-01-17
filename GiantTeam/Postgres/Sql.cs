@@ -1,8 +1,11 @@
-﻿using GiantTeam.Text;
+﻿using GiantTeam.ComponentModel;
+using GiantTeam.Linq;
+using GiantTeam.Text;
 using Npgsql;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Drawing;
 using System.Reflection;
+using System.Windows.Markup;
 
 namespace GiantTeam.Postgres
 {
@@ -153,38 +156,108 @@ namespace GiantTeam.Postgres
             return Raw(PgQuote.Literal(moment));
         }
 
-        public static Sql GetTableIdentifier<T>()
+        private static readonly Dictionary<Assembly, SqlMetadata[]> _assemblySqlMetadatasCache = new();
+        private static readonly Dictionary<Type, SqlMetadata> _sqlmetadataCache = new();
+        private static readonly Dictionary<Type, Sql> _tableNameCache = new();
+        private static readonly Dictionary<Type, Sql> _columnNameCache = new();
+        private static readonly Dictionary<Type, PropertyInfo[]> _insertPropertiesCache = new();
+
+        public static SqlMetadata GetSqlMetadata<TTable>()
         {
-            return GetTableIdentifier(typeof(T));
+            return GetSqlMetadata(typeof(TTable));
+        }
+
+        public static SqlMetadata GetSqlMetadata(Type tableType)
+        {
+            if (!_sqlmetadataCache.TryGetValue(tableType, out var sqlMetadata))
+            {
+                if (!_assemblySqlMetadatasCache.TryGetValue(tableType.Assembly, out var candidates))
+                {
+                    _assemblySqlMetadatasCache[tableType.Assembly] =
+                    candidates =
+                        tableType.Assembly.GetTypes()
+                        .Where(t => t.IsAssignableTo(typeof(SqlMetadata)))
+                        .OrderByDescending(t => t.FullName) // sort longest name to shortest
+                        .Select(t => (SqlMetadata)Activator.CreateInstance(t)!)
+                        .ToArray();
+                }
+
+                _sqlmetadataCache[tableType] =
+                sqlMetadata =
+                    candidates.FirstOrDefault(c => c.GetType().Namespace!.StartsWith(tableType.Namespace!))
+                    ?? new SqlMetadata();
+            }
+
+            return sqlMetadata;
+        }
+
+        public static Sql GetTableIdentifier<TTable>()
+        {
+            return GetTableIdentifier(typeof(TTable));
         }
 
         public static Sql GetTableIdentifier(Type type)
         {
-            if (type.GetCustomAttribute<TableAttribute>() is TableAttribute table)
+            if (!_tableNameCache.TryGetValue(type, out var sql))
             {
-                if (table.Schema is not null)
-                {
-                    return Identifier(table.Schema, table.Name);
-                }
-                else
-                {
-                    return Identifier(table.Name);
-                }
+                var sqlMetadata = GetSqlMetadata(type);
+
+                _tableNameCache[type] =
+                sql =
+                    sqlMetadata.GetFullyQualifiedTableIdentifier(type);
             }
-            else
-            {
-                return Identifier(TextTransformers.Snakify(type.Name));
-            }
+
+            return sql;
         }
 
-        public static Sql GetColumnIdentifiers<T>()
+        public static Sql GetColumnIdentifiers<TTable>()
         {
-            return GetColumnIdentifiers(typeof(T));
+            return GetColumnIdentifiers(typeof(TTable));
         }
 
         public static Sql GetColumnIdentifiers(Type type)
         {
-            return Raw(PgQuote.IdentifierList(type.GetProperties().Select(p => p.Name).Select(TextTransformers.Snakify)));
+            if (!_columnNameCache.TryGetValue(type, out var sql))
+            {
+                var sqlMetadata = GetSqlMetadata(type);
+
+                _columnNameCache[type] =
+                sql =
+                    Raw(PgQuote.IdentifierList(type.GetProperties().Select(sqlMetadata.GetColumnName)));
+            }
+
+            return sql;
+        }
+
+        public static Sql Insert<TTable>(TTable row, SqlMetadata? sqlMetadata = null)
+        {
+            var type = typeof(TTable);
+            sqlMetadata ??= GetSqlMetadata(type);
+
+            if (!_insertPropertiesCache.TryGetValue(type, out var properties))
+            {
+                properties = type
+                    .GetProperties()
+                    .Where(p =>
+                        p.GetSetMethod() != null &&
+                        (!p.PropertyType.IsClass || p.PropertyType == typeof(string))
+                    )
+                    .ToArray();
+                _insertPropertiesCache[type] = properties;
+            }
+
+            var columns = properties
+                .Select(p => (Name: sqlMetadata.GetColumnName(p), Value: p.GetValue(row)))
+                .ToDictionary(o => o.Name, o => o.Value);
+
+            var arguments = columns.Values
+                .Prepend(IdentifierList(columns.Keys))
+                .Prepend(GetTableIdentifier(type))
+                .ToArray();
+
+            var sql = new Sql("INSERT INTO {0} ({1}) VALUES (" + Enumerable.Range(2, columns.Count).Select(i => "{" + i + "}").Join(',') + ")", arguments);
+
+            return sql;
         }
     }
 }

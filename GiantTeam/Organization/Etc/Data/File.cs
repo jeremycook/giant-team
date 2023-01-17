@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GiantTeam.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organization.Etc.Data;
 
