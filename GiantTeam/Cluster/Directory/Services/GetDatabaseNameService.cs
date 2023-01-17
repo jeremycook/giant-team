@@ -6,7 +6,7 @@ namespace GiantTeam.Cluster.Directory.Services
     {
         // TODO: Handle removed organizations.
         // TODO: Convert to LRU cache.
-        private static readonly Dictionary<string, string> _cache = new();
+        private static readonly Dictionary<Guid, string> _cache = new();
 
         private readonly DirectoryManagementDataService directoryManagementDataService;
 
@@ -24,11 +24,11 @@ namespace GiantTeam.Cluster.Directory.Services
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="System.Data.Common.DbException"></exception>
         /// <exception cref="NotFoundException"></exception>
-        public string GetDatabaseName(string organizationId)
+        public string GetDatabaseName(Guid organizationId)
         {
-            if (string.IsNullOrWhiteSpace(organizationId))
+            if (organizationId == Guid.Empty)
             {
-                throw new ArgumentException($"'{nameof(organizationId)}' cannot be null or whitespace.", nameof(organizationId));
+                throw new ArgumentException($"'{nameof(organizationId)}' cannot be all zeros.", nameof(organizationId));
             }
 
             if (!_cache.TryGetValue(organizationId, out var databaseName))

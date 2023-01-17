@@ -32,7 +32,7 @@ namespace GiantTeam.UserData.Services
         /// Create a new elevated <see cref="PgDataService"/> connection to <paramref name="organizationId"/>.
         /// </summary>
         /// <param name="organizationId"></param>
-        public PgDataService NewElevatedDataService(string organizationId, string defaultSchema = "")
+        public PgDataService NewElevatedDataService(Guid organizationId, string defaultSchema = "")
         {
             var databaseName = getDatabaseNameService.GetDatabaseName(organizationId);
 
@@ -53,7 +53,7 @@ namespace GiantTeam.UserData.Services
         /// Create a new regular <see cref="PgDataService"/> connection to <paramref name="databaseName"/>.
         /// </summary>
         /// <param name="databaseName"></param>
-        public PgDataService NewDataService(string organizationId, string defaultSchema = "")
+        public PgDataService NewDataService(Guid organizationId, string defaultSchema = "")
         {
             var databaseName = getDatabaseNameService.GetDatabaseName(organizationId);
 

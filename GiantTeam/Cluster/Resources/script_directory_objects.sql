@@ -31,7 +31,7 @@ GRANT USAGE ON SCHEMA directory TO anyone;
 
 CREATE TABLE IF NOT EXISTS directory.organization
 (
-    organization_id character varying(50) NOT NULL,
+    organization_id uuid NOT NULL DEFAULT gen_random_uuid(),
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     database_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
     database_owner_organization_role_id uuid NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS directory.organization_role
 (
     organization_role_id uuid NOT NULL DEFAULT gen_random_uuid(),
     created timestamp with time zone NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text),
-    organization_id character varying(50) NOT NULL,
+    organization_id uuid NOT NULL,
     name text COLLATE pg_catalog."default" NOT NULL,
     db_role text COLLATE pg_catalog."default" NOT NULL GENERATED ALWAYS AS ('r:'::text || replace((organization_role_id)::text, '-'::text, ''::text)) STORED,
     description text COLLATE pg_catalog."default",

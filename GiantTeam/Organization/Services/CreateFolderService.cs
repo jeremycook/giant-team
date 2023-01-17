@@ -11,8 +11,8 @@ namespace GiantTeam.Organization.Services;
 
 public class CreateFolderInput
 {
-    [Required, StringLength(50)]
-    public string OrganizationId { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     [RequiredGuid]
     public Guid ParentInodeId { get; set; }

@@ -10,14 +10,14 @@ namespace GiantTeam.Organization.Services;
 
 public class CreateSpaceInput
 {
-    [Required, StringLength(50)]
-    public string OrganizationId { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     [Required, StringLength(50), InodeName]
     public string SpaceName { get; set; } = null!;
 
     [Required]
-    public Etc.Models.InodeAccess[] AccessControlList { get; set; } = null!;
+    public InodeAccess[] AccessControlList { get; set; } = null!;
 }
 
 public class CreateSpaceResult

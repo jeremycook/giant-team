@@ -28,7 +28,7 @@ public class FetchInodeService
         return await FetchInodeAsync(input.OrganizationId, input.InodeId);
     }
 
-    public async Task<Etc.Models.Inode> FetchInodeAsync(string organizationId, Guid inodeId)
+    public async Task<Etc.Models.Inode> FetchInodeAsync(Guid organizationId, Guid inodeId)
     {
         return await FetchInodeAsync(organizationId, inodeId, null);
     }
@@ -40,12 +40,12 @@ public class FetchInodeService
         return await FetchInodeByPathAsync(input.OrganizationId, input.Path);
     }
 
-    public async Task<Etc.Models.Inode> FetchInodeByPathAsync(string organizationId, string path)
+    public async Task<Etc.Models.Inode> FetchInodeByPathAsync(Guid organizationId, string path)
     {
         return await FetchInodeAsync(organizationId, null, path);
     }
 
-    private async Task<Etc.Models.Inode> FetchInodeAsync(string organizationId, Guid? nodeId, string? path)
+    private async Task<Etc.Models.Inode> FetchInodeAsync(Guid organizationId, Guid? nodeId, string? path)
     {
         using var db = userDbContextFactory.NewDbContext<EtcDbContext>(organizationId);
 
@@ -109,8 +109,8 @@ public class FetchInodeService
 
 public class FetchInodeInput
 {
-    [Required]
-    public string OrganizationId { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     [Required]
     public Guid InodeId { get; set; }
@@ -118,8 +118,8 @@ public class FetchInodeInput
 
 public class FetchInodeByPathInput
 {
-    [Required]
-    public string OrganizationId { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     /// <summary>
     /// "", "Space/Folder/Another Folder", and "Space/Folder/Another Folder/file.txt"

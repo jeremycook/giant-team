@@ -25,7 +25,7 @@ namespace GiantTeam.UserData.Services
             this.sessionService = sessionService;
         }
 
-        public TDbContext NewDbContext<TDbContext>(string organizationId, string defaultSchema = "")
+        public TDbContext NewDbContext<TDbContext>(Guid organizationId, string defaultSchema = "")
             where TDbContext : DbContext
         {
             var databaseName = getDatabaseNameService.GetDatabaseName(organizationId);
@@ -50,7 +50,7 @@ namespace GiantTeam.UserData.Services
                 args: new[] { dbContextOptions })!;
         }
 
-        public TDbContext NewElevatedDbContext<TDbContext>(string organizationId, string defaultSchema = "")
+        public TDbContext NewElevatedDbContext<TDbContext>(Guid organizationId, string defaultSchema = "")
             where TDbContext : DbContext
         {
             var databaseName = getDatabaseNameService.GetDatabaseName(organizationId);

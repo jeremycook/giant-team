@@ -11,8 +11,8 @@ namespace GiantTeam.Organization.Services
 {
     public class AlterDatabaseInput
     {
-        [Required, StringLength(50), DatabaseName]
-        public string DatabaseName { get; set; } = null!;
+        [RequiredGuid]
+        public Guid OrganizationId { get; set; }
 
         [Required, MinLength(1)]
         public DatabaseAlteration[] Changes { get; set; } = null!;
@@ -58,7 +58,7 @@ namespace GiantTeam.Organization.Services
                 sessionService.User.UserId,
                 migrationScript);
 
-            var dataService = userDataFactory.NewDataService(input.DatabaseName);
+            var dataService = userDataFactory.NewDataService(input.OrganizationId);
             try
             {
                 await dataService.ExecuteUnsanitizedAsync(migrationScript);

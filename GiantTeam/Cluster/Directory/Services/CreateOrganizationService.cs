@@ -27,7 +27,7 @@ namespace GiantTeam.Cluster.Directory.Services
 
     public class CreateOrganizationResult
     {
-        public string OrganizationId { get; set; } = null!;
+        public Guid OrganizationId { get; set; }
     }
 
     public class CreateOrganizationService
@@ -103,7 +103,7 @@ namespace GiantTeam.Cluster.Directory.Services
             };
             var organization = new Data.Organization()
             {
-                OrganizationId = Guid.NewGuid().ToString(),
+                OrganizationId = Guid.NewGuid(),
                 Name = input.Name,
                 DatabaseName = input.DatabaseName,
                 DatabaseOwnerOrganizationRoleId = owner.OrganizationRoleId,
@@ -136,7 +136,7 @@ namespace GiantTeam.Cluster.Directory.Services
                     await securityDataService.ExecuteAsync($"ALTER ROLE {Sql.Identifier(owner.DbRole)} NOCREATEDB");
 
                     // Connect to the new database with elevated rights
-                    var elevatedDatabaseService = userDataFactory.NewElevatedDataService(databaseName);
+                    var elevatedDatabaseService = userDataFactory.NewElevatedDataService(organization.OrganizationId);
 
                     // These actions must be performed as the database owner
                     await elevatedDatabaseService.ExecuteAsync(

@@ -6,8 +6,8 @@ namespace GiantTeam.Cluster.Directory.Data
     public class Organization
     {
         [Key]
-        [Required, StringLength(50), DatabaseName]
-        public string OrganizationId { get; set; } = null!;
+        [RequiredGuid]
+        public Guid OrganizationId { get; set; }
 
         [Required, StringLength(100)]
         public string Name { get; set; } = null!;

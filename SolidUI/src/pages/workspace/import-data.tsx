@@ -11,11 +11,11 @@ export default function ImportDataPage() {
   const navigate = useNavigate();
   const params = useParams();
 
-  const database = () => params.workspace;
+  const organizationId = () => params.organization;
   const [ok, okSetter] = createSignal(true);
   const [message, messageSetter] = createSignal('');
 
-  createEffect(() => setTitle(`Import Data into ${database()}`));
+  createEffect(() => setTitle(`Import Data into ${organizationId()}`));
 
   const formSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ export default function ImportDataPage() {
     const fileBlob = (form.file as HTMLInputElement).files![0] as Blob;
 
     const output = await postImportData({
-      database: database(),
+      organizationId: organizationId(),
       schema: form.schema.value,
       table: form.table.value,
       createTableIfNotExists: form.createTableIfNotExists.checked,

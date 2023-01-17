@@ -59,12 +59,13 @@ public class FetchOrganizationDetailsService
 
 public class FetchOrganizationDetailsInput
 {
-    public string OrganizationId { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 }
 
 public class FetchOrganizationDetailsResult
 {
-    public string OrganizationId { get; init; } = null!;
+    public Guid OrganizationId { get; init; }
     public string Name { get; init; } = null!;
     public string DatabaseName { get; init; } = null!;
     public DateTime Created { get; init; }

@@ -46,8 +46,8 @@ namespace GiantTeam.Cluster.Directory.Services
 
     public class FetchOrganizationInput
     {
-        [Required]
-        public string OrganizationId { get; set; } = null!;
+        [RequiredGuid]
+        public Guid OrganizationId { get; set; }
     }
 
     public class FetchOrganizationOutput
@@ -62,7 +62,7 @@ namespace GiantTeam.Cluster.Directory.Services
             Roles = organization.Roles!.Select(r => new FetchOrganizationOutputRole(r)).ToArray();
         }
 
-        public string OrganizationId { get; set; } = null!;
+        public Guid OrganizationId { get; set; }
         public string Name { get; set; } = null!;
         public string DatabaseName { get; set; } = null!;
         public Guid DatabaseOwnerOrganizationRoleId { get; set; }

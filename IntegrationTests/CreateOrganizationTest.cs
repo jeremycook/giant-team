@@ -20,8 +20,8 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
         // Arrange
         var client = _factory.CreateClient();
         string organizationName = $"Test {DateTime.Now:MMdd HHmmss}";
-        string organizationId = organizationName.ToLower().Replace(" ", "_");
-        string databaseName = organizationId;
+        Guid organizationId;
+        string databaseName = organizationName.ToLower().Replace(" ", "_");
 
         // Register and login with fixed credentials that may already exist
         {
@@ -59,7 +59,7 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
             var data = await response.Content.ReadFromJsonAsync<CreateOrganizationResult>();
 
             Assert.NotNull(data);
-            Assert.Equal(organizationId, data.OrganizationId);
+            organizationId = data.OrganizationId;
         }
 
         // Get organization
@@ -73,7 +73,6 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
 
             Assert.NotNull(data);
             Assert.Equal(organizationId, data.OrganizationId);
-
             Assert.Equal(organizationName, data.Name);
             Assert.Equal(databaseName, data.DatabaseName);
         }

@@ -46,7 +46,6 @@ public class ImportDataService
 
     private async Task<ImportDataOutput> ImportCsvAsync(ImportDataInput input)
     {
-        string databaseName = input.Database;
         string schemaName = input.Schema!;
         string tableName = input.Table!;
         bool createTable = input.CreateTableIfNotExists == true;
@@ -60,7 +59,7 @@ public class ImportDataService
         }
         else
         {
-            var organizationDataService = userDataFactory.NewDataService(input.Database, input.Schema!);
+            var organizationDataService = userDataFactory.NewDataService(input.OrganizationId, input.Schema!);
 
             var fieldNames = await CsvHelper.ParseRecordAsync(reader);
 
@@ -137,8 +136,7 @@ SELECT
     data_type,
     (CASE is_nullable WHEN 'YES' THEN true ELSE false END) AS is_nullable
 FROM information_schema.columns
-WHERE table_catalog = {databaseName}
-AND table_schema = {schemaName}
+WHERE table_schema = {schemaName}
 AND table_name = {tableName}
 """));
 
@@ -169,13 +167,13 @@ FROM unnest({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => 
                     command.Parameters.AddWithValue("p" + i, value);
                 }
 
-                logger.LogInformation("Inserting {Rows} rows into {Database}.{Schema}.{Table}: {CommandText}",
-                    records.Count, databaseName, schemaName, tableName, insertSql);
+                logger.LogInformation("Inserting {Rows} rows into {OrganizationId} {Schema}.{Table}: {CommandText}",
+                    records.Count, input.OrganizationId, schemaName, tableName, insertSql);
 
                 var rowsAffected = await organizationDataService.ExecuteAsync(new NpgsqlBatch() { BatchCommands = { command } });
 
-                logger.LogInformation("Inserted {Rows} rows into {Database}.{Schema}.{Table}",
-                    rowsAffected, databaseName, schemaName, tableName);
+                logger.LogInformation("Inserted {Rows} rows into {OrganizationId} {Schema}.{Table}",
+                    rowsAffected, input.OrganizationId, schemaName, tableName);
             }
 
             return new ImportDataOutput()
@@ -190,8 +188,8 @@ FROM unnest({string.Join(",", Enumerable.Range(0, fieldNames.Count).Select(i => 
 
 public class ImportDataInput
 {
-    [Required, StringLength(50), PgIdentifier]
-    public string Database { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     [Required, StringLength(50), PgIdentifier]
     public string? Schema { get; set; }

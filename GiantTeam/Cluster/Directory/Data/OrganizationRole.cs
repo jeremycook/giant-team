@@ -14,7 +14,7 @@ namespace GiantTeam.Cluster.Directory.Data
 
         public DateTime Created { get; set; }
 
-        public string OrganizationId { get; set; } = null!;
+        public Guid OrganizationId { get; set; }
         public Organization? Organization { get; private set; }
 
         [StringLength(50), RoleName]

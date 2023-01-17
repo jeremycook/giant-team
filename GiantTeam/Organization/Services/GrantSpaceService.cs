@@ -10,8 +10,8 @@ namespace GiantTeam.Organization.Services
 {
     public class GrantSpaceInput
     {
-        [Required, StringLength(50)]
-        public string OrganizationId { get; set; } = null!;
+        [RequiredGuid]
+        public Guid OrganizationId { get; set; }
 
         [RequiredGuid]
         public Guid InodeId { get; set; }
@@ -59,10 +59,10 @@ namespace GiantTeam.Organization.Services
         }
 
         public async Task<GrantSpaceResult> GrantSpaceAsync(
-            string organizationId,
+            Guid organizationId,
             Guid inodeId,
             string schemaName,
-            Etc.Models.InodeAccess[] accessControlList)
+            InodeAccess[] accessControlList)
         {
             var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organizationId);
 

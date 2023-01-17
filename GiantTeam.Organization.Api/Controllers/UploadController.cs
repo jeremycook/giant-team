@@ -1,4 +1,5 @@
-﻿using GiantTeam.ComponentModel.Services;
+﻿using GiantTeam.ComponentModel;
+using GiantTeam.ComponentModel.Services;
 using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Organization.Services;
@@ -100,8 +101,8 @@ public class UploadController : ControllerBase
 
 public class UploadInput
 {
-    [Required]
-    public string OrganizationId { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     // TODO: Change Path to InodeId
     [Required]

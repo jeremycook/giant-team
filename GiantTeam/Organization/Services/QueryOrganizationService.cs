@@ -44,8 +44,8 @@ public class QueryOrganizationService
 
 public class QueryOrganizationInput
 {
-    [Required]
-    public string OrganizationId { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     [Required, Regex("^\\s*SELECT\\s.+$", RegexOptions.IgnoreCase | RegexOptions.Multiline, ErrorMessage = "The {0} must start with \"SELECT\".")]
     public string Sql { get; set; } = null!;

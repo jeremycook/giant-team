@@ -153,8 +153,8 @@ WHERE datname = current_database()
 
     public class CreateOrganizationRoleInput
     {
-        [Required, StringLength(50), DatabaseName]
-        public string OrganizationId { get; set; } = null!;
+        [RequiredGuid]
+        public Guid OrganizationId { get; set; }
 
         [Required, StringLength(50), InodeName]
         public string RoleName { get; set; } = null!;

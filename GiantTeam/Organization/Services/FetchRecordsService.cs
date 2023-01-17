@@ -37,7 +37,7 @@ public class FetchRecordsService
     {
         validationService.Validate(input);
 
-        var dataService = userDataFactory.NewDataService(input.Database, input.Schema);
+        var dataService = userDataFactory.NewDataService(input.OrganizationId, input.Schema);
         await using var dataSource = dataService.CreateDataSource();
         await using var connection = await dataSource.OpenConnectionAsync();
 
@@ -50,7 +50,7 @@ public class FetchRecordsService
             sessionService.User.UserId,
             sessionService.User.DbUser,
             sessionService.User.DbLogin,
-            input.Database,
+            input.OrganizationId,
             command.CommandText);
 
         var output = new FetchRecords();
@@ -214,8 +214,8 @@ public class FetchRecordsInput
     /// </summary>
     public bool? Verbose { get; set; } = false;
 
-    [Required, StringLength(50), PgIdentifier]
-    public string Database { get; set; } = null!;
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
 
     [Required, StringLength(50), PgIdentifier]
     public string Schema { get; set; } = null!;
