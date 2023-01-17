@@ -95,27 +95,23 @@ namespace GiantTeam.Cluster.Directory.Services
 
             validationService.Validate(input);
 
-            Data.Organization organization;
+            var owner = new OrganizationRole()
+            {
+                OrganizationRoleId = Guid.NewGuid(),
+                Name = "Owner",
+                Created = DateTime.UtcNow,
+            };
+            var organization = new Data.Organization()
+            {
+                OrganizationId = Guid.NewGuid().ToString(),
+                Name = input.Name,
+                DatabaseName = input.DatabaseName,
+                DatabaseOwnerOrganizationRoleId = owner.OrganizationRoleId,
+                Created = DateTime.UtcNow,
+                Roles = new(new[] { owner }),
+            };
             await using (var managerDirectoryDb = await managerDirectoryDbContextFactory.CreateDbContextAsync())
             {
-                await using var tx = await managerDirectoryDb.Database.BeginTransactionAsync();
-
-                var owner = new OrganizationRole()
-                {
-                    OrganizationRoleId = Guid.NewGuid(),
-                    Name = "Owner",
-                    Created = DateTime.UtcNow,
-                };
-                organization = new Data.Organization()
-                {
-                    OrganizationId = input.DatabaseName,
-                    Name = input.Name,
-                    DatabaseName = input.DatabaseName,
-                    DatabaseOwnerOrganizationRoleId = owner.OrganizationRoleId,
-                    Created = DateTime.UtcNow,
-                    Roles = new(new[] { owner }),
-                };
-
                 validationService.ValidateAll(organization, owner);
                 managerDirectoryDb.Organizations.Add(organization);
                 await managerDirectoryDb.SaveChangesAsync();
@@ -164,13 +160,25 @@ namespace GiantTeam.Cluster.Directory.Services
                 {
                     try
                     {
+                        await managerDirectoryDb
+                            .Organizations
+                            .Where(o => o.OrganizationId == organization.OrganizationId)
+                            .ExecuteDeleteAsync();
+                    }
+                    catch (Exception cleanupException)
+                    {
+                        logger.LogWarning(cleanupException, "Cleanup failure following {DatabaseName} creation attempt", databaseName);
+                    }
+
+                    try
+                    {
                         await elevatedDirectoryDataService.ExecuteAsync(
                             $"SET ROLE {Sql.Identifier(owner.DbRole)}",
                             $"DROP DATABASE IF EXISTS {Sql.Identifier(databaseName)}");
                     }
                     catch (Exception cleanupException)
                     {
-                        logger.LogInformation(cleanupException, "Suppressed drop database cleanup failure following error when creating {DatabaseName}.", databaseName);
+                        logger.LogWarning(cleanupException, "Cleanup failure following {DatabaseName} creation attempt", databaseName);
                     }
 
                     try
@@ -180,13 +188,11 @@ namespace GiantTeam.Cluster.Directory.Services
                     }
                     catch (Exception cleanupException)
                     {
-                        logger.LogInformation(cleanupException, "Suppressed drop roles cleanup failure following error when creating {DatabaseName}.", databaseName);
+                        logger.LogWarning(cleanupException, "Cleanup failure following {DatabaseName} creation attempt", databaseName);
                     }
 
                     throw;
                 }
-
-                await tx.CommitAsync();
             } // These connections must be closed so that subsequent transactions can be opened to create roles, etc.
 
             // Create non-elevated organization roles

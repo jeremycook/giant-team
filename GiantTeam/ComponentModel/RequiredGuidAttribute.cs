@@ -9,18 +9,12 @@ namespace GiantTeam.ComponentModel
     {
         public override bool IsValid(object? value)
         {
-            if (value is Guid guid && guid != Guid.Empty)
+            return value switch
             {
-                return true;
-            }
-            else if (value is null)
-            {
-                return false;
-            }
-            else
-            {
-                throw new ArgumentException($"The {nameof(value)} argument may only be a {typeof(Guid)} or null, but is a {value.GetType()}.", nameof(value));
-            }
+                Guid guid => guid != Guid.Empty,
+                null => false,
+                _ => throw new ArgumentException($"The {nameof(value)} argument may only be a {typeof(Guid)} or null, but is a {value.GetType()}.", nameof(value)),
+            };
         }
     }
 }

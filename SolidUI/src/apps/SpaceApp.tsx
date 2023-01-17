@@ -1,8 +1,9 @@
 import { Switch, Match } from "solid-js";
-import { AppInfo, AppProps } from "."
 import { postCreateSpace } from "../bindings/GiantTeam.Organization.Api.Controllers";
 import { Inode, InodeTypeId, SchemaPermissionId } from "../bindings/GiantTeam.Organization.Etc.Models"
 import { toast } from "../partials/Toasts";
+import { AppInfo } from "./AppInfo";
+import { AppProps } from "./AppProps";
 
 export function SpaceApp(props: AppProps) {
     let ref: HTMLInputElement = null as any;
@@ -51,8 +52,10 @@ export function SpaceApp(props: AppProps) {
 }
 
 export const SpaceAppInfo: AppInfo = {
-    canHandle: (inode: Inode) => inode.inodeTypeId === 'Space',
+    name: 'Space',
     component: SpaceApp,
+    canHandle: (inode: Inode) => inode.inodeTypeId === InodeTypeId.Space,
+    showInAppDrawer: (inode: Inode) => inode.inodeTypeId === InodeTypeId.Space || inode.inodeTypeId === InodeTypeId.Root,
 }
 
 export default SpaceAppInfo;

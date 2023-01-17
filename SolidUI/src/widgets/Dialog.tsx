@@ -8,6 +8,7 @@ let globalZIndex = 0;
 export enum DialogAnchor {
     topLeft,
     topCenter,
+    middleCenter,
 }
 
 export interface DialogProps {
@@ -70,21 +71,26 @@ export default function Dialog(props: DialogProps & ParentProps) {
         setMounted(m => m + 1);
     });
 
-createEffect(() => console.log(zIndex()));
+    createEffect(() => console.log(zIndex()));
 
     createEffect(() => {
         mounted();
         const initialPosition = props.initialPosition;
 
         if (initialPosition) {
-            const offsetLeft =
-                props.anchor === DialogAnchor.topCenter ? -ref.clientWidth / 2 :
-                    props.anchor === DialogAnchor.topLeft ? 0 :
-                        0;
+            const offsetLeft = props.anchor === DialogAnchor.topCenter
+                || props.anchor === DialogAnchor.middleCenter ?
+                -ref.clientWidth / 2 :
+                0;
+            const offsetTop =
+                props.anchor === DialogAnchor.middleCenter ?
+                    -ref.clientHeight / 2 :
+                    0;
+
             const position = constrainToViewport({
                 // Mind the anchor
                 left: initialPosition.x + offsetLeft,
-                top: initialPosition.y,
+                top: initialPosition.y + offsetTop,
                 width: ref.clientWidth,
                 height: ref.clientHeight,
             });

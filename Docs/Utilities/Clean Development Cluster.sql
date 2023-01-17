@@ -12,6 +12,11 @@ UNION ALL
 SELECT format('DROP ROLE IF EXISTS %I;', rolname)
 FROM pg_roles
 WHERE rolname LIKE '_:%' 
+AND rolname NOT IN ('u:owner', 'u:owner:e', 'u:admin', 'u:admin:e', 'u:member', 'u:member:e')
+
+\gexec
+
+SELECT '-- Review the following lines, and run as a superuser in the directory DB.'
 
 UNION ALL
 
@@ -20,9 +25,14 @@ FROM directory.organization
 
 UNION ALL
 
-SELECT format('DELETE FROM directory."user" WHERE user_id = %L;', user_id)
+SELECT format('DELETE FROM directory.user_password WHERE user_id = %L; -- %s', user_id, username)
 FROM directory.user
+WHERE username NOT IN ('owner', 'admin', 'member')
 
-ORDER BY 1
+UNION ALL
 
--- \gexec
+SELECT format('DELETE FROM directory."user" WHERE user_id = %L; -- %s', user_id, username)
+FROM directory.user
+WHERE username NOT IN ('owner', 'admin', 'member')
+
+\gexec

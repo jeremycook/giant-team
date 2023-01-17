@@ -1,7 +1,6 @@
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import { hrefOf } from "../../../helpers/links";
-import { AppsIcon, AppsOutlineIcon } from "../../../partials/Icons";
 import { Section } from "../../../partials/Section";
 import { ShowItem } from "../../../widgets/ShowItem";
 import { ProcessOperator } from "../ProcessOperator";
@@ -20,7 +19,7 @@ export function Explorer(props: { processOperator: ProcessOperator, organization
 
                 <Section name='navbar-start'>
 
-                    <div class='mr-auto flex children:p-2 children:text-light'>
+                    {/* <div class='mr-auto flex children:p-2 children:text-light'>
                         <div class='dropdown'>
                             <button class='dropdown-button text-light' type='button' id='navbar-start-apps-dropdown'>
                                 <AppsIcon class='parent-active' />
@@ -37,7 +36,7 @@ export function Explorer(props: { processOperator: ProcessOperator, organization
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
                     <div class='mx-auto flex'>
                         <div class='flex children:p-2 children:text-light'>

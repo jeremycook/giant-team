@@ -1,6 +1,4 @@
-﻿using GiantTeam.Cluster.Directory.Data;
-using GiantTeam.ComponentModel;
-using Microsoft.EntityFrameworkCore;
+﻿using GiantTeam.ComponentModel;
 
 namespace GiantTeam.Cluster.Directory.Services
 {
@@ -8,14 +6,14 @@ namespace GiantTeam.Cluster.Directory.Services
     {
         // TODO: Handle removed organizations.
         // TODO: Convert to LRU cache.
-        private static Dictionary<string, string> DumbCache { get; } = new();
+        private static readonly Dictionary<string, string> _cache = new();
 
-        private readonly IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory;
+        private readonly DirectoryManagementDataService directoryManagementDataService;
 
         public GetDatabaseNameService(
-           IDbContextFactory<ManagerDirectoryDbContext> managerDirectoryDbContextFactory)
+           DirectoryManagementDataService directoryManagementDataService)
         {
-            this.managerDirectoryDbContextFactory = managerDirectoryDbContextFactory;
+            this.directoryManagementDataService = directoryManagementDataService;
         }
 
         /// <summary>
@@ -33,16 +31,20 @@ namespace GiantTeam.Cluster.Directory.Services
                 throw new ArgumentException($"'{nameof(organizationId)}' cannot be null or whitespace.", nameof(organizationId));
             }
 
-            if (!DumbCache.TryGetValue(organizationId, out var databaseName))
+            if (!_cache.TryGetValue(organizationId, out var databaseName))
             {
-                using var managerDirectoryDbContext = managerDirectoryDbContextFactory.CreateDbContext();
-                databaseName = managerDirectoryDbContext.Organizations
-                    .Where(o => o.OrganizationId == organizationId)
-                    .Select(o => o.DatabaseName)
-                    .SingleOrDefault()
-                    ?? throw new NotFoundException($"The \"{organizationId}\" organization was not found.");
+                databaseName = directoryManagementDataService
+                    .ScalarAsync($"SELECT database_name FROM directory.organization WHERE organization_id = {organizationId}")
+                    .GetAwaiter()
+                    .GetResult()
+                    as string;
 
-                DumbCache[organizationId] = databaseName;
+                if (databaseName is null)
+                {
+                    throw new NotFoundException($"The \"{organizationId}\" organization was not found.");
+                }
+
+                _cache[organizationId] = databaseName;
             }
 
             return databaseName;

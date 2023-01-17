@@ -64,7 +64,7 @@ namespace GiantTeam.Cluster.Directory.Services
                 .SingleOrDefaultAsync(r => r.OrganizationId == input.OrganizationId)
                 ?? throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
 
-            var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organization.DatabaseName);
+            var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organization.OrganizationId);
 
             // This will throw if the user does not have permission
             // to connect to the organization's database.

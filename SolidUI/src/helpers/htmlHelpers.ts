@@ -57,3 +57,10 @@ export function getElementPosition(element: HTMLElement) {
         top: top
     };
 }
+
+export function getScreenCenter() {
+    return {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2
+    };
+}

@@ -1,8 +1,9 @@
 import { Switch, Match } from "solid-js";
-import { AppInfo, AppProps } from "."
 import { postCreateFolder } from "../bindings/GiantTeam.Organization.Api.Controllers";
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
 import { toast } from "../partials/Toasts";
+import { AppInfo } from "./AppInfo";
+import { AppProps } from "./AppProps";
 
 export function FolderApp(props: AppProps) {
     let ref: HTMLInputElement = null as any;
@@ -44,8 +45,10 @@ export function FolderApp(props: AppProps) {
 }
 
 export const FolderAppInfo: AppInfo = {
-    canHandle: (inode: Inode) => inode.inodeTypeId === 'Folder',
+    name: 'Folder',
     component: FolderApp,
+    canHandle: (inode: Inode) => inode.inodeTypeId === InodeTypeId.Folder,
+    showInAppDrawer: (inode: Inode) => inode.inodeTypeId === InodeTypeId.Folder || inode.inodeTypeId === InodeTypeId.Space,
 }
 
 export default FolderAppInfo;

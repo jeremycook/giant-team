@@ -11,7 +11,7 @@ namespace GiantTeam.Cluster.Security.Services
     {
         private readonly ValidationService validationService;
         private readonly SessionService sessionService;
-        private readonly DirectoryManagementService dataService;
+        private readonly DirectoryManagementDataService dataService;
 
         public class FetchRoleInput
         {
@@ -39,7 +39,7 @@ namespace GiantTeam.Cluster.Security.Services
         public FetchRoleService(
             ValidationService validationService,
             SessionService sessionService,
-            DirectoryManagementService dataService)
+            DirectoryManagementDataService dataService)
         {
             this.validationService = validationService;
             this.sessionService = sessionService;

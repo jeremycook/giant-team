@@ -47,7 +47,6 @@ public class FetchInodeService
 
     private async Task<Etc.Models.Inode> FetchInodeAsync(string organizationId, Guid? nodeId, string? path)
     {
-
         using var db = userDbContextFactory.NewDbContext<EtcDbContext>(organizationId);
 
         IQueryable<Etc.Data.Inode> query;
@@ -113,7 +112,7 @@ public class FetchInodeInput
     [Required]
     public string OrganizationId { get; set; } = null!;
 
-    [RequiredGuid]
+    [Required]
     public Guid InodeId { get; set; }
 }
 

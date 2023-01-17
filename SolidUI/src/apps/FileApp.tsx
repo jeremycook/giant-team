@@ -1,9 +1,10 @@
 import { createSignal, Match, Show, Switch } from "solid-js"
-import { AppInfo, AppProps } from "."
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
 import { hrefOf } from "../helpers/links";
 import { log } from "../helpers/logging";
 import { toast } from "../partials/Toasts";
+import { AppInfo } from "./AppInfo";
+import { AppProps } from "./AppProps";
 
 export function FileApp(props: AppProps) {
     let ref: HTMLInputElement = null as any;
@@ -72,7 +73,9 @@ export function FileApp(props: AppProps) {
 }
 
 export const FileAppInfo: AppInfo = {
-    canHandle: (inode: Inode) => inode.inodeTypeId === 'File',
+    name: "File",
+    canHandle: (inode: Inode) => inode.inodeTypeId === InodeTypeId.File,
+    showInAppDrawer: (inode: Inode) => inode.inodeTypeId === InodeTypeId.Folder || inode.inodeTypeId === InodeTypeId.Space,
     component: FileApp,
 }
 
