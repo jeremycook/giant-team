@@ -1,12 +1,10 @@
-import { Accessor, createSignal, Setter } from "solid-js";
-import { AppInfo } from "../../apps/AppInfo";
-import { Inode } from "../../bindings/GiantTeam.Organization.Etc.Models";
-import { immute } from "../../helpers/immute";
-import { OrganizationDetails } from "./OrganizationDetailsResource";
+import { Accessor, createContext, createSignal, ParentProps, Setter, useContext } from "solid-js";
+import { AppInfo } from "../../../apps/AppInfo";
+import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
+import { immute } from "../../../helpers/immute";
 
 export interface Process {
     appInfo: AppInfo;
-    organization: OrganizationDetails;
     inode: Inode;
 }
 
@@ -25,8 +23,8 @@ export class ProcessOperator {
         return this._processes();
     }
 
-    launch(appInfo: AppInfo, org: OrganizationDetails, inode: Inode) {
-        const newProcess = { appInfo, organization: org, inode };
+    launch(appInfo: AppInfo, inode: Inode) {
+        const newProcess = { appInfo, inode };
         this._setProcesses(x => [...x, newProcess]);
         this.activateByIndex(this.processes.length - 1);
         return this.processes.length;
@@ -46,4 +44,16 @@ export class ProcessOperator {
             return immute.removeAt(x, index);
         });
     }
+}
+
+export const ProcessOperatorContext = createContext(new ProcessOperator());
+
+export function useProcessOperatorContext() { return useContext(ProcessOperatorContext); }
+
+export function ProcessOperatorProvider(props: ParentProps) {
+    return (
+        <ProcessOperatorContext.Provider value={new ProcessOperator()}>
+            {props.children}
+        </ProcessOperatorContext.Provider>
+    );
 }

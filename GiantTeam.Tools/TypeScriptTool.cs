@@ -120,14 +120,16 @@ namespace GiantTeam.Tools
                     }
                     else if (type.IsAbstract && type.IsSealed)
                     {
-                        sb.Append($"export const {type.Name} = {{\n");
-                        foreach (var field in
-                            type.GetFields(BindingFlags.Public | BindingFlags.Static).Select(m => new { m.Name, Value = m.GetValue(null) })
-                            .Union(type.GetProperties(BindingFlags.Public | BindingFlags.Static).Where(m => m.GetSetMethod() is null).Select(m => new { m.Name, Value = m.GetValue(null) })))
+                        var fields = type
+                            .GetFields(BindingFlags.Public | BindingFlags.Static).Select(m => new { m.Name, Value = m.GetValue(null) })
+                            .Union(type.GetProperties(BindingFlags.Public | BindingFlags.Static).Where(m => (!m.PropertyType.IsClass || m.PropertyType == typeof(string)) && m.GetSetMethod() is null).Select(m => new { m.Name, Value = m.GetValue(null) }));
+
+                        sb.Append($"export enum {type.Name} {{\n");
+                        foreach (var field in fields)
                         {
                             sb.Append(tab);
                             sb.Append(field.Name);
-                            sb.Append(": ");
+                            sb.Append(" = ");
                             sb.Append($"'{field.Value}'");
                             sb.Append(",\n");
                         }

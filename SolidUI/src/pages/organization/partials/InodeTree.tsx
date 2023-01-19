@@ -1,48 +1,54 @@
-import { Accessor, Setter, createSignal, For, Show } from "solid-js";
+import { Accessor, createSignal, For, Match, Show, Switch } from "solid-js";
 import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
-import { OrganizationDetails } from "../OrganizationDetailsResource"
-import { ProcessOperator } from "../ProcessOperator"
+import { CaretDownIcon, CaretRightIcon } from "../../../partials/Icons";
 
-export class InodeNavigator {
-    private _root: Accessor<Inode>;
-    private _setRoot: Setter<Inode>;
 
-    constructor(rootInode: Inode) {
-        [this._root, this._setRoot] = createSignal(rootInode);
-    }
+export function InodeTree(props: {
+    inode: Inode,
+    selectedInode: Accessor<Inode | undefined>,
+    onClickInode: (inode: Inode) => void,
+}) {
+    const [isExpanded, expand] = createSignal(false);
 
-    get root() {
-        return this._root();
-    }
-
-    refresh() {
-        
-    }
-}
-
-export function InodeElement(props: { inode: Inode }) {
     return <>
-        {props.inode.name}
-        <ul>
-            <For each={props.inode.children}>{inode =>
-                <li>
-                    {inode.name}
-                    <For each={inode.children}>{childNode =>
-                        <InodeElement inode={childNode} />
-                    }</For>
-                </li>
-            }</For>
-        </ul>
+        <li>
+            <button
+                onclick={() => expand(!isExpanded())}>
+                <CaretRightIcon class='transition-transform transition-duration-100' classList={{
+                    'rotate-90': isExpanded(),
+                }} />
+            </button>
+            {' '}
+            <button type='button'
+                classList={{
+                    'paint-primary': props.inode === props.selectedInode()
+                }}
+                onclick={() => props.onClickInode(props.inode)}>
+                {props.inode.name}
+            </button>
+
+            <ul class='list-none pl-2 m-0 transition-all'
+                classList={{
+                    'h-0': !isExpanded(),
+                }}>
+                <For each={props.inode.children}>{childNode =>
+                    <InodeTree inode={childNode} selectedInode={props.selectedInode} onClickInode={props.onClickInode} />
+                }</For>
+            </ul>
+        </li>
     </>
 }
 
-export function InodeTree(props: {
-    organization: OrganizationDetails,
-    processOperator: ProcessOperator,
-    navigator: InodeNavigator
+export function InodeRoot(props: {
+    inode: Inode,
+    selectedInode: Accessor<Inode | undefined>,
+    onClickInode: (inode: Inode) => void,
 }) {
-    // TODO: Create InodeNavigator context
     return <>
-        <InodeElement inode={props.navigator.root} />
+        <ul class='list-none pl-2 m-0'>
+            <For each={props.inode.children}>{inode =>
+                <InodeTree inode={inode} onClickInode={props.onClickInode} selectedInode={props.selectedInode} />
+            }</For>
+        </ul>
     </>
 }

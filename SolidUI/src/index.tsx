@@ -16,6 +16,7 @@ render(
         <Router>
             <AppRoutes />
             <Toasts />
+            <div id='__portal'></div>
         </Router>
     ),
     document.getElementById('root') as HTMLElement,

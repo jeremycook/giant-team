@@ -28,9 +28,9 @@ export interface InodeChildConstraint {
     inodeTypeId: string;
 }
 
-export const InodeId = {
-    Root: '00000000-0000-0000-0000-000000000000',
-    Etc: '3e544ebc-f30a-471f-a8ec-f9e3ac84f19a',
+export enum InodeId {
+    Root = '00000000-0000-0000-0000-000000000000',
+    Etc = '3e544ebc-f30a-471f-a8ec-f9e3ac84f19a',
 }
 
 export interface InodeType {
@@ -42,33 +42,38 @@ export interface InodeTypeConstraint {
     parentInodeTypeId: string;
 }
 
-export const InodeTypeId = {
-    Root: 'Root',
-    Space: 'Space',
-    Folder: 'Folder',
-    File: 'File',
-    Table: 'Table',
+export enum InodeTypeId {
+    Root = 'Root',
+    Space = 'Space',
+    Folder = 'Folder',
+    File = 'File',
+    Table = 'Table',
 }
 
-export const PermissionId = {
-    Read: 'r',
-    Append: 'a',
-    Write: 'w',
-    Delete: 'd',
-    Drop: 'D',
-    Execute: 'x',
-    Alter: 'N',
-    ControlAccess: 'C',
-    Ownership: 'o',
+export enum PermissionId {
+    Read = 'r',
+    Append = 'a',
+    Write = 'w',
+    Delete = 'd',
+    Drop = 'D',
+    Execute = 'x',
+    Alter = 'N',
+    ControlAccess = 'C',
+    Ownership = 'o',
 }
 
-export const SchemaPermissionId = {
-    ALL: 'ALL',
-    CREATE: 'CREATE',
-    USAGE: 'USAGE',
-    R_USAGE: 'r',
-    A_CREATE: 'a',
-    Map: 'System.Collections.Generic.Dictionary`2[System.Char,System.String[]]',
+export interface Role {
+    roleId: string;
+    name: string;
+    created: Date;
+}
+
+export enum SchemaPermissionId {
+    ALL = 'ALL',
+    CREATE = 'CREATE',
+    USAGE = 'USAGE',
+    R_USAGE = 'r',
+    A_CREATE = 'a',
 }
 
 export interface Space {

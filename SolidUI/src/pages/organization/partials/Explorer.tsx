@@ -3,7 +3,7 @@ import { For } from "solid-js";
 import { hrefOf } from "../../../helpers/links";
 import { Section } from "../../../partials/Section";
 import { ShowItem } from "../../../widgets/ShowItem";
-import { ProcessOperator } from "../ProcessOperator";
+import { ProcessOperator } from "./ProcessOperatorContext";
 import { InodeResource } from "../InodeResource";
 import { OrganizationDetailsResource } from "../OrganizationDetailsResource";
 
@@ -49,7 +49,7 @@ export function Explorer(props: { processOperator: ProcessOperator, organization
                                         <For each={segments()}>{segment => <>
                                             <A class='stack-item' href={hrefOf.inode(org.organizationId, segment.path)}>{segment.name}</A>
                                         </>}</For>
-                                        <A class='stack-item' href={hrefOf.inode(org.organizationId, '')}>{org.name}</A>
+                                        <A class='stack-item' href={hrefOf.inode(org.organizationId, '')}>{org.rootInode.name}</A>
                                     </div>
                                 </div>
                             </div>

@@ -1,6 +1,6 @@
 import { createEffect, createSignal, JSX, onCleanup, onMount, ParentProps } from "solid-js";
 import { Portal } from "solid-js/web";
-import { constrainToViewport } from "../helpers/htmlHelpers";
+import { constrainToViewport, getScreenCenter } from "../helpers/htmlHelpers";
 import { DismissIcon } from "../partials/Icons";
 
 let globalZIndex = 0;
@@ -20,8 +20,8 @@ export interface DialogProps {
 }
 
 export default function Dialog(props: DialogProps & ParentProps) {
-    let ref: HTMLDivElement = null as any;
-    let moveRef: HTMLDivElement = null as any;
+    let ref: HTMLDivElement;
+    let moveRef: HTMLDivElement;
 
     const [mounted, setMounted] = createSignal(0);
     const [left, setLeft] = createSignal(0);
@@ -63,52 +63,15 @@ export default function Dialog(props: DialogProps & ParentProps) {
             setTop(mouse.clientY + offsetTop);
         }
     };
+
     onMount(() => {
         moveRef.addEventListener('mousedown', onmousedown, true);
+
         document.addEventListener('mouseup', onmouseup, true);
         document.addEventListener('mousemove', onmousemove, true);
 
         setMounted(m => m + 1);
-    });
-
-    createEffect(() => console.log(zIndex()));
-
-    createEffect(() => {
-        mounted();
-        const initialPosition = props.initialPosition;
-
-        if (initialPosition) {
-            const offsetLeft = props.anchor === DialogAnchor.topCenter
-                || props.anchor === DialogAnchor.middleCenter ?
-                -ref.clientWidth / 2 :
-                0;
-            const offsetTop =
-                props.anchor === DialogAnchor.middleCenter ?
-                    -ref.clientHeight / 2 :
-                    0;
-
-            const position = constrainToViewport({
-                // Mind the anchor
-                left: initialPosition.x + offsetLeft,
-                top: initialPosition.y + offsetTop,
-                width: ref.clientWidth,
-                height: ref.clientHeight,
-            });
-
-            setLeft(position.left);
-            setTop(position.top);
-        }
-        else {
-            const position = constrainToViewport({
-                left: 0,
-                top: 0,
-                width: ref.clientWidth,
-                height: ref.clientHeight,
-            });
-
-            setLeft(position.left);
-            setTop(position.top);
-        }
+        console.debug('mounted', mounted());
     });
 
     onCleanup(() => {
@@ -116,10 +79,41 @@ export default function Dialog(props: DialogProps & ParentProps) {
         document.removeEventListener('mouseup', onmouseup);
     });
 
-    return (
-        <Portal mount={props.mount ?? document.body}>
-            <div ref={ref} class='card b b-solid shadow-xl p-0 absolute min-w-300px max-w-100% max-h-100%' classList={{ grabbing: grabbing() }} style={{ left: left() + 'px', top: top() + 'px', "z-index": zIndex() }} role='dialog'>
-                <div ref={moveRef} class='rounded-t cursor-grab flex gap-1 mb px-2 py-1 paint-gray-100 color-gray-600'>
+    createEffect(() => {
+        mounted();
+        const initialPosition = props.initialPosition ?? getScreenCenter();
+        const anchor = props.anchor ?? (props.initialPosition ? DialogAnchor.topCenter : DialogAnchor.middleCenter);
+
+        const offsetLeft = anchor === DialogAnchor.topCenter
+            || anchor === DialogAnchor.middleCenter ?
+            -ref.clientWidth / 2 :
+            0;
+        const offsetTop =
+            anchor === DialogAnchor.middleCenter ?
+                -ref.clientHeight / 2 :
+                0;
+
+        const position = constrainToViewport({
+            left: initialPosition.x + offsetLeft,
+            top: initialPosition.y + offsetTop,
+            width: ref.clientWidth,
+            height: ref.clientHeight,
+        });
+
+        setLeft(position.left);
+        setTop(position.top);
+    });
+
+    return <>
+        <Portal mount={props.mount ?? document.getElementById('__portal') ?? undefined}>
+            <div ref={el => ref = el} class='card b b-solid shadow-xl p-0 absolute min-w-300px max-w-100% max-h-100%' classList={{
+                grabbing: grabbing(),
+            }} style={{
+                left: left() + 'px',
+                top: top() + 'px',
+                'z-index': zIndex(),
+            }} role='dialog'>
+                <div ref={el => moveRef = el} class='rounded-t cursor-grab flex gap-1 mb px-2 py-1 paint-gray-100 color-gray-600'>
                     <strong class='text-xl grow text-center'>{props.title}</strong>
                     <button type='button' onclick={props.onDismiss} aria-label="Close Dialog">
                         <DismissIcon />
@@ -130,5 +124,5 @@ export default function Dialog(props: DialogProps & ParentProps) {
                 </div>
             </div>
         </Portal>
-    )
+    </>
 }
