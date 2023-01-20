@@ -2,8 +2,8 @@
 
 namespace GiantTeam.Organization.Etc.Data;
 
-public class InodeType
+public class InodeTypeRecord
 {
-    [Key]
+    [Key, Required]
     public string InodeTypeId { get; set; } = null!;
 }

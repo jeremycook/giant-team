@@ -1,5 +1,5 @@
 import { postJson, DataResponse } from "../helpers/httpHelpers";
-import { CreateOrganizationInput, CreateOrganizationResult, FetchOrganizationInput, FetchOrganizationOutput, FetchOrganizationsOutput, QueryDirectoryInput } from "./GiantTeam.Cluster.Directory.Services";
+import { CreateOrganizationInput, CreateOrganizationResult, FetchOrganizationsOutput, QueryDirectoryInput } from "./GiantTeam.Cluster.Directory.Services";
 import { QueryTable } from "./GiantTeam.Postgres.Models";
 
 // DO NOT MODIFY BELOW THIS LINE
@@ -7,9 +7,6 @@ import { QueryTable } from "./GiantTeam.Postgres.Models";
 
 export const postCreateOrganization = async (input: CreateOrganizationInput) =>
     await postJson('/api/cluster/create-organization', input) as DataResponse<CreateOrganizationResult>;
-
-export const postFetchOrganization = async (input: FetchOrganizationInput) =>
-    await postJson('/api/cluster/fetch-organization', input) as DataResponse<FetchOrganizationOutput>;
 
 export const postFetchOrganizations = async () =>
     await postJson('/api/cluster/fetch-organizations') as DataResponse<FetchOrganizationsOutput>;

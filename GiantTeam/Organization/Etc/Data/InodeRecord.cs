@@ -4,17 +4,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiantTeam.Organization.Etc.Data;
 
-public class Inode
+public class InodeRecord
 {
     private string? _uglyName;
 
-    [Key]
+    [Obsolete("Runtime only", true)]
+    public InodeRecord() { }
+
+    public InodeRecord(DateTime created)
+    {
+        Created = created;
+    }
+
+    [Key, Required]
     public Guid InodeId { get; set; }
 
+    [Required]
     public Guid ParentInodeId { get; set; }
 
+    [Required]
     public string InodeTypeId { get; set; } = null!;
-    public InodeType? InodeType { get; set; }
 
     [StringLength(248), InodeName]
     public string Name { get; set; } = null!;
@@ -22,10 +31,8 @@ public class Inode
     [StringLength(248), InodeName]
     public string UglyName { get => _uglyName ??= Name?.Replace(' ', '_').ToLowerInvariant()!; set => _uglyName = value; }
 
-    public DateTime Created { get; set; }
+    public DateTime Created { get; private set; }
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public string Path { get; private set; } = null!;
-
-    public List<Inode>? Children { get; set; }
+    public string? Path { get; private set; } = null!;
 }

@@ -348,6 +348,12 @@ namespace GiantTeam.Tools
                 return arrayTypeName;
             }
 
+            if (type.IsGenericType &&
+                type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
+            {
+                return $"{{ [k: {TypeScriptTypeName(type.GetGenericArguments()[0])}]: {TypeScriptTypeName(type.GetGenericArguments()[1])} }}";
+            }
+
             var suffix = string.Empty;
             while (TryGetEnumerableItemType(type, out Type enumerableItemType))
             {

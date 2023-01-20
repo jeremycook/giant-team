@@ -1,6 +1,6 @@
 import { postJson, DataResponse } from "../helpers/httpHelpers";
-import { Inode } from "./GiantTeam.Organization.Etc.Models";
-import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, CreateSpaceResult, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, FetchOrganizationDetailsInput, FetchOrganizationDetailsResult, FetchInodeInput, CreateFolderInput, CreateFolderResult, QueryOrganizationInput, FetchInodeByPathInput } from "./GiantTeam.Organization.Services";
+import { Inode, OrganizationDetails } from "./GiantTeam.Organization.Etc.Models";
+import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, FetchOrganizationDetailsInput, FetchInodeInput, CreateFolderInput, QueryOrganizationInput, FetchInodeByPathInput, FetchInodeChildrenInput } from "./GiantTeam.Organization.Services";
 import { QueryTable } from "./GiantTeam.Postgres.Models";
 
 type IFormFileCollection = never;
@@ -22,19 +22,22 @@ export const postAlterDatabase = async (input: AlterDatabaseInput) =>
     await postJson('/api/organization/alter-database', input) as DataResponse<AlterDatabaseOutput>;
 
 export const postCreateFolder = async (input: CreateFolderInput) =>
-    await postJson('/api/organization/create-folder', input) as DataResponse<CreateFolderResult>;
+    await postJson('/api/organization/create-folder', input) as DataResponse<Inode>;
 
 export const postCreateSpace = async (input: CreateSpaceInput) =>
-    await postJson('/api/organization/create-space', input) as DataResponse<CreateSpaceResult>;
+    await postJson('/api/organization/create-space', input) as DataResponse<Inode>;
 
 export const postFetchInodeByPath = async (input: FetchInodeByPathInput) =>
     await postJson('/api/organization/fetch-inode-by-path', input) as DataResponse<Inode>;
+
+export const postFetchInodeChildren = async (input: FetchInodeChildrenInput) =>
+    await postJson('/api/organization/fetch-inode-children', input) as DataResponse<Inode[]>;
 
 export const postFetchInode = async (input: FetchInodeInput) =>
     await postJson('/api/organization/fetch-inode', input) as DataResponse<Inode>;
 
 export const postFetchOrganizationDetails = async (input: FetchOrganizationDetailsInput) =>
-    await postJson('/api/organization/fetch-organization-details', input) as DataResponse<FetchOrganizationDetailsResult>;
+    await postJson('/api/organization/fetch-organization-details', input) as DataResponse<OrganizationDetails>;
 
 export const postFetchRecords = async (input: FetchRecordsInput) =>
     await postJson('/api/organization/fetch-records', input) as DataResponse<FetchRecords>;

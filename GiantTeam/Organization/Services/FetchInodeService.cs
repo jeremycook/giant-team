@@ -1,9 +1,7 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.UserData.Services;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organization.Services;
@@ -11,99 +9,70 @@ namespace GiantTeam.Organization.Services;
 public class FetchInodeService
 {
     private readonly ValidationService validationService;
-    private readonly UserDbContextFactory userDbContextFactory;
+    private readonly UserDataServiceFactory userDataServiceFactory;
 
     public FetchInodeService(
         ValidationService validationService,
-        UserDbContextFactory userDbContextFactory)
+        UserDataServiceFactory userDataServiceFactory)
     {
         this.validationService = validationService;
-        this.userDbContextFactory = userDbContextFactory;
+        this.userDataServiceFactory = userDataServiceFactory;
     }
 
-    public async Task<Etc.Models.Inode> FetchInodeAsync(FetchInodeInput input)
+    public async Task<Inode> FetchInodeAsync(FetchInodeInput input)
     {
         validationService.Validate(input);
 
         return await FetchInodeAsync(input.OrganizationId, input.InodeId);
     }
 
-    public async Task<Etc.Models.Inode> FetchInodeAsync(Guid organizationId, Guid inodeId)
+    public async Task<Inode> FetchInodeAsync(Guid organizationId, Guid inodeId)
     {
-        return await FetchInodeAsync(organizationId, inodeId, null);
+        var ds = userDataServiceFactory.NewDataService(organizationId);
+
+        var inode = await ds.SingleOrDefaultAsync<Inode>($"WHERE inode_id = {inodeId}");
+
+        if (inode is null)
+            throw new NotFoundException($"Inode not found.");
+
+        return inode;
     }
 
-    public async Task<Etc.Models.Inode> FetchInodeByPathAsync(FetchInodeByPathInput input)
+
+    public async Task<Inode> FetchInodeByPathAsync(FetchInodeByPathInput input)
     {
         validationService.Validate(input);
 
         return await FetchInodeByPathAsync(input.OrganizationId, input.Path);
     }
 
-    public async Task<Etc.Models.Inode> FetchInodeByPathAsync(Guid organizationId, string path)
+    public async Task<Inode> FetchInodeByPathAsync(Guid organizationId, string path)
     {
-        return await FetchInodeAsync(organizationId, null, path);
-    }
+        var ds = userDataServiceFactory.NewDataService(organizationId);
 
-    private async Task<Etc.Models.Inode> FetchInodeAsync(Guid organizationId, Guid? nodeId, string? path)
-    {
-        using var db = userDbContextFactory.NewDbContext<EtcDbContext>(organizationId);
-
-        IQueryable<Etc.Data.Inode> query;
-
-        if (nodeId is not null)
-            query = db.Inodes.Where(o => o.InodeId == nodeId);
-        else if (path is not null)
-            query = db.Inodes.Where(o => o.Path == path.ToLower());
-        else
-            throw new InvalidOperationException($"The nodeId or path must be provided.");
-
-        var inode = await query
-            .Select(o => new Etc.Models.Inode()
-            {
-                InodeTypeId = o.InodeTypeId,
-                InodeId = o.InodeId,
-                ParentInodeId = o.ParentInodeId,
-                Name = o.Name,
-                Created = o.Created,
-                Path = o.Path,
-                ChildrenConstraints = (
-                    from con in db.InodeTypeConstraints
-                    where con.ParentInodeTypeId == o.InodeTypeId && con.InodeTypeId != con.ParentInodeTypeId
-                    orderby con.InodeTypeId
-                    select new InodeChildConstraint()
-                    {
-                        InodeTypeId = con.InodeTypeId,
-                    }
-                ).ToList(),
-                Children = o.Children!
-                    .Where(c => c.InodeId != c.ParentInodeId)
-                    .Select(c => new Etc.Models.Inode()
-                    {
-                        InodeTypeId = c.InodeTypeId,
-                        InodeId = c.InodeId,
-                        ParentInodeId = c.ParentInodeId,
-                        Name = c.Name,
-                        Created = c.Created,
-                        Path = c.Path,
-                        ChildrenConstraints = (
-                            from con in db.InodeTypeConstraints
-                            where con.ParentInodeTypeId == c.InodeTypeId && con.InodeTypeId != con.ParentInodeTypeId
-                            orderby con.InodeTypeId
-                            select new InodeChildConstraint()
-                            {
-                                InodeTypeId = con.InodeTypeId,
-                            }
-                        ).ToList(),
-                        Children = null,
-                    }).ToList()
-            })
-            .SingleOrDefaultAsync();
+        var inode = await ds.SingleOrDefaultAsync<Inode>($"WHERE path = {path.ToLowerInvariant()}");
 
         if (inode is null)
-            throw new NotFoundException($"Inode not found.");
+            throw new NotFoundException($"Inode not found at {path}.");
 
         return inode;
+    }
+
+
+    public async Task<IEnumerable<Inode>> FetchInodeChildrenAsync(FetchInodeChildrenInput input)
+    {
+        validationService.Validate(input);
+
+        return await FetchInodeChildrenAsync(input.OrganizationId, input.ParentInodeId);
+    }
+
+    public async Task<IEnumerable<Inode>> FetchInodeChildrenAsync(Guid organizationId, Guid parentInodeId)
+    {
+        var ds = userDataServiceFactory.NewDataService(organizationId);
+
+        var children = await ds.ListAsync<Inode>($"WHERE parent_inode_id = {parentInodeId} AND parent_inode_id <> inode_id ORDER BY name");
+
+        return children;
     }
 }
 
@@ -128,3 +97,13 @@ public class FetchInodeByPathInput
     [Required(AllowEmptyStrings = true)]
     public string Path { get; set; } = null!;
 }
+
+public class FetchInodeChildrenInput
+{
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
+
+    [Required]
+    public Guid ParentInodeId { get; set; }
+}
+

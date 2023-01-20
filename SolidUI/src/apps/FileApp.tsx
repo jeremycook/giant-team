@@ -2,13 +2,14 @@ import { createSignal, Match, Show, Switch } from "solid-js"
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
 import { hrefOf } from "../helpers/links";
 import { log } from "../helpers/logging";
+import { useOrganizationDetailsContext } from "../pages/organization/partials/OrganizationDetailsProvider";
 import { toast } from "../partials/Toasts";
 import { AppInfo } from "./AppInfo";
 import { AppProps } from "./AppProps";
 
 export function FileApp(props: AppProps) {
     let ref: HTMLInputElement = null as any;
-
+    const organizationDetails = useOrganizationDetailsContext();
     const [showRetry, setShowRetry] = createSignal(false);
 
     const onSubmitForm = async (e: SubmitEvent) => {
@@ -49,7 +50,6 @@ export function FileApp(props: AppProps) {
             toast.error('Something went wrong.');
             setShowRetry(true);
         }
-
     };
     return <>
         <Switch fallback={<>
@@ -58,7 +58,7 @@ export function FileApp(props: AppProps) {
             <Match when={props.inode.inodeTypeId === InodeTypeId.File}>
                 TODO: File viewer/editor
             </Match>
-            <Match when={props.inode.childrenConstraints.some(c => c.inodeTypeId === InodeTypeId.File)}>
+            <Match when={organizationDetails.inodeTypes[props.inode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.File)}>
                 <form class='flex gap-1' onsubmit={onSubmitForm}>
                     <input ref={ref} type='file' multiple required onchange={e => e.currentTarget.form?.requestSubmit()} />
                     <Show when={showRetry()}>

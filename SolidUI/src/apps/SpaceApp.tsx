@@ -1,12 +1,14 @@
 import { Switch, Match } from "solid-js";
 import { postCreateSpace } from "../bindings/GiantTeam.Organization.Api.Controllers";
-import { Inode, InodeTypeId, SchemaPermissionId } from "../bindings/GiantTeam.Organization.Etc.Models"
+import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
+import { useOrganizationDetailsContext } from "../pages/organization/partials/OrganizationDetailsProvider";
 import { toast } from "../partials/Toasts";
 import { AppInfo } from "./AppInfo";
 import { AppProps } from "./AppProps";
 
 export function SpaceApp(props: AppProps) {
     let ref: HTMLInputElement = null as any;
+    const organizationDetails = useOrganizationDetailsContext();
 
     const onSubmitForm = async (e: SubmitEvent) => {
         e.preventDefault();
@@ -14,9 +16,7 @@ export function SpaceApp(props: AppProps) {
         const response = await postCreateSpace({
             organizationId: props.organization.organizationId,
             spaceName: ref.value,
-            accessControlList: [
-                { dbRole: 'TODO', permissions: [SchemaPermissionId.R_USAGE, SchemaPermissionId.A_CREATE] }
-            ]
+            accessControlList: [/*TODO*/]
         });
 
         if (response.ok) {
@@ -34,7 +34,7 @@ export function SpaceApp(props: AppProps) {
             <Match when={props.inode.inodeTypeId === InodeTypeId.Space}>
                 TODO: Space view/editor
             </Match>
-            <Match when={props.inode.childrenConstraints.some(c => c.inodeTypeId === InodeTypeId.Space)}>
+            <Match when={organizationDetails.inodeTypes[props.inode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.Space)}>
                 <form class='flex flex-col gap-1' onsubmit={onSubmitForm}>
                     <input ref={ref} required pattern='^[^<>:"/\|?*]+$' title='Cannot contain ^ < > : " / \ | ? * ] + or $ characters.' />
                     <div>

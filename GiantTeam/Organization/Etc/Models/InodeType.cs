@@ -2,6 +2,7 @@
 
 public class InodeType
 {
-    public string InodeTypeId { get; set; } = null!;
-    public List<InodeTypeConstraint> Constraints { get; set; } = null!;
+    public string InodeTypeId { get; init; } = null!;
+    public List<string> AllowedChildNodeTypeIds { get; init; } = null!;
+    public List<string> AllowedParentNodeTypeIds { get; init; } = null!;
 }

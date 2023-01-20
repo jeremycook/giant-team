@@ -1,4 +1,5 @@
 ﻿using GiantTeam.Text;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 
 namespace GiantTeam.Postgres;
@@ -9,14 +10,14 @@ public abstract class SqlMetadataBase
 
     public virtual string? GetTableSchema(Type tableType)
     {
-        // TODO: Check TableAttribute
-        return DefaultSchema;
+        var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
+        return tableAttribute?.Schema ?? DefaultSchema;
     }
 
     public virtual string GetTableName(Type tableType)
     {
-        // TODO: Check TableAttribute
-        return TextTransformers.Snakify(tableType.Name);
+        var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
+        return TextTransformers.Snakify(tableAttribute?.Name ?? tableType.Name);
     }
 
     public Sql GetFullyQualifiedTableIdentifier(Type tableType)
@@ -47,8 +48,27 @@ public abstract class SqlMetadataBase
             .GetProperties()
             .Where(p =>
                 p.GetSetMethod() != null &&
-                (!p.PropertyType.IsClass || p.PropertyType == typeof(string))
+                (CanBeAColumn(p))
             )
             .ToArray();
+    }
+
+    private static bool CanBeAColumn(PropertyInfo p)
+    {
+        if (p.GetSetMethod() == null)
+            return false;
+
+        var propertyType = p.PropertyType;
+
+        if (!propertyType.IsClass)
+            return true;
+
+        if (propertyType == typeof(string))
+            return true;
+
+        if (propertyType.IsArray)
+            return true;
+
+        return false;
     }
 }

@@ -1,14 +1,17 @@
 import { batch, createContext, ParentProps, useContext } from "solid-js";
 import { createMutable } from "solid-js/store";
-import { postFetchInodeByPath } from "../../../bindings/GiantTeam.Organization.Api.Controllers";
+import { postFetchInodeByPath, postFetchInodeChildren } from "../../../bindings/GiantTeam.Organization.Api.Controllers";
 import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
 import { mutate } from "../../../helpers/mutate";
 
+export interface ExplorerInode extends Inode {
+    children?: ExplorerInode[],
+};
 
 export class InodeExplorer {
-    private _root: Inode;
+    private _root: ExplorerInode;
 
-    constructor(public organinzationId: string, rootInode: Inode) {
+    constructor(public organinzationId: string, rootInode: ExplorerInode) {
         this._root = createMutable(rootInode);
     }
 
@@ -35,12 +38,21 @@ export class InodeExplorer {
         await batch(async () => {
             if (path === '') {
                 this._root.name = response.data.name;
-                if (response.data.children) {
-                    this._root.children = response.data.children;
+
+                const childrenResponse = await postFetchInodeChildren({
+                    organizationId: this.organinzationId,
+                    parentInodeId: response.data.inodeId,
+                });
+
+                if (!childrenResponse.ok) {
+                    // TODO: Log something? Notify the user?
+                    return;
                 }
+
+                this._root.children = childrenResponse.data;
             }
             else {
-                let parent: Inode = this._root;
+                let parent = this._root;
                 const segments = path.split('/');
                 for (let i = 0; i < segments.length; i++) {
                     const seg = segments[i];
@@ -89,7 +101,7 @@ export const InodeExplorerContext = createContext(new InodeExplorer(undefined!, 
 
 export function useInodeExplorerContext() { return useContext(InodeExplorerContext); }
 
-export function InodeExplorerProvider(props: { organizationId: string, rootInode: Inode } & ParentProps) {
+export function InodeExplorerProvider(props: { organizationId: string, rootInode: ExplorerInode } & ParentProps) {
     return (
         <InodeExplorerContext.Provider value={new InodeExplorer(props.organizationId, props.rootInode)}>
             {props.children}

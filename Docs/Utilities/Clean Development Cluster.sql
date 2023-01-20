@@ -20,7 +20,7 @@ SELECT '-- Review the following lines, and run as a superuser in the directory D
 
 UNION ALL
 
-SELECT format('DELETE FROM directory.organization WHERE organization_id = %L;', organization_id)
+SELECT format('DELETE FROM directory.organization WHERE organization_id = %L; -- %s, %s', organization_id, name, database_name)
 FROM directory.organization
 
 UNION ALL

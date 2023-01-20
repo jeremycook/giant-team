@@ -9,7 +9,27 @@ GRANT ALL ON SCHEMA etc TO pg_database_owner;
 REVOKE ALL ON SCHEMA etc FROM PUBLIC;
 GRANT USAGE ON SCHEMA etc TO PUBLIC;
 
+-- Type: etc.permission_id
+-- DROP TYPE IF EXISTS etc.permission_id;
+
 SET search_path = etc;
+
+CREATE TYPE etc.permission_id AS ENUM (
+	'r',
+	'a',
+	'w',
+	'd',
+	'D',
+	'x',
+	'N',
+	'C',
+	'o'
+);
+
+ALTER TYPE etc.permission_id
+    OWNER TO pg_database_owner;
+
+GRANT USAGE ON TYPE etc.permission_id TO PUBLIC;
 
 -- Table: etc.role
 -- DROP TABLE IF EXISTS etc.role;
@@ -19,7 +39,8 @@ CREATE TABLE IF NOT EXISTS etc.role
     role_id character varying(50) NOT NULL, -- TODO: Check that it matches 'r:...' and is a member of this database
 	name text NOT NULL,
 	created timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
-    CONSTRAINT role_check CHECK (role_id ~ '^r:[0-9a-f]+$'),
+    CONSTRAINT role_role_id_format_check CHECK (role_id ~ '^r:[0-9a-f]{32}$'),
+    CONSTRAINT role_role_id_connect_check CHECK (has_database_privilege(role_id::name, current_database()::text, 'CONNECT'::text)),
     CONSTRAINT role_pkey PRIMARY KEY (role_id),
     CONSTRAINT role_key UNIQUE (name)
 )
@@ -241,7 +262,7 @@ GRANT EXECUTE ON FUNCTION etc.get_inode_tree(uuid) TO PUBLIC;
 -- ALTER TABLE etc.inode DROP CONSTRAINT IF EXISTS inode_inode_type_id_check;
 
 DO $$BEGIN
-IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'inode_inode_type_id_check') THEN
+IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint WHERE conname = 'inode_inode_type_id_check') THEN
 	ALTER TABLE etc.inode ADD CONSTRAINT inode_inode_type_id_check CHECK (etc.inode_inode_type_id_is_valid(inode_type_id, parent_inode_id));
 END IF;
 END$$;
@@ -251,7 +272,7 @@ END$$;
 
 CREATE TABLE IF NOT EXISTS etc.permission
 (
-    permission_id text COLLATE pg_catalog."default" NOT NULL,
+    permission_id etc.permission_id NOT NULL,
     name text COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT permission_pkey PRIMARY KEY (permission_id)
 )
@@ -279,14 +300,17 @@ INSERT INTO etc.permission (permission_id, name) VALUES
 CREATE TABLE IF NOT EXISTS etc.inode_access
 (
     inode_id uuid NOT NULL,
-    db_role text COLLATE pg_catalog."default" NOT NULL,
-    permissions char[] COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT inode_access_pkey PRIMARY KEY (inode_id, db_role),
+    role_id text COLLATE pg_catalog."default" NOT NULL,
+    permissions etc.permission_id[] NOT NULL,
+    CONSTRAINT inode_access_pkey PRIMARY KEY (inode_id, role_id),
     CONSTRAINT inode_access_inode_id_fkey FOREIGN KEY (inode_id)
         REFERENCES etc.inode (inode_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT inode_access_db_role_check CHECK (has_database_privilege(db_role::name, current_database()::text, 'CONNECT'::text))
+    CONSTRAINT inode_access_role_id_fkey FOREIGN KEY (role_id)
+        REFERENCES etc.role (role_id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 )
 
 TABLESPACE pg_default;
@@ -303,27 +327,27 @@ GRANT SELECT ON TABLE etc.inode_access TO PUBLIC;
 
 CREATE INDEX IF NOT EXISTS inode_access_permissions_index
     ON etc.inode_access USING gin
-    (permissions COLLATE pg_catalog."default")
+    (permissions)
     TABLESPACE pg_default;
 
--- FUNCTION: etc.inode_access_granted(uuid, char[])
--- DROP FUNCTION IF EXISTS etc.inode_access_granted(uuid, char[]);
+-- FUNCTION: etc.inode_access_granted(uuid, etc.permission_id[])
+-- DROP FUNCTION IF EXISTS etc.inode_access_granted(uuid, etc.permission_id[]);
 
 CREATE OR REPLACE FUNCTION etc.inode_access_granted(
 	_inode_id uuid,
-	_permissions char[])
+	_permissions etc.permission_id[])
     RETURNS boolean
     LANGUAGE 'sql'
     COST 100
     STABLE STRICT PARALLEL SAFE 
 
-RETURN ( EXISTS (SELECT 1 FROM etc.inode_access WHERE (_inode_id = inode_id AND (inode_access_granted._permissions <@ inode_access.permissions) AND (pg_has_role(CURRENT_USER, (inode_access.db_role)::name, 'USAGE'::text) OR pg_has_role(CURRENT_USER, 'pg_database_owner'::name, 'USAGE'::text))) LIMIT 1));
+RETURN ( EXISTS (SELECT 1 FROM etc.inode_access WHERE (_inode_id = inode_id AND (inode_access_granted._permissions <@ inode_access.permissions) AND (pg_has_role(CURRENT_USER, (inode_access.role_id)::name, 'USAGE'::text) OR pg_has_role(CURRENT_USER, 'pg_database_owner'::name, 'USAGE'::text))) LIMIT 1));
 
-ALTER FUNCTION etc.inode_access_granted(uuid, char[])
+ALTER FUNCTION etc.inode_access_granted(uuid, etc.permission_id[])
     OWNER TO pg_database_owner;
 
-GRANT EXECUTE ON FUNCTION etc.inode_access_granted(uuid, char[]) TO pg_database_owner;
-GRANT EXECUTE ON FUNCTION etc.inode_access_granted(uuid, char[]) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION etc.inode_access_granted(uuid, etc.permission_id[]) TO pg_database_owner;
+GRANT EXECUTE ON FUNCTION etc.inode_access_granted(uuid, etc.permission_id[]) TO PUBLIC;
 
 -- POLICY: inode_select_rls
 -- DROP POLICY IF EXISTS inode_select_rls ON etc.inode;
@@ -333,7 +357,7 @@ CREATE POLICY inode_select_rls
     AS PERMISSIVE
     FOR SELECT
     TO public
-    USING (etc.inode_access_granted(inode_id, ARRAY['r'::text]));
+    USING (etc.inode_access_granted(inode_id, ARRAY['r'::etc.permission_id]));
 
 -- POLICY: inode_insert_rls
 -- DROP POLICY IF EXISTS inode_insert_rls ON etc.inode;
@@ -343,7 +367,7 @@ CREATE POLICY inode_insert_rls
     AS PERMISSIVE
     FOR INSERT
     TO public
-    WITH CHECK (etc.inode_access_granted(inode_id, ARRAY['a'::text]));
+    WITH CHECK (etc.inode_access_granted(inode_id, ARRAY['a'::etc.permission_id]));
 
 -- POLICY: inode_update_rls
 -- DROP POLICY IF EXISTS inode_update_rls ON etc.inode;
@@ -353,7 +377,7 @@ CREATE POLICY inode_update_rls
     AS PERMISSIVE
     FOR UPDATE
     TO public
-    USING (etc.inode_access_granted(inode_id, ARRAY['w'::text]));
+    USING (etc.inode_access_granted(inode_id, ARRAY['w'::etc.permission_id]));
 
 -- POLICY: inode_delete_rls
 -- DROP POLICY IF EXISTS inode_delete_rls ON etc.inode;
@@ -363,7 +387,7 @@ CREATE POLICY inode_delete_rls
     AS PERMISSIVE
     FOR DELETE
     TO public
-    USING (etc.inode_access_granted(inode_id, ARRAY['d'::text]));
+    USING (etc.inode_access_granted(inode_id, ARRAY['d'::etc.permission_id]));
 
 ALTER TABLE IF EXISTS etc.inode
     ENABLE ROW LEVEL SECURITY;
@@ -398,7 +422,7 @@ CREATE POLICY file_select_rls
     AS PERMISSIVE
     FOR SELECT
     TO public
-    USING (etc.inode_access_granted(inode_id, ARRAY['r'::text]));
+    USING (etc.inode_access_granted(inode_id, ARRAY['r'::etc.permission_id]));
 
 -- POLICY: file_insert_rls
 -- DROP POLICY IF EXISTS file_insert_rls ON etc.file;
@@ -408,7 +432,7 @@ CREATE POLICY file_insert_rls
     AS PERMISSIVE
     FOR INSERT
     TO public
-    WITH CHECK (etc.inode_access_granted(inode_id, ARRAY['a'::text]));
+    WITH CHECK (etc.inode_access_granted(inode_id, ARRAY['a'::etc.permission_id]));
 
 -- POLICY: file_update_rls
 -- DROP POLICY IF EXISTS file_update_rls ON etc.file;
@@ -418,7 +442,7 @@ CREATE POLICY file_update_rls
     AS PERMISSIVE
     FOR UPDATE
     TO public
-    USING (etc.inode_access_granted(inode_id, ARRAY['w'::text]));
+    USING (etc.inode_access_granted(inode_id, ARRAY['w'::etc.permission_id]));
 
 -- POLICY: file_delete_rls
 -- DROP POLICY IF EXISTS file_delete_rls ON etc.file;
@@ -428,7 +452,7 @@ CREATE POLICY file_delete_rls
     AS PERMISSIVE
     FOR DELETE
     TO public
-    USING (etc.inode_access_granted(inode_id, ARRAY['d'::text]));
+    USING (etc.inode_access_granted(inode_id, ARRAY['d'::etc.permission_id]));
 
 ALTER TABLE IF EXISTS etc.file
     ENABLE ROW LEVEL SECURITY;

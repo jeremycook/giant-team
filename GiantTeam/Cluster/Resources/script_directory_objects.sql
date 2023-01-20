@@ -34,11 +34,12 @@ CREATE TABLE IF NOT EXISTS directory.organization
     organization_id uuid NOT NULL DEFAULT gen_random_uuid(),
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     database_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    database_owner_organization_role_id uuid NOT NULL,
+    db_owner_role character varying(50) COLLATE pg_catalog."default" NOT NULL,
     created timestamp with time zone NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text),
     CONSTRAINT organization_pkey PRIMARY KEY (organization_id),
     CONSTRAINT organization_database_name_key UNIQUE (database_name),
-    CONSTRAINT organization_database_name_check CHECK (database_name::text ~ '^[a-z][a-z0-9_]*$'::text)
+    CONSTRAINT organization_database_name_check CHECK (database_name::text ~ '^[a-z][a-z0-9_]*$'::text),
+    CONSTRAINT organization_db_owner_role_check CHECK (db_owner_role::text ~ '^r:[0-9a-f]{32}$'::text)
 )
 
 TABLESPACE pg_default;
@@ -49,32 +50,6 @@ ALTER TABLE IF EXISTS directory.organization
 GRANT ALL ON TABLE directory.organization TO pg_database_owner;
 GRANT DELETE, INSERT, SELECT, UPDATE ON TABLE directory.organization TO directory_manager;
 GRANT SELECT ON TABLE directory.organization TO anyone;
-
--- Table: directory.organization_role
--- DROP TABLE IF EXISTS directory.organization_role;
-
-CREATE TABLE IF NOT EXISTS directory.organization_role
-(
-    organization_role_id uuid NOT NULL DEFAULT gen_random_uuid(),
-    created timestamp with time zone NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text),
-    organization_id uuid NOT NULL,
-    name text COLLATE pg_catalog."default" NOT NULL,
-    db_role text COLLATE pg_catalog."default" NOT NULL GENERATED ALWAYS AS ('r:'::text || replace((organization_role_id)::text, '-'::text, ''::text)) STORED,
-    description text COLLATE pg_catalog."default",
-    CONSTRAINT organization_role_pkey PRIMARY KEY (organization_role_id),
-    CONSTRAINT organization_role_organization_id_fkey FOREIGN KEY (organization_id)
-        REFERENCES directory.organization (organization_id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE CASCADE
-)
-
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS directory.organization_role
-    OWNER to pg_database_owner;
-
-GRANT ALL ON TABLE directory.organization_role TO pg_database_owner;
-GRANT DELETE, INSERT, SELECT, UPDATE ON TABLE directory.organization_role TO directory_manager;
 
 -- Table: directory.user
 -- DROP TABLE IF EXISTS directory.user;

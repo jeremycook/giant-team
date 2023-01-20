@@ -1,22 +1,29 @@
-import { Switch, Match, Show, createSignal } from "solid-js";
+import { Switch, Match, createSignal } from "solid-js";
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
-import { OpenInodeDialog } from "../widgets/OpenInodeDialog";
+import { OpenInodeDialog } from "../partials/OpenInodeDialog";
+import { SaveInodeDialog } from "../partials/SaveInodeDialog";
 import { AppInfo } from "./AppInfo";
 import { AppProps } from "./AppProps";
 
+enum DialogType {
+    None,
+    Open,
+    Save,
+}
+
 export function TableApp(props: AppProps) {
-    const [showOpenDialog, setShowOpenDialog] = createSignal(false);
+    const [dialogType, setDialogType] = createSignal(DialogType.None);
 
     return <>
         <div class='pxy'>
             <Switch fallback={<>
                 <div class='grid grid-cols-2 gap-1 w-300px'>
                     <button type='button' class='card text-center b b-solid'
-                        onclick={() => setShowOpenDialog(true)}>
+                        onclick={() => setDialogType(DialogType.Open)}>
                         Open an Existing Table
                     </button>
                     <button type='button' class='card text-center b b-solid'
-                        onclick={(e) => { }}>
+                        onclick={() => setDialogType(DialogType.Save)}>
                         Create a New Table
                     </button>
                 </div>
@@ -27,13 +34,27 @@ export function TableApp(props: AppProps) {
             </Switch>
         </div>
 
-        <Show when={showOpenDialog()}>
-            <OpenInodeDialog
-                type={InodeTypeId.Table}
-                explorer={props.explorer}
-                initialInode={props.inode}
-                onDismiss={() => setShowOpenDialog(false)} />
-        </Show>
+        <Switch>
+            <Match when={dialogType() === DialogType.Open}>
+                <OpenInodeDialog
+                    type={InodeTypeId.Table}
+                    explorer={props.explorer}
+                    initialInode={props.inode}
+                    onDismiss={() => setDialogType(DialogType.None)} />
+            </Match>
+            <Match when={dialogType() === DialogType.Save}>
+                <SaveInodeDialog
+                    type={InodeTypeId.Table}
+                    explorer={props.explorer}
+                    initialInode={props.inode}
+                    onDismiss={() => setDialogType(DialogType.None)}
+                    onSubmit={(e, parentInode) => {
+                        e.preventDefault();
+                        // Save table
+                        // TODO: postCreateT
+                    }} />
+            </Match>
+        </Switch>
     </>
 }
 

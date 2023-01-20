@@ -1,5 +1,4 @@
-import { Inode } from "../bindings/GiantTeam.Organization.Etc.Models";
-import { OrganizationDetails } from "../pages/organization/OrganizationDetailsResource";
+import { Inode, OrganizationDetails } from "../bindings/GiantTeam.Organization.Etc.Models";
 import { InodeExplorer } from "../pages/organization/partials/InodeExplorerContext";
 
 

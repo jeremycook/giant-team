@@ -1,8 +1,8 @@
-import { FetchOrganizationOutput } from "../../../bindings/GiantTeam.Cluster.Directory.Services";
+import { Organization } from "../../../bindings/GiantTeam.Cluster.Directory.Models";
 import { Anchor } from "../../../partials/Anchor";
 
-export interface OrganizationModel extends FetchOrganizationOutput {
-}
+
+export interface OrganizationModel extends Organization { }
 
 export function OrganizationCard(props: { model: OrganizationModel }) {
     return (

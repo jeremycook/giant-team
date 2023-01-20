@@ -1,8 +1,16 @@
-﻿namespace GiantTeam.Organization.Etc.Models;
+﻿using GiantTeam.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+namespace GiantTeam.Organization.Etc.Models;
 
 public class File
 {
-    public Inode Inode { get; set; } = null!;
+    [Key, RequiredGuid]
+    public Guid InodeId { get; set; }
+
+    [Required]
     public string ContentType { get; set; } = null!;
+
+    [Required]
     public byte[] Data { get; set; } = null!;
 }

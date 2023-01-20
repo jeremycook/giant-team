@@ -1,7 +1,9 @@
 ﻿using GiantTeam.Cluster.Directory.Data;
+using GiantTeam.Cluster.Directory.Helpers;
 using GiantTeam.Cluster.Security.Services;
 using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
@@ -38,7 +40,7 @@ namespace GiantTeam.Cluster.Directory.Services
             this.sessionService = sessionService;
         }
 
-        public async Task<CreateOrganizationRoleResult> CreateOrganizationRoleAsync(CreateOrganizationRoleInput input)
+        public async Task<Role> CreateOrganizationRoleAsync(CreateOrganizationRoleInput input)
         {
             if (input is null)
             {
@@ -52,14 +54,13 @@ namespace GiantTeam.Cluster.Directory.Services
                 throw new UnauthorizedException("Elevated rights are required to create an organization role. Please login with elevated rights.");
             }
 
-            await using var managerDirectoryDb = await managerDirectoryDbContextFactory.CreateDbContextAsync();
-            await using var tx = await managerDirectoryDb.Database.BeginTransactionAsync();
-
-            var organization = await managerDirectoryDb
-                .Organizations
-                .Include(o => o.Roles)
-                .SingleOrDefaultAsync(r => r.OrganizationId == input.OrganizationId)
-                ?? throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
+            Data.Organization organization;
+            await using (var managerDirectoryDb = await managerDirectoryDbContextFactory.CreateDbContextAsync())
+            {
+                organization = await managerDirectoryDb.Organizations
+                    .SingleOrDefaultAsync(r => r.OrganizationId == input.OrganizationId)
+                    ?? throw new NotFoundException($"The \"{input.OrganizationId}\" organization was not found.");
+            }
 
             var elevatedDataService = userDataServiceFactory.NewElevatedDataService(organization.OrganizationId);
 
@@ -82,8 +83,8 @@ WHERE datname = current_database()
                 throw new UnauthorizedException($"You do not have permission to create an organization role for the \"{input.OrganizationId}\" organization.");
             }
 
-            if (!organization.Roles!.Any(o => o.DbRole == ownerDbRole && o.OrganizationRoleId == organization.DatabaseOwnerOrganizationRoleId))
-                throw new InvalidOperationException($"The owner of the \"{organization.DatabaseName}\" database, and the \"{organization.OrganizationId}\" organization owner role \"{organization.DatabaseOwnerOrganizationRoleId}\" do not match.");
+            if (organization.DbOwnerRole != ownerDbRole)
+                throw new InvalidOperationException($"This is a bug. The owner of the \"{organization.DatabaseName}\" database, and the \"{organization.OrganizationId}\" organization owner role do not match.");
 
             try
             {
@@ -100,39 +101,51 @@ WHERE datname = current_database()
             }
 
             // Now we know that the user is allowed to create roles for this organization,
-            // create the directory record and the new role with its members.
-            var newRole = new OrganizationRole()
+            // we can create the new DB role, and Root inode access record.
+            var newRole = new RoleRecord(DateTime.UtcNow)
             {
-                OrganizationId = organization.OrganizationId,
-                OrganizationRoleId = Guid.NewGuid(),
+                RoleId = DirectoryHelpers.OrganizationRole(Guid.NewGuid()),
                 Name = input.RoleName,
-                Created = DateTime.UtcNow,
             };
-
-            validationService.Validate(newRole);
-            managerDirectoryDb.OrganizationRoles.Add(newRole);
-            await managerDirectoryDb.SaveChangesAsync();
-
-            await using var securityScope = await securityDataService.BeginScopeAsync();
-            await securityDataService.ExecuteAsync(
-                $"CREATE ROLE {Sql.Identifier(newRole.DbRole)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.IdentifierList(input.MemberDbRoles)}");
-
-            // Grant connect to database and read root node
-            await using var elevatedScope = await elevatedDataService.BeginScopeAsync();
-            await elevatedDataService.ExecuteAsync(
-                $"SET ROLE {Sql.Identifier(ownerDbRole)}",
-                $"GRANT CONNECT ON DATABASE {Sql.Identifier(organization.DatabaseName)} TO {Sql.Identifier(newRole.DbRole)}",
-                $"INSERT INTO etc.inode_access (inode_id, db_role, permissions) VALUES ({InodeId.Root}, {newRole.DbRole}, {new[] { PermissionId.Read }})");
-
-            await tx.CommitAsync();
-            await securityScope.Transaction.CommitAsync();
-            await elevatedScope.Transaction.CommitAsync();
-
-            return new()
+            var newAccess = new InodeAccessRecord(DateTime.UtcNow)
             {
-                OrganizationRoleId = newRole.OrganizationRoleId,
-                DbRole = newRole.DbRole,
+                InodeId = InodeId.Root,
+                RoleId = newRole.RoleId,
+                Permissions = new[] { PermissionId.r },
             };
+            validationService.ValidateAll(newRole, newAccess);
+
+            await securityDataService.ExecuteAsync(
+                $"CREATE ROLE {Sql.Identifier(newRole.RoleId)} WITH INHERIT NOCREATEDB NOLOGIN NOSUPERUSER NOCREATEROLE NOREPLICATION ROLE {Sql.IdentifierList(input.MemberDbRoles)}");
+
+            try
+            {
+                // Grant connect to database and read root node
+                // Execution order matters:
+                //      The role table has a database connect privilege check
+                //      The inode_access table references the role table
+                await elevatedDataService.ExecuteAsync(
+                    Sql.Format($"SET ROLE {Sql.Identifier(ownerDbRole)}"),
+                    Sql.Format($"GRANT CONNECT ON DATABASE {Sql.Identifier(organization.DatabaseName)} TO {Sql.Identifier(newRole.RoleId)}"),
+                    Sql.Insert(newRole),
+                    Sql.Insert(newAccess));
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    await securityDataService.ExecuteAsync(
+                        $"DROP ROLE IF EXISTS {Sql.Identifier(newRole.RoleId)}");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogCritical(ex, "Role creation rollback failure.");
+                }
+
+                throw;
+            }
+
+            return Role.CreateFrom(newRole);
         }
     }
 
@@ -146,11 +159,5 @@ WHERE datname = current_database()
 
         [Required, MinLength(1)]
         public List<string> MemberDbRoles { get; set; } = null!;
-    }
-
-    public class CreateOrganizationRoleResult
-    {
-        public Guid OrganizationRoleId { get; set; }
-        public string DbRole { get; set; } = null!;
     }
 }

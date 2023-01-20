@@ -1,49 +1,49 @@
 ﻿namespace GiantTeam.Organization.Etc.Models;
 
-public static class PermissionId
+public enum PermissionId
 {
     /// <summary>
-    /// Read file, list directory contents, select rows from table
+    /// Read file, list directory contents, select rows from table, use the schema
     /// </summary>
-    public const char Read = 'r';
+    r = 'r',
 
     /// <summary>
-    /// Append data to end of file, create file in directory, insert rows into table
+    /// Append data to end of file, create file in directory, insert rows into table, create objects in the schema
     /// </summary>
-    public const char Append = 'a';
+    a = 'a',
 
     /// <summary>
     /// Write data into file, create subdirectory in directory, update rows in table
     /// </summary>
-    public const char Write = 'w';
+    w = 'w',
 
     /// <summary>
     /// Delete file, delete directory, delete rows from table
     /// </summary>
-    public const char Delete = 'd';
+    d = 'd',
 
     /// <summary>
     /// Remove children from the directory, drop table
     /// </summary>
-    public const char Drop = 'D';
+    D = 'D',
 
     /// <summary>
     /// Execute file, change directory
     /// </summary>
-    public const char Execute = 'x';
+    x = 'x',
 
     /// <summary>
-    /// Write the named attributes of the file/directory, alter the table
+    /// Write the named attributes of the file/directory, alter the table, alter the schema
     /// </summary>
-    public const char Alter = 'N';
+    N = 'N',
 
     /// <summary>
-    /// Modify access
+    /// Control access
     /// </summary>
-    public const char ControlAccess = 'C';
+    C = 'C',
 
     /// <summary>
     /// Change ownership
     /// </summary>
-    public const char Ownership = 'o';
+    o = 'o',
 }

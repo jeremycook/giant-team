@@ -1,4 +1,5 @@
-﻿using GiantTeam.Organization.Services;
+﻿using GiantTeam.Organization.Etc.Models;
+using GiantTeam.Organization.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GiantTeam.Organization.Api.Controllers;
@@ -7,7 +8,7 @@ namespace GiantTeam.Organization.Api.Controllers;
 public class CreateSpaceController : ControllerBase
 {
     [HttpPost("/api/organization/[Controller]")]
-    public async Task<CreateSpaceResult> Post(
+    public async Task<Inode> Post(
         [FromServices] CreateSpaceService service,
         CreateSpaceInput input)
     {

@@ -1,11 +1,12 @@
-import { ProcessOperator, ProcessOperatorContext } from "./partials/ProcessOperatorContext";
+import { ProcessOperatorProvider } from "./partials/ProcessOperatorContext";
 import { OrganizationDetailsResource } from "./OrganizationDetailsResource";
 import { useRouteData } from "@solidjs/router";
 import { ShowItem } from "../../widgets/ShowItem";
-import { InodeExplorer, InodeExplorerContext } from "./partials/InodeExplorerContext";
+import { InodeExplorerProvider } from "./partials/InodeExplorerContext";
 import { Organization } from "./partials/Organization";
 import { Loading } from "../../partials/Loading";
 import { createEffect } from "solid-js";
+import { OrganizationDetailsProvider } from "./partials/OrganizationDetailsProvider";
 
 export default function OrganizationPage() {
     const organizationResource = useRouteData<OrganizationDetailsResource>();
@@ -21,11 +22,16 @@ export default function OrganizationPage() {
             <Loading />
         }>{org => <>
 
-            <InodeExplorerContext.Provider value={new InodeExplorer(org.organizationId, org.rootInode)}>
-                <ProcessOperatorContext.Provider value={new ProcessOperator()}>
-                    <Organization organization={org} />
-                </ProcessOperatorContext.Provider>
-            </InodeExplorerContext.Provider>
+            <OrganizationDetailsProvider organizationDetails={org}>
+                <InodeExplorerProvider organizationId={org.organizationId} rootInode={{
+                    ...org.rootInode,
+                    children: org.rootChildren,
+                }}>
+                    <ProcessOperatorProvider>
+                        <Organization organization={org} />
+                    </ProcessOperatorProvider>
+                </InodeExplorerProvider>
+            </OrganizationDetailsProvider>
 
         </>}</ShowItem>
     </>

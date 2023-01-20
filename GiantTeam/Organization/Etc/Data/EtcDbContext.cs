@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GiantTeam.Organization.Etc.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace GiantTeam.Organization.Etc.Data;
@@ -9,10 +10,10 @@ public class EtcDbContext : DbContext
 
     public EtcDbContext(DbContextOptions<EtcDbContext> options) : base(options)
     {
-        Inodes = Set<Inode>();
-        Files = Set<File>();
-        InodeTypes = Set<InodeType>();
-        InodeTypeConstraints = Set<InodeTypeConstraint>();
+        Inodes = Set<InodeRecord>();
+        Files = Set<FileRecord>();
+        InodeTypes = Set<InodeTypeRecord>();
+        InodeTypeConstraints = Set<InodeTypeConstraintRecord>();
 
         // Keyless
         DatabaseDefinitions = Set<DatabaseDefinition>();
@@ -32,16 +33,22 @@ public class EtcDbContext : DbContext
     {
         modelBuilder.HasDefaultSchema(Schema);
 
-        modelBuilder.Entity<Inode>().HasMany(o => o.Children).WithOne().HasForeignKey(o => o.ParentInodeId).OnDelete(DeleteBehavior.NoAction);
-        modelBuilder.Entity<File>().HasOne(o => o.Inode).WithOne().HasPrincipalKey<Inode>(o => o.InodeId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<InodeRecord>().HasMany<InodeRecord>().WithOne().HasForeignKey(o => o.ParentInodeId).OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<FileRecord>().HasOne<InodeRecord>().WithOne().HasPrincipalKey<InodeRecord>(o => o.InodeId).OnDelete(DeleteBehavior.Cascade);
     }
 
     // Tables
-    public DbSet<Inode> Inodes { get; }
-    public DbSet<File> Files { get; }
-    public DbSet<InodeType> InodeTypes { get; }
-    public DbSet<InodeTypeConstraint> InodeTypeConstraints { get; }
+
+    public DbSet<InodeRecord> Inodes { get; }
+    public DbSet<FileRecord> Files { get; }
+    public DbSet<InodeAccessRecord> InodeAccesses { get; }
+
+    public DbSet<InodeTypeRecord> InodeTypes { get; }
+    public DbSet<InodeTypeConstraintRecord> InodeTypeConstraints { get; }
+
+    public DbSet<RoleRecord> Roles { get; }
 
     // Views
+
     public DbSet<DatabaseDefinition> DatabaseDefinitions { get; }
 }

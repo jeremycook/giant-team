@@ -9,29 +9,36 @@ public class FetchOrganizationDetailsService
     private readonly ValidationService validationService;
     private readonly FetchInodeService fetchInodeService;
     private readonly FetchRolesService fetchRolesService;
+    private readonly InodeTypeService inodeTypeService;
 
     public FetchOrganizationDetailsService(
         ValidationService validationService,
         FetchInodeService fetchInodeService,
-        FetchRolesService fetchRolesService)
+        FetchRolesService fetchRolesService,
+        InodeTypeService inodeTypeService)
     {
         this.validationService = validationService;
         this.fetchInodeService = fetchInodeService;
         this.fetchRolesService = fetchRolesService;
+        this.inodeTypeService = inodeTypeService;
     }
 
-    public async Task<FetchOrganizationDetailsResult> FetchOrganizationDetailsAsync(FetchOrganizationDetailsInput input)
+    public async Task<OrganizationDetails> FetchOrganizationDetailsAsync(FetchOrganizationDetailsInput input)
     {
         validationService.Validate(input);
 
         var rootInode = await fetchInodeService.FetchInodeAsync(input.OrganizationId, InodeId.Root);
+        var rootChildren = await fetchInodeService.FetchInodeChildrenAsync(input.OrganizationId, InodeId.Root);
         var roles = await fetchRolesService.FetchInodeAsync(input.OrganizationId);
+        var inodeTypes = await inodeTypeService.FetchInodeTypesDictionaryAsync(input.OrganizationId);
 
-        var result = new FetchOrganizationDetailsResult()
+        var result = new OrganizationDetails()
         {
             OrganizationId = input.OrganizationId,
             RootInode = rootInode,
-            Roles = roles.ToArray(),
+            RootChildren = rootChildren,
+            Roles = roles,
+            InodeTypes = inodeTypes,
         };
         return result;
     }
@@ -41,11 +48,4 @@ public class FetchOrganizationDetailsInput
 {
     [RequiredGuid]
     public Guid OrganizationId { get; set; }
-}
-
-public class FetchOrganizationDetailsResult
-{
-    public Guid OrganizationId { get; init; }
-    public Inode RootInode { get; init; } = null!;
-    public IEnumerable<Role> Roles { get; init; } = null!;
 }

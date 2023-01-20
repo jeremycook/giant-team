@@ -21,11 +21,14 @@ namespace GiantTeam.Cluster.Directory.Helpers
             return dbLogin + ":e";
         }
 
-        public static string? OrganizationRole(Guid organizationRoleId)
+        public static string OrganizationRole(Guid roleId)
         {
-            return organizationRoleId != Guid.Empty ?
-                $"r:{organizationRoleId:n}" :
-                null;
+            if (roleId == Guid.Empty)
+            {
+                throw new ArgumentException($"The {nameof(roleId)} argument cannot be all-zeroes.", nameof(roleId));
+            }
+
+            return $"r:{roleId:n}";
         }
     }
 }

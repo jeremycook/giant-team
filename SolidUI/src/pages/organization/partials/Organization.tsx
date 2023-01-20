@@ -1,13 +1,12 @@
 import { For, Show, createSignal } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
+import { Inode, OrganizationDetails } from "../../../bindings/GiantTeam.Organization.Etc.Models";
 import { DismissOutlineIcon, AddOutlineIcon } from "../../../partials/Icons";
 import { MainLayout } from "../../../partials/MainLayout";
 import { RenderSection } from "../../../partials/Section";
 import SectionedLayout from "../../../partials/SectionedLayout";
 import Dialog from "../../../widgets/Dialog";
 import { ShowItem } from "../../../widgets/ShowItem";
-import { OrganizationDetails } from "../OrganizationDetailsResource";
 import { AppDrawer } from "./AppDrawer";
 import { useInodeExplorerContext } from "./InodeExplorerContext";
 import { InodeRoot } from "./InodeTree";
@@ -32,7 +31,7 @@ export function Organization(props: { organization: OrganizationDetails }) {
                             <InodeRoot
                                 inode={explorer.root}
                                 selectedInode={activeInode}
-                                onClickInode={inode => setActiveInode(inode)} />
+                                onClickInode={(e, inode) => setActiveInode(inode)} />
 
                         </div>
                         <div class='grow flex flex-col'>
@@ -42,8 +41,8 @@ export function Organization(props: { organization: OrganizationDetails }) {
                                 <For each={processOperator.processes}>{(process, i) =>
                                     <div class='cursor-pointer flex b not-first:b-l-solid b-t-solid b-t-4px'
                                         classList={{
-                                            'bg-white': processOperator.activeIndex === i(),
                                             'b-t-gray': processOperator.activeIndex !== i(),
+                                            'bg-white': processOperator.activeIndex === i(),
                                             'b-t-primary': processOperator.activeIndex === i(),
                                         }}
                                         onclick={() => processOperator.activateByIndex(i())}

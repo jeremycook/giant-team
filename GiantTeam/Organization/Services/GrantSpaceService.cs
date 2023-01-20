@@ -1,6 +1,5 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
-using GiantTeam.Linq;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
@@ -17,33 +16,26 @@ namespace GiantTeam.Organization.Services
         public Guid InodeId { get; set; }
 
         [Required]
-        public Etc.Models.InodeAccess[] AccessControlList { get; set; } = null!;
-    }
-
-    public class GrantSpaceResult
-    {
+        public InodeAccess[] AccessControlList { get; set; } = null!;
     }
 
     public class GrantSpaceService
     {
-        private readonly ILogger<GrantSpaceService> logger;
         private readonly ValidationService validationService;
         private readonly FetchInodeService fetchInodeService;
         private readonly UserDataServiceFactory userDataServiceFactory;
 
         public GrantSpaceService(
-            ILogger<GrantSpaceService> logger,
             ValidationService validationService,
             FetchInodeService fetchInodeService,
             UserDataServiceFactory userDataServiceFactory)
         {
-            this.logger = logger;
             this.validationService = validationService;
             this.fetchInodeService = fetchInodeService;
             this.userDataServiceFactory = userDataServiceFactory;
         }
 
-        public async Task<GrantSpaceResult> GrantSpaceAsync(GrantSpaceInput input)
+        public async Task GrantSpaceAsync(GrantSpaceInput input)
         {
             validationService.Validate(input);
 
@@ -53,14 +45,12 @@ namespace GiantTeam.Organization.Services
                 throw new InvalidOperationException("The inode is not a space.");
             }
 
-            var result = await GrantSpaceAsync(input.OrganizationId, space.InodeId, space.UglyName, input.AccessControlList);
-
-            return result;
+            await GrantSpaceAsync(input.OrganizationId, space.InodeId, space.UglyName, input.AccessControlList);
         }
 
-        public async Task<GrantSpaceResult> GrantSpaceAsync(
+        public async Task GrantSpaceAsync(
             Guid organizationId,
-            Guid inodeId,
+            Guid schemaInodeId,
             string schemaName,
             InodeAccess[] accessControlList)
         {
@@ -75,28 +65,48 @@ namespace GiantTeam.Organization.Services
             foreach (var access in accessControlList)
             {
                 commands.Add(Sql.Format($"""
-INSERT INTO etc.inode_access (inode_id, db_role, permissions) VALUES ({inodeId}, {access.DbRole}, {access.Permissions})
+INSERT INTO etc.inode_access (inode_id, role_id, permissions) VALUES ({schemaInodeId}, {access.RoleId}, {access.Permissions})
     ON CONFLICT ON CONSTRAINT inode_access_pkey
     DO UPDATE SET permissions = {access.Permissions}
 """));
-                commands.Add(Sql.Format($"REVOKE ALL ON SCHEMA {Sql.Identifier(schemaName)} FROM {Sql.Identifier(access.DbRole)}"));
+                commands.Add(Sql.Format($"REVOKE ALL ON SCHEMA {Sql.Identifier(schemaName)} FROM {Sql.Identifier(access.RoleId)}"));
 
                 var schemaPrivileges = access.Permissions
-                    .SelectMany(permission => SchemaPermissionId.Map.TryGetValue(permission, out var value) ? value : Array.Empty<string>())
+                    .SelectMany(MapPermissionToSchemaPrivilege)
                     .Distinct()
                     .ToArray();
 
                 if (schemaPrivileges.Any())
                 {
-                    commands.Add(Sql.Format($"GRANT {Sql.Raw(schemaPrivileges.Join(','))} ON SCHEMA {Sql.Identifier(schemaName)} TO {Sql.Identifier(access.DbRole)}"));
+                    commands.Add(Sql.Format($"GRANT {Sql.Raw(string.Join(',', schemaPrivileges))} ON SCHEMA {Sql.Identifier(schemaName)} TO {Sql.Identifier(access.RoleId)}"));
                 }
             }
 
             await elevatedDataService.ExecuteAsync(commands);
+        }
 
-            return new()
+        private static GrantSchemaPrivilege[] MapPermissionToSchemaPrivilege(PermissionId permissionId)
+        {
+            return permissionId switch
             {
+                PermissionId.r => new[] { GrantSchemaPrivilege.USAGE },
+                PermissionId.a => new[] { GrantSchemaPrivilege.CREATE },
+                PermissionId.w => Array.Empty<GrantSchemaPrivilege>(),
+                PermissionId.d => Array.Empty<GrantSchemaPrivilege>(),
+                PermissionId.D => Array.Empty<GrantSchemaPrivilege>(),
+                PermissionId.x => Array.Empty<GrantSchemaPrivilege>(),
+                PermissionId.N => new[] { GrantSchemaPrivilege.ALL },
+                PermissionId.C => Array.Empty<GrantSchemaPrivilege>(),
+                PermissionId.o => Array.Empty<GrantSchemaPrivilege>(),
+                _ => throw new NotImplementedException(permissionId.ToString()),
             };
+        }
+
+        private enum GrantSchemaPrivilege
+        {
+            ALL,
+            CREATE,
+            USAGE,
         }
     }
 }

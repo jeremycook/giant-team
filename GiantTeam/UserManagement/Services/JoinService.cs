@@ -52,7 +52,7 @@ namespace GiantTeam.UserManagement.Services
         {
             validationService.Validate(input);
 
-            User user = new()
+            User user = new(DateTime.UtcNow)
             {
                 UserId = Guid.NewGuid(),
                 Name = input.Name,
@@ -60,7 +60,6 @@ namespace GiantTeam.UserManagement.Services
                 DbUser = "u:" + input.Username,
                 Email = input.Email,
                 EmailVerified = false,
-                Created = DateTimeOffset.UtcNow,
             };
             UserPassword userPassword = new()
             {

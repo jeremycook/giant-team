@@ -1,19 +1,17 @@
-﻿using GiantTeam.ComponentModel;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace GiantTeam.Organization.Etc.Models;
 
-[PrimaryKey(nameof(InodeId), nameof(DbRole))]
 public class InodeAccess
 {
-    [Required]
-    public string DbRole { get; set; } = null!;
+    [Required, StringLength(50), RegularExpression("^r:[0-9a-f]{32}$")]
+    public string RoleId { get; set; } = null!;
 
     /// <summary>
     /// An array of <see cref="PermissionId"/>s.
-    /// An empty array indicates that no permissions are granted.
+    /// If an empty array is provided then any permissions currently granted to <see cref="RoleId"/> will be revoked
     /// </summary>
     [Required]
-    public char[] Permissions { get; set; } = null!;
+    public List<PermissionId> Permissions { get; set; } = null!;
 }

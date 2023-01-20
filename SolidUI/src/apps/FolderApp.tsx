@@ -1,12 +1,14 @@
 import { Switch, Match } from "solid-js";
 import { postCreateFolder } from "../bindings/GiantTeam.Organization.Api.Controllers";
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
+import { useOrganizationDetailsContext } from "../pages/organization/partials/OrganizationDetailsProvider";
 import { toast } from "../partials/Toasts";
 import { AppInfo } from "./AppInfo";
 import { AppProps } from "./AppProps";
 
 export function FolderApp(props: AppProps) {
     let ref: HTMLInputElement = null as any;
+    const organizationDetails = useOrganizationDetailsContext();
 
     const onSubmitForm = async (e: SubmitEvent) => {
         e.preventDefault();
@@ -15,6 +17,7 @@ export function FolderApp(props: AppProps) {
             organizationId: props.organization.organizationId,
             parentInodeId: props.inode.inodeId,
             folderName: ref.value,
+            access: []
         });
 
         if (response.ok) {
@@ -32,7 +35,7 @@ export function FolderApp(props: AppProps) {
             <Match when={props.inode.inodeTypeId === InodeTypeId.Folder}>
                 TODO: Folder view/editor
             </Match>
-            <Match when={props.inode.childrenConstraints.some(c => c.inodeTypeId === InodeTypeId.Folder)}>
+            <Match when={organizationDetails.inodeTypes[props.inode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.Folder)}>
                 <form class='flex gap-1' onsubmit={onSubmitForm}>
                     <input ref={ref} required pattern='^[^<>:"/\|?*]+$' title='Cannot contain ^ < > : " / \ | ? * ] + or $ characters.' />
                     <button class='button'>

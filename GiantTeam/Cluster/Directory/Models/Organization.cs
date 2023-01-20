@@ -1,18 +1,10 @@
 ﻿using GiantTeam.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace GiantTeam.Cluster.Directory.Data
+namespace GiantTeam.Cluster.Directory.Models
 {
     public class Organization
     {
-        [Obsolete("Runtime only", true)]
-        public Organization() { }
-
-        public Organization(DateTime created)
-        {
-            Created = created;
-        }
-
         [Key, RequiredGuid]
         public Guid OrganizationId { get; set; }
 

@@ -40,6 +40,7 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
             {
                 Username = Constants.Username,
                 Password = Constants.Password,
+                Elevated = true,
             });
             if (!loginResponse.IsSuccessStatusCode) throw new Exception(loginResponse.StatusCode + ": " + await loginResponse.Content.ReadAsStringAsync());
 
@@ -50,7 +51,7 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
 
         // Create organization
         {
-            using var response = await client.PostAsJsonAsync("/api/create-organization", new CreateOrganizationInput()
+            using var response = await client.PostAsJsonAsync("/api/cluster/create-organization", new CreateOrganizationInput()
             {
                 Name = organizationName,
                 DatabaseName = databaseName,
@@ -64,17 +65,16 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
 
         // Get organization
         {
-            using var response = await client.PostAsJsonAsync("/api/fetch-organization", new FetchOrganizationInput()
-            {
-                OrganizationId = organizationId,
-            });
+            using var response = await client.PostAsJsonAsync("/api/cluster/fetch-organizations", new { });
             if (!response.IsSuccessStatusCode) throw new Exception(response.StatusCode + ": " + await response.Content.ReadAsStringAsync());
-            var data = await response.Content.ReadFromJsonAsync<FetchOrganizationOutput>();
+            var data = await response.Content.ReadFromJsonAsync<FetchOrganizationsOutput>();
 
             Assert.NotNull(data);
-            Assert.Equal(organizationId, data.OrganizationId);
-            Assert.Equal(organizationName, data.Name);
-            Assert.Equal(databaseName, data.DatabaseName);
+            var organization = data.Organizations.FirstOrDefault(o => o.OrganizationId == organizationId);
+            Assert.NotNull(organization);
+            Assert.Equal(organizationId, organization.OrganizationId);
+            Assert.Equal(organizationName, organization.Name);
+            Assert.Equal(databaseName, organization.DatabaseName);
         }
     }
 }

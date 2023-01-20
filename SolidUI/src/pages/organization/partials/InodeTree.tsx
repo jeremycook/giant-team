@@ -1,19 +1,21 @@
-import { Accessor, createSignal, For, Match, Show, Switch } from "solid-js";
-import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
-import { CaretDownIcon, CaretRightIcon } from "../../../partials/Icons";
+import { Accessor, createSignal, For, Setter } from "solid-js";
+import { CaretRightIcon } from "../../../partials/Icons";
+import { ExplorerInode } from "./InodeExplorerContext";
 
 
 export function InodeTree(props: {
-    inode: Inode,
-    selectedInode: Accessor<Inode | undefined>,
-    onClickInode: (inode: Inode) => void,
+    inode: ExplorerInode,
+    selectedInode: Accessor<ExplorerInode | undefined>,
+    onClickInode: (e: Event, inode: ExplorerInode, options: { isExpanded: boolean, expand: Setter<boolean> }) => void,
 }) {
     const [isExpanded, expand] = createSignal(false);
 
+    const toggleExpanded = () => expand(!isExpanded());
+
     return <>
         <li>
-            <button
-                onclick={() => expand(!isExpanded())}>
+            <button type='button'
+                onclick={() => toggleExpanded()}>
                 <CaretRightIcon class='transition-transform transition-duration-100' classList={{
                     'rotate-90': isExpanded(),
                 }} />
@@ -23,11 +25,11 @@ export function InodeTree(props: {
                 classList={{
                     'paint-primary': props.inode === props.selectedInode()
                 }}
-                onclick={() => props.onClickInode(props.inode)}>
+                onclick={e => props.onClickInode(e, props.inode, { isExpanded: isExpanded(), expand })}>
                 {props.inode.name}
             </button>
 
-            <ul class='list-none pl-2 m-0 transition-all'
+            <ul class='list-none pl-2 m-0 overflow-hidden transition-all transition-duration-100'
                 classList={{
                     'h-0': !isExpanded(),
                 }}>
@@ -40,14 +42,14 @@ export function InodeTree(props: {
 }
 
 export function InodeRoot(props: {
-    inode: Inode,
-    selectedInode: Accessor<Inode | undefined>,
-    onClickInode: (inode: Inode) => void,
+    inode: ExplorerInode,
+    selectedInode: Accessor<ExplorerInode | undefined>,
+    onClickInode: (e: Event, inode: ExplorerInode, options: { isExpanded: boolean, expand: Setter<boolean> }) => void,
 }) {
     return <>
         <ul class='list-none pl-2 m-0'>
             <For each={props.inode.children}>{inode =>
-                <InodeTree inode={inode} onClickInode={props.onClickInode} selectedInode={props.selectedInode} />
+                <InodeTree {...props} />
             }</For>
         </ul>
     </>

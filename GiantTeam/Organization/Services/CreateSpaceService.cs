@@ -1,8 +1,8 @@
-﻿using GiantTeam.Cluster.Directory.Services;
-using GiantTeam.ComponentModel;
+﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
+using GiantTeam.Text;
 using GiantTeam.UserData.Services;
 using System.ComponentModel.DataAnnotations;
 
@@ -20,52 +20,33 @@ public class CreateSpaceInput
     public InodeAccess[] AccessControlList { get; set; } = null!;
 }
 
-public class CreateSpaceResult
-{
-    public Guid InodeId { get; set; }
-}
-
 public class CreateSpaceService
 {
-    private readonly ILogger<CreateSpaceService> logger;
     private readonly ValidationService validationService;
-    private readonly FetchOrganizationService fetchOrganizationService;
-    private readonly UserDbContextFactory userDbContextFactory;
     private readonly UserDataServiceFactory userDataServiceFactory;
     private readonly GrantSpaceService grantSpaceService;
 
     public CreateSpaceService(
-        ILogger<CreateSpaceService> logger,
         ValidationService validationService,
-        FetchOrganizationService fetchOrganizationService,
-        UserDbContextFactory userDbContextFactory,
         UserDataServiceFactory userDataServiceFactory,
         GrantSpaceService grantSpaceService)
     {
-        this.logger = logger;
         this.validationService = validationService;
-        this.fetchOrganizationService = fetchOrganizationService;
-        this.userDbContextFactory = userDbContextFactory;
         this.userDataServiceFactory = userDataServiceFactory;
         this.grantSpaceService = grantSpaceService;
     }
 
-    public async Task<CreateSpaceResult> CreateSpaceAsync(CreateSpaceInput input)
-    {
-        return await ProcessAsync(input);
-    }
-
-    private async Task<CreateSpaceResult> ProcessAsync(CreateSpaceInput input)
+    public async Task<Inode> CreateSpaceAsync(CreateSpaceInput input)
     {
         validationService.Validate(input);
 
-        var space = new Etc.Data.Inode()
+        var space = new Inode()
         {
             InodeId = Guid.NewGuid(),
             ParentInodeId = InodeId.Root,
             Name = input.SpaceName,
+            UglyName = TextTransformers.Snakify(input.SpaceName),
             InodeTypeId = InodeTypeId.Space,
-            Created = DateTime.UtcNow,
         };
 
         validationService.Validate(space);
@@ -73,6 +54,7 @@ public class CreateSpaceService
         string schemaName = space.UglyName;
 
         // Create the SCHEMA as the pg_database_owner.
+        var schemaCreated = false;
         var elevatedDataService = userDataServiceFactory.NewElevatedDataService(input.OrganizationId);
         try
         {
@@ -80,6 +62,8 @@ public class CreateSpaceService
                 Sql.Format($"SET ROLE pg_database_owner"),
                 Sql.Format($"CREATE SCHEMA {Sql.Identifier(schemaName)}"),
                 Sql.Insert(space));
+
+            schemaCreated = true;
 
             await grantSpaceService.GrantSpaceAsync(
                 input.OrganizationId,
@@ -89,16 +73,17 @@ public class CreateSpaceService
         }
         catch (Exception)
         {
-            await elevatedDataService.ExecuteAsync(
-                Sql.Format($"SET ROLE pg_database_owner"),
-                Sql.Format($"DROP SCHEMA IF EXISTS {Sql.Identifier(schemaName)}"));
+            if (schemaCreated)
+            {
+                await elevatedDataService.ExecuteAsync(
+                    Sql.Format($"SET ROLE pg_database_owner"),
+                    Sql.Delete(space),
+                    Sql.Format($"DROP SCHEMA IF EXISTS {Sql.Identifier(schemaName)}"));
+            }
 
             throw;
         }
 
-        return new()
-        {
-            InodeId = space.InodeId,
-        };
+        return space;
     }
 }
