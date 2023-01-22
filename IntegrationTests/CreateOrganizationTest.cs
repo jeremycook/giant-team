@@ -1,4 +1,6 @@
 using GiantTeam.Cluster.Directory.Services;
+using GiantTeam.Organization.Etc.Models;
+using GiantTeam.Organization.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using static GiantTeam.Authentication.Api.Controllers.LoginController;
 using static GiantTeam.UserManagement.Services.JoinService;
@@ -20,8 +22,9 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
         // Arrange
         var client = _factory.CreateClient();
         string organizationName = $"Test {DateTime.Now:MMdd HHmmss}";
-        Guid organizationId;
         string databaseName = organizationName.ToLower().Replace(" ", "_");
+        Guid organizationId;
+        OrganizationDetails organizationDetails;
 
         // Register and login with fixed credentials that may already exist
         {
@@ -63,18 +66,61 @@ public class CreateOrganizationTest : IClassFixture<WebApplicationFactory<WebApp
             organizationId = data.OrganizationId;
         }
 
-        // Get organization
+        // Get organizations
         {
             using var response = await client.PostAsJsonAsync("/api/cluster/fetch-organizations", new { });
             if (!response.IsSuccessStatusCode) throw new Exception(response.StatusCode + ": " + await response.Content.ReadAsStringAsync());
             var data = await response.Content.ReadFromJsonAsync<FetchOrganizationsOutput>();
 
             Assert.NotNull(data);
+
             var organization = data.Organizations.FirstOrDefault(o => o.OrganizationId == organizationId);
             Assert.NotNull(organization);
             Assert.Equal(organizationId, organization.OrganizationId);
             Assert.Equal(organizationName, organization.Name);
             Assert.Equal(databaseName, organization.DatabaseName);
+        }
+
+        // Get organization
+        {
+            using var response = await client.PostAsJsonAsync("/api/organization/fetch-organization-details", new FetchOrganizationDetailsInput { OrganizationId = organizationId });
+            if (!response.IsSuccessStatusCode) throw new Exception(response.StatusCode + ": " + await response.Content.ReadAsStringAsync());
+            var data = (await response.Content.ReadFromJsonAsync<OrganizationDetails>())!;
+
+            Assert.NotNull(data);
+            Assert.Equal(organizationId, data.OrganizationId);
+            Assert.Equal(organizationName, data.RootInode.Name);
+            Assert.Single(data.RootChildren);
+            Assert.Equal(3, data.Roles.Count());
+
+            organizationDetails = data;
+        }
+
+        // Create a table
+        {
+            var ownerRole = organizationDetails.Roles.Single(o => o.Name == "Owner");
+            var adminRole = organizationDetails.Roles.Single(o => o.Name == "Admin");
+            var memberRole = organizationDetails.Roles.Single(o => o.Name == "Member");
+            var homeInode = organizationDetails.RootChildren.Single(o => o.UglyName == "home");
+            using var response = await client.PostAsJsonAsync("/api/organization/create-table", new CreateTableInput
+            {
+                OrganizationId = organizationId,
+                ParentInodeId = homeInode.InodeId,
+                TableName = "Test Table",
+                AccessControlList = new()
+                {
+                    new() { RoleId = ownerRole.RoleId, Permissions = new[] { PermissionId.m } },
+                    new() { RoleId = adminRole.RoleId, Permissions = new[] { PermissionId.r, PermissionId.a, PermissionId.w, PermissionId.d } },
+                    new() { RoleId = memberRole.RoleId, Permissions = new[] { PermissionId.r } },
+                }
+            });
+            if (!response.IsSuccessStatusCode) throw new Exception(response.StatusCode + ": " + await response.Content.ReadAsStringAsync());
+            var data = await response.Content.ReadFromJsonAsync<Inode>();
+
+            Assert.NotNull(data);
+            Assert.Equal("Test Table", data.Name);
+            Assert.Equal("test_table", data.UglyName);
+            Assert.Equal(InodeTypeId.Table, data.InodeTypeId);
         }
     }
 }

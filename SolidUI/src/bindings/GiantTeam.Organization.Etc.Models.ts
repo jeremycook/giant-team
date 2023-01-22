@@ -58,15 +58,11 @@ export interface OrganizationDetails {
 }
 
 export enum PermissionId {
-    C = 67,
-    D = 68,
-    N = 78,
     a = 97,
     d = 100,
-    o = 111,
+    m = 109,
     r = 114,
     w = 119,
-    x = 120,
 }
 
 export interface Role {

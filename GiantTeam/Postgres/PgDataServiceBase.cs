@@ -87,7 +87,7 @@ namespace GiantTeam.Postgres
             {
                 return await batch.ExecuteNonQueryAsync();
             }
-            catch (DbException ex)
+            catch (Exception ex)
             {
                 Logger.LogError(ex, "Error executing batch commands {CommandTextList}", batch.BatchCommands.OfType<NpgsqlBatchCommand>().Select(cmd => cmd.CommandText));
                 throw;
@@ -239,19 +239,19 @@ namespace GiantTeam.Postgres
             if (sql is null)
             {
                 var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
             }
             else if (WhereRegex().IsMatch(sql.Unsanitized))
             {
                 // WHERE clause
                 var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql} LIMIT 2");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql} LIMIT 2");
             }
             else if (FromRegex().IsMatch(sql.Unsanitized))
             {
                 // FROM clause
                 var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql} LIMIT 2");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} {sql} LIMIT 2");
             }
             else
             {
@@ -305,19 +305,19 @@ namespace GiantTeam.Postgres
             if (sql is null)
             {
                 var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} LIMIT 2");
             }
             else if (WhereRegex().IsMatch(sql.Unsanitized))
             {
                 // WHERE clause
                 var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql} LIMIT 2");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql} LIMIT 2");
             }
             else if (FromRegex().IsMatch(sql.Unsanitized))
             {
                 // FROM clause
                 var type = typeof(T);
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql} LIMIT 2");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} {sql} LIMIT 2");
             }
             else
             {
@@ -376,22 +376,22 @@ namespace GiantTeam.Postgres
 
             if (sql is null)
             {
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)}");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} FROM {GetTableIdentifier(type)}");
             }
             else if (FromRegex().IsMatch(sql.Unsanitized))
             {
                 // FROM clause
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} {sql}");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} {sql}");
             }
             else if (WhereRegex().IsMatch(sql.Unsanitized))
             {
                 // WHERE clause
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql}");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql}");
             }
             else if (OrderByRegex().IsMatch(sql.Unsanitized))
             {
                 // ORDER BY clause
-                sql = Format($"SELECT {GetColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql}");
+                sql = Format($"SELECT {GetSelectColumnIdentifiers(type)} FROM {GetTableIdentifier(type)} {sql}");
             }
 
             var list = new List<T>();

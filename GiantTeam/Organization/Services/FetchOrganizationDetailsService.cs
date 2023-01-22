@@ -29,7 +29,7 @@ public class FetchOrganizationDetailsService
 
         var rootInode = await fetchInodeService.FetchInodeAsync(input.OrganizationId, InodeId.Root);
         var rootChildren = await fetchInodeService.FetchInodeChildrenAsync(input.OrganizationId, InodeId.Root);
-        var roles = await fetchRolesService.FetchInodeAsync(input.OrganizationId);
+        var roles = await fetchRolesService.FetchRolesAsync(input.OrganizationId);
         var inodeTypes = await inodeTypeService.FetchInodeTypesDictionaryAsync(input.OrganizationId);
 
         var result = new OrganizationDetails()

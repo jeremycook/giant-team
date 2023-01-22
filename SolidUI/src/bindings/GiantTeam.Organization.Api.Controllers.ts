@@ -27,6 +27,9 @@ export const postCreateFolder = async (input: CreateFolderInput) =>
 export const postCreateSpace = async (input: CreateSpaceInput) =>
     await postJson('/api/organization/create-space', input) as DataResponse<Inode>;
 
+export const postCreateTable = async (input: CreateTableInput) =>
+    await postJson('/api/organization/create-table', input) as DataResponse<Inode>;
+
 export const postFetchInodeByPath = async (input: FetchInodeByPathInput) =>
     await postJson('/api/organization/fetch-inode-by-path', input) as DataResponse<Inode>;
 

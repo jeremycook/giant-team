@@ -1,5 +1,6 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.UserData.Services;
 using System.ComponentModel.DataAnnotations;
@@ -30,12 +31,12 @@ public class FetchInodeService
     {
         var ds = userDataServiceFactory.NewDataService(organizationId);
 
-        var inode = await ds.SingleOrDefaultAsync<Inode>($"WHERE inode_id = {inodeId}");
+        var inode = await ds.SingleOrDefaultAsync<InodeRecord>($"WHERE inode_id = {inodeId}");
 
         if (inode is null)
             throw new NotFoundException($"Inode not found.");
 
-        return inode;
+        return Inode.CreateFrom(inode);
     }
 
 
@@ -50,29 +51,29 @@ public class FetchInodeService
     {
         var ds = userDataServiceFactory.NewDataService(organizationId);
 
-        var inode = await ds.SingleOrDefaultAsync<Inode>($"WHERE path = {path.ToLowerInvariant()}");
+        var inode = await ds.SingleOrDefaultAsync<InodeRecord>($"WHERE path = {path.ToLowerInvariant()}");
 
         if (inode is null)
             throw new NotFoundException($"Inode not found at {path}.");
 
-        return inode;
+        return Inode.CreateFrom(inode);
     }
 
 
-    public async Task<IEnumerable<Inode>> FetchInodeChildrenAsync(FetchInodeChildrenInput input)
+    public async Task<IReadOnlyList<Inode>> FetchInodeChildrenAsync(FetchInodeChildrenInput input)
     {
         validationService.Validate(input);
 
         return await FetchInodeChildrenAsync(input.OrganizationId, input.ParentInodeId);
     }
 
-    public async Task<IEnumerable<Inode>> FetchInodeChildrenAsync(Guid organizationId, Guid parentInodeId)
+    public async Task<IReadOnlyList<Inode>> FetchInodeChildrenAsync(Guid organizationId, Guid parentInodeId)
     {
         var ds = userDataServiceFactory.NewDataService(organizationId);
 
-        var children = await ds.ListAsync<Inode>($"WHERE parent_inode_id = {parentInodeId} AND parent_inode_id <> inode_id ORDER BY name");
+        var children = await ds.ListAsync<InodeRecord>($"WHERE parent_inode_id = {parentInodeId} AND parent_inode_id <> inode_id ORDER BY name");
 
-        return children;
+        return children.Select(Inode.CreateFrom).ToArray();
     }
 }
 

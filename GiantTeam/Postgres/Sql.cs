@@ -160,6 +160,7 @@ namespace GiantTeam.Postgres
         private static readonly Dictionary<Type, SqlMetadataBase> _sqlmetadataCache = new();
         private static readonly Dictionary<Type, Sql> _tableNameCache = new();
         private static readonly Dictionary<Type, Sql> _columnNameCache = new();
+        private static readonly Dictionary<Type, PropertyInfo[]> _selectPropertiesCache = new();
         private static readonly Dictionary<Type, PropertyInfo[]> _insertPropertiesCache = new();
 
         public static SqlMetadataBase GetSqlMetadata<TTable>()
@@ -210,22 +211,22 @@ namespace GiantTeam.Postgres
             return sql;
         }
 
-        public static Sql GetColumnIdentifiers<TTable>()
+        public static Sql GetSelectColumnIdentifiers<TTable>()
         {
-            return GetColumnIdentifiers(typeof(TTable));
+            return GetSelectColumnIdentifiers(typeof(TTable));
         }
 
-        public static Sql GetColumnIdentifiers(Type type)
+        public static Sql GetSelectColumnIdentifiers(Type type)
         {
             if (!_columnNameCache.TryGetValue(type, out var sql))
             {
                 var sqlMetadata = GetSqlMetadata(type);
 
-                if (!_insertPropertiesCache.TryGetValue(type, out var properties))
+                if (!_selectPropertiesCache.TryGetValue(type, out var properties))
                 {
-                    _insertPropertiesCache[type] =
+                    _selectPropertiesCache[type] =
                     properties =
-                        sqlMetadata.GetColumnProperties(type);
+                        sqlMetadata.GetSelectProperties(type);
                 }
 
                 _columnNameCache[type] =
@@ -245,7 +246,7 @@ namespace GiantTeam.Postgres
             {
                 _insertPropertiesCache[type] =
                 properties =
-                    sqlMetadata.GetColumnProperties(type);
+                    sqlMetadata.GetInsertProperties(type);
             }
 
             var columns = properties

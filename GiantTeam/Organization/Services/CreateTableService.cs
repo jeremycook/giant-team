@@ -1,9 +1,12 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
 using GiantTeam.UserData.Services;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace GiantTeam.Organization.Services;
 
@@ -24,6 +27,7 @@ public class CreateTableInput
 
 public class CreateTableService
 {
+    private readonly ILogger<CreateTableService> logger;
     private readonly ValidationService validationService;
     private readonly InodeTypeService inodeTypeService;
     private readonly FetchInodeService fetchInodeService;
@@ -31,12 +35,14 @@ public class CreateTableService
     private readonly GrantTableService grantTableService;
 
     public CreateTableService(
+        ILogger<CreateTableService> logger,
         ValidationService validationService,
         InodeTypeService inodeTypeService,
         FetchInodeService fetchInodeService,
         UserDataServiceFactory userDataServiceFactory,
         GrantTableService grantTableService)
     {
+        this.logger = logger;
         this.validationService = validationService;
         this.inodeTypeService = inodeTypeService;
         this.fetchInodeService = fetchInodeService;
@@ -60,7 +66,7 @@ public class CreateTableService
             throw new InvalidRequestException($"A Table cannot be created in a {parentInode.InodeTypeId}.");
         }
 
-        var table = new Inode()
+        var tableRecord = new InodeRecord(DateTime.UtcNow)
         {
             InodeId = Guid.NewGuid(),
             ParentInodeId = input.ParentInodeId,
@@ -68,7 +74,7 @@ public class CreateTableService
             InodeTypeId = InodeTypeId.Table,
         };
 
-        validationService.Validate(table);
+        validationService.Validate(tableRecord);
 
         var space = await fetchInodeService.FetchInodeByPathAsync(input.OrganizationId, parentInode.Path.Split('/').First());
         if (space.InodeTypeId != InodeTypeId.Space)
@@ -77,18 +83,19 @@ public class CreateTableService
         }
 
         string schemaName = space.UglyName;
-        string tableName = table.UglyName;
+        string tableName = tableRecord.UglyName;
+
+        var createAndGrantCommands = new[]
+        {
+            Sql.Format($"SET ROLE pg_database_owner"),
+            Sql.Format($"CREATE TABLE {Sql.Identifier(schemaName, tableName)} ()"),
+            Sql.Insert(tableRecord),
+        }.Concat(grantTableService.GenerateGrantTableCommands(schemaName, tableName, tableRecord.InodeId, input.AccessControlList));
 
         var elevatedDataService = userDataServiceFactory.NewElevatedDataService(input.OrganizationId);
-        await elevatedDataService.ExecuteAsync(
-            Sql.Format($"CREATE TABLE {Sql.Identifier(schemaName, tableName)}"),
-            Sql.Insert(table));
-        await grantTableService.GrantTableAsync(
-            input.OrganizationId,
-            space,
-            table,
-            input.AccessControlList);
+        await elevatedDataService.ExecuteAsync(createAndGrantCommands);
 
-        return await fetchInodeService.FetchInodeAsync(input.OrganizationId, table.InodeId);
+        var result = await fetchInodeService.FetchInodeAsync(input.OrganizationId, tableRecord.InodeId);
+        return result;
     }
 }

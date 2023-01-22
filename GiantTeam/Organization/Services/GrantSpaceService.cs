@@ -91,13 +91,7 @@ INSERT INTO etc.inode_access (inode_id, role_id, permissions) VALUES ({schemaIno
             {
                 PermissionId.r => new[] { GrantSchemaPrivilege.USAGE },
                 PermissionId.a => new[] { GrantSchemaPrivilege.CREATE },
-                PermissionId.w => Array.Empty<GrantSchemaPrivilege>(),
-                PermissionId.d => Array.Empty<GrantSchemaPrivilege>(),
-                PermissionId.D => Array.Empty<GrantSchemaPrivilege>(),
-                PermissionId.x => Array.Empty<GrantSchemaPrivilege>(),
-                PermissionId.N => new[] { GrantSchemaPrivilege.ALL },
-                PermissionId.C => Array.Empty<GrantSchemaPrivilege>(),
-                PermissionId.o => Array.Empty<GrantSchemaPrivilege>(),
+                PermissionId.m => new[] { GrantSchemaPrivilege.ALL },
                 _ => throw new NotImplementedException(permissionId.ToString()),
             };
         }

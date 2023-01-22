@@ -13,5 +13,5 @@ public class InodeAccess
     /// If an empty array is provided then any permissions currently granted to <see cref="RoleId"/> will be revoked
     /// </summary>
     [Required]
-    public List<PermissionId> Permissions { get; set; } = null!;
+    public PermissionId[] Permissions { get; set; } = null!;
 }

@@ -23,27 +23,7 @@ public enum PermissionId
     d = 'd',
 
     /// <summary>
-    /// Remove children from the directory, drop table
+    /// Manage file, manage directory, alter table, alter schema
     /// </summary>
-    D = 'D',
-
-    /// <summary>
-    /// Execute file, change directory
-    /// </summary>
-    x = 'x',
-
-    /// <summary>
-    /// Write the named attributes of the file/directory, alter the table, alter the schema
-    /// </summary>
-    N = 'N',
-
-    /// <summary>
-    /// Control access
-    /// </summary>
-    C = 'C',
-
-    /// <summary>
-    /// Change ownership
-    /// </summary>
-    o = 'o',
+    m = 'm',
 }

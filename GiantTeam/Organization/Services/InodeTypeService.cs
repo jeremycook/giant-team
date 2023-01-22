@@ -56,12 +56,14 @@ namespace GiantTeam.Organization.Services
 
         public async ValueTask<bool> CanBeInAsyc(Guid organizationId, string inodeTypeId, string parentInodeTypeId)
         {
-            return (await FetchInodeTypeAsync(organizationId, inodeTypeId)).AllowedParentNodeTypeIds.Contains(parentInodeTypeId);
+            InodeType inodeType = await FetchInodeTypeAsync(organizationId, inodeTypeId);
+            return inodeType.AllowedParentNodeTypeIds.Contains(parentInodeTypeId);
         }
 
         public async ValueTask<bool> CanContainAsync(Guid organizationId, string inodeTypeId, string childInodeTypeId)
         {
-            return (await FetchInodeTypeAsync(organizationId, inodeTypeId)).AllowedChildNodeTypeIds.Contains(childInodeTypeId);
+            InodeType inodeType = await FetchInodeTypeAsync(organizationId, inodeTypeId);
+            return inodeType.AllowedChildNodeTypeIds.Contains(childInodeTypeId);
         }
     }
 }

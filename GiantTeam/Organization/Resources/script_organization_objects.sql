@@ -15,15 +15,11 @@ GRANT USAGE ON SCHEMA etc TO PUBLIC;
 SET search_path = etc;
 
 CREATE TYPE etc.permission_id AS ENUM (
-	'r',
-	'a',
-	'w',
-	'd',
-	'D',
-	'x',
-	'N',
-	'C',
-	'o'
+	'r', -- read
+	'a', -- append
+	'w', -- write
+	'd', -- delete
+	'm'  -- manage
 );
 
 ALTER TYPE etc.permission_id
@@ -287,11 +283,7 @@ INSERT INTO etc.permission (permission_id, name) VALUES
 	('a', 'Append data to end of file, create file in directory, insert rows into table'),
 	('w', 'Write data into file, create subdirectory in directory, update rows in table'),
 	('d', 'Delete file, delete directory, delete rows from table'),
-	('D', 'Remove children from the directory, drop table'),
-	('x', 'Execute file, change directory'),
-	('N', 'Write the named attributes of the file/directory, alter the table'),
-	('C', 'Modify inode access'),
-	('o', 'Change inode ownership')
+	('m', 'Write the named attributes of the file/directory, alter the table')
 	ON CONFLICT DO NOTHING;
 
 -- Table: etc.inode_access
@@ -562,13 +554,15 @@ GRANT SELECT ON TABLE etc.database_definition TO PUBLIC;
 INSERT INTO etc.inode_type (inode_type_id) values 
 	('Space'),
 	('Folder'),
-	('File')
+	('File'),
+	('Table')
 	ON CONFLICT DO NOTHING;
 
 INSERT INTO etc.inode_type_constraint (inode_type_id, parent_inode_type_id) values 
 	('Space', 'Root'),
 	('Folder', 'Space'), ('Folder', 'Folder'),
-	('File', 'Space'), ('File', 'Folder')
+	('File', 'Space'), ('File', 'Folder'),
+	('Table', 'Space'), ('Table', 'Folder')
 	ON CONFLICT DO NOTHING;
 
 INSERT INTO etc.inode (inode_id, parent_inode_id, inode_type_id, name, ugly_name) values

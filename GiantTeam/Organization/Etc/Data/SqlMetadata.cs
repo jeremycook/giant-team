@@ -1,7 +1,7 @@
 ﻿using GiantTeam.Postgres;
 using GiantTeam.Text;
 
-namespace GiantTeam.Organization.Etc;
+namespace GiantTeam.Organization.Etc.Data;
 
 public class SqlMetadata : SqlMetadataBase
 {

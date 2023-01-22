@@ -184,8 +184,8 @@ namespace GiantTeam.Cluster.Directory.Services
                     SpaceName = "Home",
                     AccessControlList = new InodeAccess[]
                     {
-                        new () { RoleId = admin.RoleId, Permissions = new() { PermissionId.r, PermissionId.a } },
-                        new () { RoleId = member.RoleId, Permissions = new() { PermissionId.r } },
+                        new () { RoleId = admin.RoleId, Permissions = new[] { PermissionId.r, PermissionId.a } },
+                        new () { RoleId = member.RoleId, Permissions = new[] { PermissionId.r } },
                     },
                 });
 

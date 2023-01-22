@@ -64,42 +64,39 @@ namespace GiantTeam.Organization.Services
 
             var schemaName = space.UglyName;
             var tableName = table.UglyName;
-            var tableGrants = accessControlList
-                .Select(acl => new GrantTable(acl));
+
+            List<Sql> grantCommands = GenerateGrantTableCommands(schemaName, tableName, table.InodeId, accessControlList);
 
             // Grant as the pg_database_owner.
-            var commands = new List<Sql>()
-            {
-                Sql.Format($"SET ROLE pg_database_owner"),
-            };
-            commands.AddRange(tableGrants.SelectMany(p => new[]
-            {
-                Sql.Format($"REVOKE ALL ON TABLE {Sql.Identifier(schemaName, tableName)} FROM {Sql.Identifier(p.RoleId)}"),
-                Sql.Format($"GRANT {(p.Privileges.Contains(GrantTablePrivilege.ALL) ?
-                    Sql.Raw(GrantTablePrivilege.ALL.ToString()) :
-                    Sql.Raw(p.Privileges.Select(o => o.ToString()).Join(","))
-                )} ON TABLE {Sql.Identifier(schemaName, tableName)} TO {Sql.Identifier(p.RoleId)}"),
-            }));
+            await elevatedDataService.ExecuteAsync(grantCommands.Prepend(Sql.Format($"SET ROLE pg_database_owner")));
+        }
+
+        public List<Sql> GenerateGrantTableCommands(string schemaName, string tableName, Guid tableInodeId, IEnumerable<InodeAccess> accessControlList)
+        {
+            var grantCommands = new List<Sql>();
 
             foreach (var access in accessControlList)
             {
-                commands.Add(Sql.Format($"""
-INSERT INTO etc.inode_access (inode_id, role_id, permissions) VALUES ({table.InodeId}, {access.RoleId}, {access.Permissions})
+                grantCommands.Add(Sql.Format($"""
+INSERT INTO etc.inode_access (inode_id, role_id, permissions) VALUES ({tableInodeId}, {access.RoleId}, {access.Permissions})
     ON CONFLICT ON CONSTRAINT inode_access_pkey
     DO UPDATE SET permissions = {access.Permissions}
 """));
+
                 var grantTable = new GrantTable(access);
-                commands.Add(Sql.Format($"REVOKE ALL ON TABLE {Sql.Identifier(schemaName, tableName)} FROM {Sql.Identifier(grantTable.RoleId)}"));
+
+                grantCommands.Add(Sql.Format($"REVOKE ALL ON TABLE {Sql.Identifier(schemaName, tableName)} FROM {Sql.Identifier(grantTable.RoleId)}"));
+
                 if (grantTable.Privileges.Any())
                 {
-                    commands.Add(Sql.Format($"GRANT {(grantTable.Privileges.Contains(GrantTablePrivilege.ALL) ?
+                    grantCommands.Add(Sql.Format($"GRANT {(grantTable.Privileges.Contains(GrantTablePrivilege.ALL) ?
                         Sql.Raw(GrantTablePrivilege.ALL.ToString()) :
                         Sql.Raw(grantTable.Privileges.Select(o => o.ToString()).Join(","))
                     )} ON TABLE {Sql.Identifier(schemaName, tableName)} TO {Sql.Identifier(grantTable.RoleId)}"));
                 }
             }
 
-            await elevatedDataService.ExecuteAsync(commands);
+            return grantCommands;
         }
 
         internal class GrantTable
@@ -121,11 +118,7 @@ INSERT INTO etc.inode_access (inode_id, role_id, permissions) VALUES ({table.Ino
                     PermissionId.a => new[] { GrantTablePrivilege.INSERT },
                     PermissionId.w => new[] { GrantTablePrivilege.UPDATE },
                     PermissionId.d => new[] { GrantTablePrivilege.DELETE },
-                    PermissionId.D => new[] { GrantTablePrivilege.TRUNCATE },
-                    PermissionId.x => Array.Empty<GrantTablePrivilege>(),
-                    PermissionId.N => new[] { GrantTablePrivilege.ALL },
-                    PermissionId.C => Array.Empty<GrantTablePrivilege>(),
-                    PermissionId.o => Array.Empty<GrantTablePrivilege>(),
+                    PermissionId.m => new[] { GrantTablePrivilege.ALL },
                     _ => throw new NotImplementedException(permissionId.ToString()),
                 };
             }

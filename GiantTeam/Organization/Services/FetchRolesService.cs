@@ -1,7 +1,9 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.UserData.Services;
+using System.Collections.Immutable;
 
 namespace GiantTeam.Organization.Services;
 
@@ -18,17 +20,17 @@ public class FetchRolesService
         this.userDataServiceFactory = userDataServiceFactory;
     }
 
-    public async Task<IEnumerable<Role>> FetchInodeAsync(FetchInodeInput input)
+    public async Task<IReadOnlyList<Role>> FetchRolesAsync(FetchInodeInput input)
     {
         validationService.Validate(input);
-        return await FetchInodeAsync(input.OrganizationId);
+        return await FetchRolesAsync(input.OrganizationId);
     }
 
-    public async Task<IEnumerable<Role>> FetchInodeAsync(Guid organizationId)
+    public async Task<IReadOnlyList<Role>> FetchRolesAsync(Guid organizationId)
     {
         var dataService = userDataServiceFactory.NewDataService(organizationId);
-        var roles = await dataService.ListAsync<Role>($"ORDER BY name");
-        return roles;
+        var roles = await dataService.ListAsync<RoleRecord>($"ORDER BY name");
+        return roles.Select(Role.CreateFrom).ToImmutableArray();
     }
 }
 

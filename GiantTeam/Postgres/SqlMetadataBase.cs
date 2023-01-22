@@ -42,22 +42,27 @@ public abstract class SqlMetadataBase
         return Sql.Identifier(GetColumnName(property));
     }
 
-    public virtual PropertyInfo[] GetColumnProperties(Type type)
+    public virtual PropertyInfo[] GetSelectProperties(Type type)
+    {
+        return type
+            .GetProperties()
+            .Where(MayBeAColumn)
+            .ToArray();
+    }
+
+    public virtual PropertyInfo[] GetInsertProperties(Type type)
     {
         return type
             .GetProperties()
             .Where(p =>
                 p.GetSetMethod() != null &&
-                (CanBeAColumn(p))
+                MayBeAColumn(p)
             )
             .ToArray();
     }
 
-    private static bool CanBeAColumn(PropertyInfo p)
+    private static bool MayBeAColumn(PropertyInfo p)
     {
-        if (p.GetSetMethod() == null)
-            return false;
-
         var propertyType = p.PropertyType;
 
         if (!propertyType.IsClass)

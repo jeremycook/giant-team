@@ -1,5 +1,6 @@
 ﻿using GiantTeam.ComponentModel;
 using GiantTeam.ComponentModel.Services;
+using GiantTeam.Organization.Etc.Data;
 using GiantTeam.Organization.Etc.Models;
 using GiantTeam.Postgres;
 using GiantTeam.Text;
@@ -22,25 +23,31 @@ public class CreateSpaceInput
 
 public class CreateSpaceService
 {
+    private readonly ILogger<CreateSpaceService> logger;
     private readonly ValidationService validationService;
     private readonly UserDataServiceFactory userDataServiceFactory;
     private readonly GrantSpaceService grantSpaceService;
+    private readonly FetchInodeService fetchInodeService;
 
     public CreateSpaceService(
+        ILogger<CreateSpaceService> logger,
         ValidationService validationService,
         UserDataServiceFactory userDataServiceFactory,
-        GrantSpaceService grantSpaceService)
+        GrantSpaceService grantSpaceService,
+        FetchInodeService fetchInodeService)
     {
+        this.logger = logger;
         this.validationService = validationService;
         this.userDataServiceFactory = userDataServiceFactory;
         this.grantSpaceService = grantSpaceService;
+        this.fetchInodeService = fetchInodeService;
     }
 
     public async Task<Inode> CreateSpaceAsync(CreateSpaceInput input)
     {
         validationService.Validate(input);
 
-        var space = new Inode()
+        var space = new InodeRecord(DateTime.UtcNow)
         {
             InodeId = Guid.NewGuid(),
             ParentInodeId = InodeId.Root,
@@ -53,18 +60,17 @@ public class CreateSpaceService
 
         string schemaName = space.UglyName;
 
-        // Create the SCHEMA as the pg_database_owner.
-        var schemaCreated = false;
         var elevatedDataService = userDataServiceFactory.NewElevatedDataService(input.OrganizationId);
+
+        // Create the SCHEMA as the pg_database_owner.
+        await elevatedDataService.ExecuteAsync(
+            Sql.Format($"SET ROLE pg_database_owner"),
+            Sql.Format($"CREATE SCHEMA {Sql.Identifier(schemaName)}"),
+            Sql.Insert(space));
+
         try
         {
-            await elevatedDataService.ExecuteAsync(
-                Sql.Format($"SET ROLE pg_database_owner"),
-                Sql.Format($"CREATE SCHEMA {Sql.Identifier(schemaName)}"),
-                Sql.Insert(space));
-
-            schemaCreated = true;
-
+            // Grant access
             await grantSpaceService.GrantSpaceAsync(
                 input.OrganizationId,
                 space.InodeId,
@@ -73,17 +79,22 @@ public class CreateSpaceService
         }
         catch (Exception)
         {
-            if (schemaCreated)
+            try
             {
                 await elevatedDataService.ExecuteAsync(
                     Sql.Format($"SET ROLE pg_database_owner"),
                     Sql.Delete(space),
                     Sql.Format($"DROP SCHEMA IF EXISTS {Sql.Identifier(schemaName)}"));
             }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Error unwinding create {Schema} in {OrganizationId}.", schemaName, input.OrganizationId);
+            }
 
             throw;
         }
 
-        return space;
+        var result = await fetchInodeService.FetchInodeAsync(input.OrganizationId, space.InodeId);
+        return result;
     }
 }
