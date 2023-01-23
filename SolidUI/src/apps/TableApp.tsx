@@ -1,7 +1,10 @@
 import { Switch, Match, createSignal } from "solid-js";
+import { createStore } from "solid-js/store";
+import { postCreateTable } from "../bindings/GiantTeam.Organization.Api.Controllers";
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
 import { OpenInodeDialog } from "../partials/OpenInodeDialog";
 import { SaveInodeDialog } from "../partials/SaveInodeDialog";
+import { toast } from "../partials/Toasts";
 import { AppInfo } from "./AppInfo";
 import { AppProps } from "./AppProps";
 
@@ -12,6 +15,7 @@ enum DialogType {
 }
 
 export function TableApp(props: AppProps) {
+    const [model, setModel] = createStore({ inode: props.inode });
     const [dialogType, setDialogType] = createSignal(DialogType.None);
 
     return <>
@@ -28,7 +32,7 @@ export function TableApp(props: AppProps) {
                     </button>
                 </div>
             </>}>
-                <Match when={TableAppInfo.canHandle(props.inode)}>
+                <Match when={TableAppInfo.canHandle(model.inode)}>
                     TODO: Table view/editor
                 </Match>
             </Switch>
@@ -48,10 +52,26 @@ export function TableApp(props: AppProps) {
                     explorer={props.explorer}
                     initialInode={props.inode}
                     onDismiss={() => setDialogType(DialogType.None)}
-                    onSubmit={(e, parentInode) => {
+                    onSubmit={async (e, m) => {
                         e.preventDefault();
+
                         // Save table
-                        // TODO: postCreateT
+                        const response = await postCreateTable({
+                            organizationId: props.explorer.organization.organizationId,
+                            parentInodeId: m.parentInode.inodeId,
+                            tableName: m.name,
+                            accessControlList: m.accessControls,
+                        });
+
+                        if (response.ok) {
+                            toast.success('Table created.');
+                            await props.explorer.refresh(response.data.path);
+                            setModel('inode', response.data);
+                            setDialogType(DialogType.None);
+                        }
+                        else {
+                            toast.error(response.message);
+                        }
                     }} />
             </Match>
         </Switch>

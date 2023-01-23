@@ -1,6 +1,6 @@
 import { postJson, DataResponse } from "../helpers/httpHelpers";
 import { Inode, OrganizationDetails } from "./GiantTeam.Organization.Etc.Models";
-import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, FetchOrganizationDetailsInput, FetchInodeInput, CreateFolderInput, QueryOrganizationInput, FetchInodeByPathInput, FetchInodeChildrenInput } from "./GiantTeam.Organization.Services";
+import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, FetchOrganizationDetailsInput, FetchInodeInput, CreateFolderInput, QueryOrganizationInput, FetchInodeByPathInput, FetchInodeChildrenInput, CreateTableInput } from "./GiantTeam.Organization.Services";
 import { QueryTable } from "./GiantTeam.Postgres.Models";
 
 type IFormFileCollection = never;

@@ -1,7 +1,7 @@
 import { batch, createContext, ParentProps, useContext } from "solid-js";
 import { createMutable } from "solid-js/store";
 import { postFetchInodeByPath, postFetchInodeChildren } from "../../../bindings/GiantTeam.Organization.Api.Controllers";
-import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
+import { Inode, OrganizationDetails } from "../../../bindings/GiantTeam.Organization.Etc.Models";
 import { mutate } from "../../../helpers/mutate";
 
 export interface ExplorerInode extends Inode {
@@ -11,7 +11,7 @@ export interface ExplorerInode extends Inode {
 export class InodeExplorer {
     private _root: ExplorerInode;
 
-    constructor(public organinzationId: string, rootInode: ExplorerInode) {
+    constructor(public organization: OrganizationDetails, rootInode: ExplorerInode) {
         this._root = createMutable(rootInode);
     }
 
@@ -19,14 +19,29 @@ export class InodeExplorer {
         return this._root;
     }
 
-    // find(path: string) {
-    //     // const inode = this._context.find(x => x.path === path);
-    //     // return inode;
-    // }
+    find(path: string) {
+        if (path === '') {
+            return this._root;
+        }
+
+        const segments = path.split('/');
+
+        let parent = this._root;
+        for (let i = 0; i < segments.length; i++) {
+            const seg = segments[i];
+            const child = parent.children?.find(x => x.uglyName == seg);
+            if (!child) {
+                throw Error('Child not found at ' + path);
+            }
+            parent = child;
+        }
+
+        return parent;
+    }
 
     async refresh(path: string) {
         const response = await postFetchInodeByPath({
-            organizationId: this.organinzationId,
+            organizationId: this.organization.organizationId,
             path: path,
         });
 
@@ -40,7 +55,7 @@ export class InodeExplorer {
                 this._root.name = response.data.name;
 
                 const childrenResponse = await postFetchInodeChildren({
-                    organizationId: this.organinzationId,
+                    organizationId: this.organization.organizationId,
                     parentInodeId: response.data.inodeId,
                 });
 
@@ -90,7 +105,7 @@ export class InodeExplorer {
 
     private async _fetchInode(path: string) {
         const response = await postFetchInodeByPath({
-            organizationId: this.organinzationId,
+            organizationId: this.organization.organizationId,
             path: path,
         });
         return response.ok ? response.data : undefined;
@@ -101,9 +116,9 @@ export const InodeExplorerContext = createContext(new InodeExplorer(undefined!, 
 
 export function useInodeExplorerContext() { return useContext(InodeExplorerContext); }
 
-export function InodeExplorerProvider(props: { organizationId: string, rootInode: ExplorerInode } & ParentProps) {
+export function InodeExplorerProvider(props: { organization: OrganizationDetails, rootInode: ExplorerInode } & ParentProps) {
     return (
-        <InodeExplorerContext.Provider value={new InodeExplorer(props.organizationId, props.rootInode)}>
+        <InodeExplorerContext.Provider value={new InodeExplorer(props.organization, props.rootInode)}>
             {props.children}
         </InodeExplorerContext.Provider>
     );

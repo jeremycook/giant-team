@@ -23,7 +23,7 @@ export default function OrganizationPage() {
         }>{org => <>
 
             <OrganizationDetailsProvider organizationDetails={org}>
-                <InodeExplorerProvider organizationId={org.organizationId} rootInode={{
+                <InodeExplorerProvider organization={org} rootInode={{
                     ...org.rootInode,
                     children: org.rootChildren,
                 }}>
