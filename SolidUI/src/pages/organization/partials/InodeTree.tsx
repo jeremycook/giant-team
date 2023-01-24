@@ -1,12 +1,14 @@
 import { Accessor, createSignal, For, Setter } from "solid-js";
+import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
 import { CaretRightIcon } from "../../../partials/Icons";
-import { ExplorerInode } from "./InodeExplorerContext";
+import { InodeProvider } from "./InodeProvider";
 
 
 export function InodeTree(props: {
-    inode: ExplorerInode,
-    selectedInode: Accessor<ExplorerInode | undefined>,
-    onClickInode: (e: Event, inode: ExplorerInode, options: { isExpanded: boolean, expand: Setter<boolean> }) => void,
+    inodeProvider: InodeProvider,
+    selectedInode: Accessor<Inode | undefined>,
+    onClickInode: (e: Event, inode: Inode, options: { isExpanded: boolean, expand: Setter<boolean> }) => void,
+    inode: Inode,
 }) {
     const [isExpanded, expand] = createSignal(false);
 
@@ -33,8 +35,8 @@ export function InodeTree(props: {
                 classList={{
                     'h-0': !isExpanded(),
                 }}>
-                <For each={props.inode.children}>{childNode =>
-                    <InodeTree inode={childNode} selectedInode={props.selectedInode} onClickInode={props.onClickInode} />
+                <For each={props.inodeProvider.getDirectoryContents(props.inode.path)}>{childInode =>
+                    <InodeTree {...props} inode={childInode} />
                 }</For>
             </ul>
         </li>
@@ -42,14 +44,14 @@ export function InodeTree(props: {
 }
 
 export function InodeRoot(props: {
-    inode: ExplorerInode,
-    selectedInode: Accessor<ExplorerInode | undefined>,
-    onClickInode: (e: Event, inode: ExplorerInode, options: { isExpanded: boolean, expand: Setter<boolean> }) => void,
+    inodeProvider: InodeProvider,
+    selectedInode: Accessor<Inode | undefined>,
+    onClickInode: (e: Event, inode: Inode, options: { isExpanded: boolean, expand: Setter<boolean> }) => void,
 }) {
     return <>
         <ul class='list-none pl-2 m-0'>
-            <For each={props.inode.children}>{inode =>
-                <InodeTree {...props} />
+            <For each={props.inodeProvider.getDirectoryContents('')}>{inode =>
+                <InodeTree {...props} inode={inode} />
             }</For>
         </ul>
     </>

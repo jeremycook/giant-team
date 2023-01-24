@@ -47,6 +47,11 @@ export interface FetchInodeInput {
     inodeId: string;
 }
 
+export interface FetchInodeListInput {
+    organizationId: string;
+    path: string;
+}
+
 export interface FetchOrganizationDetailsInput {
     organizationId: string;
 }

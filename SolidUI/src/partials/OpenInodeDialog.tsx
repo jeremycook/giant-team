@@ -1,11 +1,11 @@
 import { JSX } from "solid-js";
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models";
-import { InodeExplorer } from "../pages/organization/partials/InodeExplorerContext";
+import { InodeProvider } from "../pages/organization/partials/InodeProvider";
 import Dialog from "../widgets/Dialog";
 
 export function OpenInodeDialog(props: {
     type: InodeTypeId,
-    explorer: InodeExplorer,
+    inodeProvider: InodeProvider,
     initialInode: Inode,
     onDismiss: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>,
 }) {

@@ -9,7 +9,6 @@ import LogoutPage from './pages/logout';
 import NewOrganizationPage from './pages/organizations/new-organization';
 import NotFoundPage from './pages/not-found';
 import MyPage from './pages/my/my';
-import { createOrganizationDetailsResource } from "./pages/organization/OrganizationDetailsResource";
 import OrganizationsPage from './pages/organizations/organizations';
 import OrganizationPage from './pages/organization/organization';
 
@@ -34,7 +33,7 @@ export function AppRoutes() {
                     <Route path='/new-organization' component={NewOrganizationPage} />
                 </Route>
 
-                <Route path="/o/:organization/*path" component={OrganizationPage} data={props => createOrganizationDetailsResource({ organization: props.params.organization })} />
+                <Route path="/o/:organization/*path" component={OrganizationPage} />
 
             </ProtectedRoute>
         </Routes>

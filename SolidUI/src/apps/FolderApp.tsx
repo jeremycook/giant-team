@@ -15,7 +15,7 @@ export function FolderApp(props: AppProps) {
 
         const response = await postCreateFolder({
             organizationId: props.organization.organizationId,
-            parentInodeId: props.inode.inodeId,
+            parentInodeId: props.initialInode.inodeId,
             folderName: ref.value,
             access: []
         });
@@ -32,10 +32,10 @@ export function FolderApp(props: AppProps) {
         <Switch fallback={<>
             Folders cannot be created here.
         </>}>
-            <Match when={props.inode.inodeTypeId === InodeTypeId.Folder}>
+            <Match when={props.initialInode.inodeTypeId === InodeTypeId.Folder}>
                 TODO: Folder view/editor
             </Match>
-            <Match when={organizationDetails.inodeTypes[props.inode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.Folder)}>
+            <Match when={organizationDetails.inodeTypes[props.initialInode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.Folder)}>
                 <form class='flex gap-1' onsubmit={onSubmitForm}>
                     <input ref={ref} required pattern='^[^<>:"/\|?*]+$' title='Cannot contain ^ < > : " / \ | ? * ] + or $ characters.' />
                     <button class='button'>

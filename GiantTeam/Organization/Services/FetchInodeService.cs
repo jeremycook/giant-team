@@ -71,9 +71,27 @@ public class FetchInodeService
     {
         var ds = userDataServiceFactory.NewDataService(organizationId);
 
-        var children = await ds.ListAsync<InodeRecord>($"WHERE parent_inode_id = {parentInodeId} AND parent_inode_id <> inode_id ORDER BY name");
+        var children = await ds.ListAsync<InodeRecord>($"WHERE parent_inode_id = {parentInodeId} AND parent_inode_id <> inode_id ORDER BY path");
 
         return children.Select(Inode.CreateFrom).ToArray();
+    }
+
+
+    public async Task<IReadOnlyList<Inode>> FetchInodeListAsync(FetchInodeListInput input)
+    {
+        validationService.Validate(input);
+
+        return await FetchInodeListAsync(input.OrganizationId, input.Path);
+    }
+
+    public async Task<IReadOnlyList<Inode>> FetchInodeListAsync(Guid organizationId, string path)
+    {
+        var ds = userDataServiceFactory.NewDataService(organizationId);
+
+        // TODO: Limit?
+        var inodes = await ds.ListAsync<InodeRecord>($"WHERE path = {path} OR path LIKE {(path == string.Empty ? "%" : (path + "/%"))} ORDER BY path");
+
+        return inodes.Select(Inode.CreateFrom).ToList();
     }
 }
 
@@ -108,3 +126,11 @@ public class FetchInodeChildrenInput
     public Guid ParentInodeId { get; set; }
 }
 
+public class FetchInodeListInput
+{
+    [RequiredGuid]
+    public Guid OrganizationId { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string Path { get; set; } = null!;
+}

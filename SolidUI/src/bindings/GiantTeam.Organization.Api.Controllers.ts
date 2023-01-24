@@ -1,6 +1,6 @@
 import { postJson, DataResponse } from "../helpers/httpHelpers";
 import { Inode, OrganizationDetails } from "./GiantTeam.Organization.Etc.Models";
-import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, FetchOrganizationDetailsInput, FetchInodeInput, CreateFolderInput, QueryOrganizationInput, FetchInodeByPathInput, FetchInodeChildrenInput, CreateTableInput } from "./GiantTeam.Organization.Services";
+import { AlterDatabaseInput, AlterDatabaseOutput, CreateSpaceInput, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, FetchOrganizationDetailsInput, FetchInodeInput, CreateFolderInput, QueryOrganizationInput, FetchInodeByPathInput, FetchInodeChildrenInput, CreateTableInput, FetchInodeListInput } from "./GiantTeam.Organization.Services";
 import { QueryTable } from "./GiantTeam.Postgres.Models";
 
 type IFormFileCollection = never;
@@ -38,6 +38,9 @@ export const postFetchInodeChildren = async (input: FetchInodeChildrenInput) =>
 
 export const postFetchInode = async (input: FetchInodeInput) =>
     await postJson('/api/organization/fetch-inode', input) as DataResponse<Inode>;
+
+export const postFetchInodeList = async (input: FetchInodeListInput) =>
+    await postJson('/api/organization/fetch-inode-list', input) as DataResponse<Inode[]>;
 
 export const postFetchOrganizationDetails = async (input: FetchOrganizationDetailsInput) =>
     await postJson('/api/organization/fetch-organization-details', input) as DataResponse<OrganizationDetails>;

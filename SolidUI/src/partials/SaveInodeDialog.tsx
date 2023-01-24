@@ -2,7 +2,7 @@ import { createEffect, For, JSX } from "solid-js";
 import { createStore } from "solid-js/store";
 import { Inode, InodeAccess, InodeTypeId, PermissionId } from "../bindings/GiantTeam.Organization.Etc.Models";
 import { immute } from "../helpers/immute";
-import { InodeExplorer } from "../pages/organization/partials/InodeExplorerContext";
+import { InodeProvider } from "../pages/organization/partials/InodeProvider";
 import { InodeRoot } from "../pages/organization/partials/InodeTree";
 import Dialog from "../widgets/Dialog";
 
@@ -16,7 +16,7 @@ const permisions = [
 
 export function SaveInodeDialog(props: {
     type: InodeTypeId,
-    explorer: InodeExplorer,
+    inodeProvider: InodeProvider,
     initialInode: Inode,
     onDismiss: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>,
     onSubmit: (
@@ -27,7 +27,7 @@ export function SaveInodeDialog(props: {
     const [model, setModel] = createStore({
         parentInode: props.initialInode,
         name: '',
-        accessControls: props.explorer.organization.roles.map(r => ({
+        accessControls: props.inodeProvider.organization.roles.map(r => ({
             roleId: r.roleId,
             name: r.name,
             permissions: r.name === 'Owner' ? [PermissionId.r, PermissionId.a, PermissionId.w, PermissionId.d, PermissionId.m] :
@@ -46,7 +46,7 @@ export function SaveInodeDialog(props: {
                 <div class='flex flex-col gap-1'>
                     <div class='h-200px b b-solid pxy'>
                         <InodeRoot
-                            inode={props.explorer.root}
+                            inodeProvider={props.inodeProvider}
                             selectedInode={() => model.parentInode}
                             onClickInode={(e, inode, { isExpanded, expand }) => {
                                 setModel('parentInode', inode);

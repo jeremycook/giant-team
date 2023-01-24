@@ -15,7 +15,7 @@ enum DialogType {
 }
 
 export function TableApp(props: AppProps) {
-    const [model, setModel] = createStore({ inode: props.inode });
+    const [model, setModel] = createStore({ inode: props.initialInode });
     const [dialogType, setDialogType] = createSignal(DialogType.None);
 
     return <>
@@ -42,22 +42,22 @@ export function TableApp(props: AppProps) {
             <Match when={dialogType() === DialogType.Open}>
                 <OpenInodeDialog
                     type={InodeTypeId.Table}
-                    explorer={props.explorer}
-                    initialInode={props.inode}
+                    inodeProvider={props.inodeProvider}
+                    initialInode={props.initialInode}
                     onDismiss={() => setDialogType(DialogType.None)} />
             </Match>
             <Match when={dialogType() === DialogType.Save}>
                 <SaveInodeDialog
                     type={InodeTypeId.Table}
-                    explorer={props.explorer}
-                    initialInode={props.inode}
+                    inodeProvider={props.inodeProvider}
+                    initialInode={props.initialInode}
                     onDismiss={() => setDialogType(DialogType.None)}
                     onSubmit={async (e, m) => {
                         e.preventDefault();
 
                         // Save table
                         const response = await postCreateTable({
-                            organizationId: props.explorer.organization.organizationId,
+                            organizationId: props.inodeProvider.organization.organizationId,
                             parentInodeId: m.parentInode.inodeId,
                             tableName: m.name,
                             accessControlList: m.accessControls,
@@ -65,7 +65,7 @@ export function TableApp(props: AppProps) {
 
                         if (response.ok) {
                             toast.success('Table created.');
-                            await props.explorer.refresh(response.data.path);
+                            await props.inodeProvider.refresh(response.data.path);
                             setModel('inode', response.data);
                             setDialogType(DialogType.None);
                         }

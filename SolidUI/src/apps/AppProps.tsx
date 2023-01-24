@@ -1,9 +1,9 @@
 import { Inode, OrganizationDetails } from "../bindings/GiantTeam.Organization.Etc.Models";
-import { InodeExplorer } from "../pages/organization/partials/InodeExplorerContext";
+import { InodeProvider } from "../pages/organization/partials/InodeProvider";
 
 
 export interface AppProps {
     organization: OrganizationDetails;
-    explorer: InodeExplorer,
-    inode: Inode;
+    inodeProvider: InodeProvider,
+    initialInode: Inode;
 }

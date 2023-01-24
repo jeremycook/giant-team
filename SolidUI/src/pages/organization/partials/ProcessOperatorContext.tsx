@@ -50,9 +50,9 @@ export const ProcessOperatorContext = createContext(new ProcessOperator());
 
 export function useProcessOperatorContext() { return useContext(ProcessOperatorContext); }
 
-export function ProcessOperatorProvider(props: ParentProps) {
+export function ProcessOperatorProvider(props: { processOperator: ProcessOperator } & ParentProps) {
     return (
-        <ProcessOperatorContext.Provider value={new ProcessOperator()}>
+        <ProcessOperatorContext.Provider value={props.processOperator}>
             {props.children}
         </ProcessOperatorContext.Provider>
     );
