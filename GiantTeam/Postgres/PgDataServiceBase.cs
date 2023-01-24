@@ -118,13 +118,13 @@ namespace GiantTeam.Postgres
         }
 
         /// <summary>
-        /// Returns a <see cref="QueryTable"/>.
+        /// Returns a <see cref="TabularData"/>.
         /// </summary>
         /// <param name="sql"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="DbException"></exception>
-        public async Task<QueryTable> QueryTableAsync(Sql sql)
+        public async Task<TabularData> TabularQueryAsync(Sql sql)
         {
             await using var dataSource = AcquireDataSource();
             await using var batch = dataSource.CreateBatch();

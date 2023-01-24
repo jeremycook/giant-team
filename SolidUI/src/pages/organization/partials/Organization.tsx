@@ -85,7 +85,7 @@ export function Organization(props: {
                                             component={process.appInfo.component}
                                             organization={org}
                                             inodeProvider={props.inodeProvider}
-                                            initialInode={process.inode} />
+                                            process={process} />
                                     </div>
                                 }</For>
                             </div>

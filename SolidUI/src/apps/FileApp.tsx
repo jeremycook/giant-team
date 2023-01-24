@@ -21,7 +21,7 @@ export function FileApp(props: AppProps) {
 
         const formData = new FormData();
         formData.set('organizationid', props.organization.organizationId);
-        formData.set('path', props.initialInode.path);
+        formData.set('path', props.process.inode.path);
         Object.values(ref.files)
             .forEach(f => formData.append('files', f));
 
@@ -55,10 +55,10 @@ export function FileApp(props: AppProps) {
         <Switch fallback={<>
             Files cannot be uploaded here.
         </>}>
-            <Match when={props.initialInode.inodeTypeId === InodeTypeId.File}>
+            <Match when={props.process.inode.inodeTypeId === InodeTypeId.File}>
                 TODO: File viewer/editor
             </Match>
-            <Match when={organizationDetails.inodeTypes[props.initialInode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.File)}>
+            <Match when={organizationDetails.inodeTypes[props.process.inode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.File)}>
                 <form class='flex gap-1' onsubmit={onSubmitForm}>
                     <input ref={ref} type='file' multiple required onchange={e => e.currentTarget.form?.requestSubmit()} />
                     <Show when={showRetry()}>

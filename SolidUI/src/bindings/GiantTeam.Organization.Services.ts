@@ -132,7 +132,7 @@ export interface ImportDataOutput {
     table: string;
 }
 
-export interface QueryOrganizationInput {
+export interface QueryInput {
     organizationId: string;
     sql: string;
 }

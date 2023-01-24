@@ -8,7 +8,7 @@ namespace GiantTeam.Cluster.Api.Controllers;
 public class QueryDirectoryController : ControllerBase
 {
     [HttpPost("/api/cluster/[Controller]")]
-    public async Task<QueryTable> Post(
+    public async Task<TabularData> Post(
         [FromServices] QueryDirectoryService service,
         QueryDirectoryInput input)
     {

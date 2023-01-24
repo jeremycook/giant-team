@@ -1,57 +1,72 @@
-import { Switch, Match, createSignal } from "solid-js";
-import { createStore } from "solid-js/store";
+import { Switch, Match, createSignal, JSX, For } from "solid-js";
 import { postCreateTable } from "../bindings/GiantTeam.Organization.Api.Controllers";
 import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
+import { TabularData } from "../bindings/GiantTeam.Postgres.Models";
+import { createQueryResource } from "../pages/organization/resources/QueryResource";
+import { AddIcon } from "../partials/Icons";
 import { OpenInodeDialog } from "../partials/OpenInodeDialog";
 import { SaveInodeDialog } from "../partials/SaveInodeDialog";
 import { toast } from "../partials/Toasts";
+import { ShowItem } from "../widgets/ShowItem";
 import { AppInfo } from "./AppInfo";
 import { AppProps } from "./AppProps";
 
-enum DialogType {
-    None,
+enum DialogState {
+    Closed,
     Open,
     Save,
 }
 
 export function TableApp(props: AppProps) {
-    const [model, setModel] = createStore({ inode: props.initialInode });
-    const [dialogType, setDialogType] = createSignal(DialogType.None);
+    const [dialogState, setDialogState] = createSignal(DialogState.Closed);
+
+    const schemaName = () => {
+        return props.process.inode.path.split('/')[0];
+    }
+    const queryResource = createQueryResource({
+        organization: props.organization.organizationId,
+        sql: `
+        SELECT *
+        FROM "${schemaName()}"."${props.process.inode.uglyName}"
+        `
+    });
 
     return <>
         <div class='pxy'>
             <Switch fallback={<>
                 <div class='grid grid-cols-2 gap-1 w-300px'>
                     <button type='button' class='card text-center b b-solid'
-                        onclick={() => setDialogType(DialogType.Open)}>
+                        onclick={() => setDialogState(DialogState.Open)}>
                         Open an Existing Table
                     </button>
                     <button type='button' class='card text-center b b-solid'
-                        onclick={() => setDialogType(DialogType.Save)}>
+                        onclick={() => setDialogState(DialogState.Save)}>
                         Create a New Table
                     </button>
                 </div>
             </>}>
-                <Match when={TableAppInfo.canHandle(model.inode)}>
-                    TODO: Table view/editor
+                <Match when={TableAppInfo.canHandle(props.process.inode)}>
+                    <ShowItem when={queryResource.data}>{tabularData => <>
+                        <Table data={tabularData} />
+                    </>}</ShowItem>
                 </Match>
             </Switch>
         </div>
 
         <Switch>
-            <Match when={dialogType() === DialogType.Open}>
+            <Match when={dialogState() === DialogState.Open}>
                 <OpenInodeDialog
                     type={InodeTypeId.Table}
                     inodeProvider={props.inodeProvider}
-                    initialInode={props.initialInode}
-                    onDismiss={() => setDialogType(DialogType.None)} />
+                    initialInode={props.process.inode}
+                    onDismiss={() => setDialogState(DialogState.Closed)} />
             </Match>
-            <Match when={dialogType() === DialogType.Save}>
+            <Match when={dialogState() === DialogState.Save}>
                 <SaveInodeDialog
                     type={InodeTypeId.Table}
                     inodeProvider={props.inodeProvider}
-                    initialInode={props.initialInode}
-                    onDismiss={() => setDialogType(DialogType.None)}
+                    initialInode={props.process.inode}
+                    onDismiss={() => setDialogState(DialogState.Closed)}
                     onSubmit={async (e, m) => {
                         e.preventDefault();
 
@@ -66,8 +81,8 @@ export function TableApp(props: AppProps) {
                         if (response.ok) {
                             toast.success('Table created.');
                             await props.inodeProvider.refresh(response.data.path);
-                            setModel('inode', response.data);
-                            setDialogType(DialogType.None);
+                            props.process.setInode(response.data);
+                            setDialogState(DialogState.Closed);
                         }
                         else {
                             toast.error(response.message);
@@ -86,3 +101,34 @@ export const TableAppInfo: AppInfo = {
 }
 
 export default TableAppInfo;
+
+function Table({ data, rowLeader }: { data: TabularData, rowLeader?: (record: any[]) => JSX.Element }) {
+    return (
+        <table>
+            <thead>
+                <tr>
+                    {typeof rowLeader === 'function' && <th></th>}
+                    <For each={data.columns}>{col =>
+                        <th>{col}</th>
+                    }</For>
+                    <th>
+                        <button type='button' onclick={e => prompt('Column Name')} title='Add a Column'>
+                            <AddIcon />
+                            <span class='sr-only'>Add Column</span>
+                        </button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <For each={data.rows ?? []}>{row =>
+                    <tr>
+                        {typeof rowLeader === 'function' && <td>{rowLeader(row)}</td>}
+                        <For each={data.columns}>{(_, columnIndex) =>
+                            <td>{row[columnIndex()]}</td>
+                        }</For>
+                    </tr>
+                }</For>
+            </tbody>
+        </table>
+    );
+}

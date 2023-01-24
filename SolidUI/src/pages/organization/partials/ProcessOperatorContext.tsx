@@ -5,20 +5,49 @@ import { Inode } from "../../../bindings/GiantTeam.Organization.Etc.Models";
 
 let globalPid = 1;
 
-export interface Process {
-    pid: number;
-    appInfo: AppInfo;
-    inode: Inode;
+export class Process {
+    private _pid: number;
+    private _appInfo: AppInfo;
+    private _inode: Accessor<Inode>;
+    private _setInode: Setter<Inode>;
+
+    constructor(
+        props: {
+            pid: number;
+            appInfo: AppInfo;
+            inode: Inode;
+        }
+    ) {
+        this._pid = props.pid;
+        this._appInfo = props.appInfo;
+        [this._inode, this._setInode] = createSignal(props.inode);
+    }
+
+    get pid() {
+        return this._pid;
+    }
+
+    get appInfo() {
+        return this._appInfo;
+    }
+
+    get inode() {
+        return this._inode();
+    }
+
+    setInode(inode: Inode) {
+        this._setInode(inode);
+    };
 }
 
 export class ProcessOperator {
-    private _processes: Accessor<Process[]>;
-    private _setProcesses: Setter<Process[]>;
+    private _processes: Accessor<ReadonlyArray<Process>>;
+    private _setProcesses: Setter<ReadonlyArray<Process>>;
     private _activePid: Accessor<number | undefined>;
     private _setActivePid: Setter<number | undefined>;
 
     constructor() {
-        [this._processes, this._setProcesses] = createSignal<Process[]>([]);
+        [this._processes, this._setProcesses] = createSignal<ReadonlyArray<Process>>([]);
         [this._activePid, this._setActivePid] = createSignal<number>();
     }
 
@@ -28,14 +57,18 @@ export class ProcessOperator {
 
     /** Launch and activate a new process. */
     launch(appInfo: AppInfo, inode: Inode) {
-        const newProcess = { pid: globalPid++, appInfo, inode };
+        const process = new Process({
+            pid: globalPid++,
+            appInfo,
+            inode,
+        });
 
         // Add the new process
-        this._setProcesses(x => [...x, newProcess]);
-        // Then activate it
-        this.activate(newProcess.pid);
+        this._setProcesses(x => [...x, process]);
+        // before activating it
+        this.activate(process.pid);
 
-        return newProcess.pid;
+        return process.pid;
     }
 
     /** Activates the first process that matches inode, or launches a new process if no match was found. */
@@ -67,7 +100,7 @@ export class ProcessOperator {
     }
 
     terminate(pid: number) {
-        // Deactivate the process if needed
+        // Deactivate the process
         if (this.activePid == pid) {
             const subset = this.processes.filter(x => x.pid !== pid);
             const newPid = subset.length > 0 ?
@@ -76,7 +109,7 @@ export class ProcessOperator {
             this._setActivePid(newPid);
         }
 
-        // Then remove it
+        // Before removing it
         this._setProcesses(x => x.filter(y => y.pid !== pid));
     }
 }

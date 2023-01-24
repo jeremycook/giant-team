@@ -8,14 +8,14 @@ using System.Text.RegularExpressions;
 
 namespace GiantTeam.Organization.Services;
 
-public class QueryOrganizationService
+public class QueryService
 {
-    private readonly ILogger<QueryOrganizationService> logger;
+    private readonly ILogger<QueryService> logger;
     private readonly ValidationService validationService;
     private readonly UserDataServiceFactory userDataServiceFactory;
 
-    public QueryOrganizationService(
-        ILogger<QueryOrganizationService> logger,
+    public QueryService(
+        ILogger<QueryService> logger,
         ValidationService validationService,
         UserDataServiceFactory userDataServiceFactory)
     {
@@ -24,25 +24,17 @@ public class QueryOrganizationService
         this.userDataServiceFactory = userDataServiceFactory;
     }
 
-    public async Task<QueryTable> QueryOrganizationAsync(QueryOrganizationInput input)
+    public async Task<TabularData> QueryAsync(QueryInput input)
     {
         validationService.Validate(input);
 
-        try
-        {
-            var dataService = userDataServiceFactory.NewDataService(input.OrganizationId);
-            QueryTable output = await dataService.QueryTableAsync(Sql.Raw(input.Sql));
-            return output;
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Suppressed {ExceptionType}: {ExceptionMessage}", ex.GetBaseException().GetType(), ex.GetBaseException().Message);
-            throw new NotFoundException("Database not found.");
-        }
+        var dataService = userDataServiceFactory.NewDataService(input.OrganizationId);
+        TabularData output = await dataService.TabularQueryAsync(Sql.Raw(input.Sql));
+        return output;
     }
 }
 
-public class QueryOrganizationInput
+public class QueryInput
 {
     [RequiredGuid]
     public Guid OrganizationId { get; set; }

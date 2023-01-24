@@ -31,10 +31,10 @@ export function SpaceApp(props: AppProps) {
         <Switch fallback={<>
             Spaces cannot be created here.
         </>}>
-            <Match when={props.initialInode.inodeTypeId === InodeTypeId.Space}>
+            <Match when={props.process.inode.inodeTypeId === InodeTypeId.Space}>
                 TODO: Space view/editor
             </Match>
-            <Match when={organizationDetails.inodeTypes[props.initialInode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.Space)}>
+            <Match when={organizationDetails.inodeTypes[props.process.inode.inodeTypeId].allowedChildNodeTypeIds.includes(InodeTypeId.Space)}>
                 <form class='flex flex-col gap-1' onsubmit={onSubmitForm}>
                     <input ref={ref} required pattern='^[^<>:"/\|?*]+$' title='Cannot contain ^ < > : " / \ | ? * ] + or $ characters.' />
                     <div>

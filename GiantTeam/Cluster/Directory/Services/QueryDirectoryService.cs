@@ -24,12 +24,12 @@ public class QueryDirectoryService
         this.userDirectoryDataServiceFactory = userDirectoryDataServiceFactory;
     }
 
-    public async Task<QueryTable> QueryDirectoryAsync(QueryDirectoryInput input)
+    public async Task<TabularData> QueryDirectoryAsync(QueryDirectoryInput input)
     {
         validationService.Validate(input);
 
         var dataService = userDirectoryDataServiceFactory.NewDataService();
-        var output = await dataService.QueryTableAsync(Sql.Raw(input.Sql));
+        var output = await dataService.TabularQueryAsync(Sql.Raw(input.Sql));
 
         return output;
     }
