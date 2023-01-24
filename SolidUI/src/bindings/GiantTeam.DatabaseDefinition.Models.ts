@@ -13,7 +13,6 @@ export interface Column {
 export interface Database {
     defaultSchema: string | null;
     schemas: Schema[];
-    scripts: string[];
 }
 
 export interface DefaultPrivileges {

@@ -10,7 +10,4 @@ public class Database
     public string? DefaultSchema { get; set; }
 
     public List<Schema> Schemas { get; } = new();
-
-    [JsonIgnore]
-    public List<string> Scripts { get; } = new();
 }

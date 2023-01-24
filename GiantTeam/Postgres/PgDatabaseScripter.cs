@@ -128,13 +128,6 @@ END IF;
 END $DDL$;
 """);
 
-            // Add scripts.
-            foreach (var sql in database.Scripts)
-            {
-                script.Append(sql);
-                script.AppendLine();
-            }
-
             return script.ToString();
         }
 
