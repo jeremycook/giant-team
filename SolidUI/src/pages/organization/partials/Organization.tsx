@@ -32,34 +32,37 @@ export function Organization(props: {
                             <InodeRoot
                                 inodeProvider={props.inodeProvider}
                                 selectedInode={activeInode}
-                                onClickInode={(e, inode) => setActiveInode(inode)} />
+                                onClickInode={(e, inode) => {
+                                    setActiveInode(inode);
+                                    props.processOperator.open(inode);
+                                }} />
 
                         </div>
                         <div class='grow flex flex-col'>
 
                             {/* Tabs */}
                             <div class='flex shadow shadow-inset bg-secondary/10'>
-                                <For each={props.processOperator.processes}>{(process, i) =>
+                                <For each={props.processOperator.processes}>{process =>
                                     <div class='cursor-pointer flex b not-first:b-l-solid b-t-solid b-t-4px'
                                         classList={{
-                                            'b-t-gray': props.processOperator.activeIndex !== i(),
-                                            'bg-white': props.processOperator.activeIndex === i(),
-                                            'b-t-primary': props.processOperator.activeIndex === i(),
+                                            'b-t-gray': props.processOperator.activePid !== process.pid,
+                                            'bg-white': props.processOperator.activePid === process.pid,
+                                            'b-t-primary': props.processOperator.activePid === process.pid,
                                         }}
-                                        onclick={() => props.processOperator.activateByIndex(i())}
+                                        onclick={() => props.processOperator.activate(process.pid)}
                                     >
                                         <div class='p-2'
                                             classList={{
-                                                'font-bold': props.processOperator.activeIndex === i()
+                                                'font-bold': props.processOperator.activePid === process.pid
                                             }}
                                         >
                                             {process.appInfo.name}
                                         </div>
                                         <button type='button' class='pr-2 text-xl'
                                             classList={{
-                                                'invisible': props.processOperator.activeIndex !== i()
+                                                'invisible': props.processOperator.activePid !== process.pid
                                             }}
-                                            onclick={() => props.processOperator.terminateByIndex(i())}
+                                            onclick={() => props.processOperator.terminate(process.pid)}
                                         >
                                             <DismissOutlineIcon />
                                         </button>
@@ -74,9 +77,9 @@ export function Organization(props: {
 
                             {/* App */}
                             <div class='overflow-auto grow bg-white/50 shadow'>
-                                <For each={props.processOperator.processes}>{(process, i) =>
+                                <For each={props.processOperator.processes}>{process =>
                                     <div classList={{
-                                        'hidden': props.processOperator.activeIndex !== i()
+                                        'hidden': props.processOperator.activePid !== process.pid
                                     }}>
                                         <Dynamic
                                             component={process.appInfo.component}

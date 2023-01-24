@@ -37,8 +37,8 @@ export default function OrganizationPage() {
             setInodeList(inodesData);
             setInodeProvider(new InodeProvider({
                 organization: org,
-                inodes: () => inodeList(),
-                setInodes: value => setInodeList(value),
+                inodes: inodeList,
+                setInodes: setInodeList,
             }));
         }
     });
