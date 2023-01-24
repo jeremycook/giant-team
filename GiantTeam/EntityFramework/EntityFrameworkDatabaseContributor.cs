@@ -11,20 +11,14 @@ public class EntityFrameworkDatabaseContributor
 
     public void Contribute(Database database, IModel model)
     {
-        // TODO: Last wins everywhere
-
-        if (model.GetDefaultSchema() is string defaultSchema)
-        {
-            // Last wins
-            database.DefaultSchema = model.GetDefaultSchema();
-        }
+        var defaultSchema = model.GetDefaultSchema();
 
         foreach (var entityType in model.GetEntityTypes())
         {
             foreach (var schemaGroup in entityType.GetTableMappings()
                 .GroupBy(o =>
                     o.Table.Schema ??
-                    database.DefaultSchema ??
+                    defaultSchema ??
                     throw new InvalidOperationException("A schema was not provided.")
                 ))
             {

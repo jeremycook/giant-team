@@ -11,7 +11,6 @@ export interface Column {
 }
 
 export interface Database {
-    defaultSchema: string | null;
     schemas: Schema[];
 }
 
