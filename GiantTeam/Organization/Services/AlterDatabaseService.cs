@@ -51,14 +51,14 @@ namespace GiantTeam.Organization.Services
             validationService.Validate(input);
 
             string migrationScript =
-                $"SET ROLE pg_database_owner;\n" +
+                //$"SET ROLE pg_database_owner;\n" +
                 PgDatabaseScripter.Singleton.ScriptAlterations(input.Changes);
 
             logger.LogInformation("Executing change database script as {UserId}: {CommandText}",
                 sessionService.User.UserId,
                 migrationScript);
 
-            var dataService = userDataFactory.NewDataService(input.OrganizationId);
+            var dataService = userDataFactory.NewElevatedDataService(input.OrganizationId);
             try
             {
                 await dataService.ExecuteUnsanitizedAsync(migrationScript);

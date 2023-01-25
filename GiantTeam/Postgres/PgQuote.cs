@@ -13,35 +13,35 @@ public static class PgQuote
     private const string doubleQuote = "\"";
     private const string escapedDoubleQuote = "\"\"";
 
-    public static string Identifier(string identifier)
+    public static string Identifier(string name)
     {
-        return $"\"{identifier.Replace(doubleQuote, escapedDoubleQuote)}\"";
+        return $"\"{name.Replace(doubleQuote, escapedDoubleQuote)}\"";
     }
-    public static string Identifier(string identifier1, string identifier2)
+    public static string Identifier(string name1, string name2)
     {
-        return Identifier(identifier1) + "." + Identifier(identifier2);
-    }
-    /// <summary>
-    /// Comma separated list of sanitized identifiers.
-    /// </summary>
-    /// <param name="identifiers"></param>
-    /// <returns></returns>
-    public static string IdentifierList(params string[] identifiers)
-    {
-        return IdentifierList((IEnumerable<string>)identifiers);
+        return Identifier(name1) + "." + Identifier(name2);
     }
     /// <summary>
     /// Comma separated list of sanitized identifiers.
     /// </summary>
-    /// <param name="identifiers"></param>
+    /// <param name="names"></param>
     /// <returns></returns>
-    public static string IdentifierList(IEnumerable<string> identifiers)
+    public static string IdentifierList(params string[] names)
     {
-        return identifiers.Select(Identifier).Join(',');
+        return IdentifierList((IEnumerable<string>)names);
     }
-    public static string Literal(string literal)
+    /// <summary>
+    /// Comma separated list of sanitized identifiers.
+    /// </summary>
+    /// <param name="names"></param>
+    /// <returns></returns>
+    public static string IdentifierList(IEnumerable<string> names)
     {
-        return $"'{literal.Replace(quote, escapedQuote).Replace(backslash, escapedBackslash)}'";
+        return names.Select(Identifier).Join(',');
+    }
+    public static string Literal(string text)
+    {
+        return $"'{text.Replace(quote, escapedQuote).Replace(backslash, escapedBackslash)}'";
     }
     public static string Literal(DateTime moment)
     {

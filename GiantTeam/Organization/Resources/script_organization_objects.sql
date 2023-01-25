@@ -458,19 +458,19 @@ CREATE OR REPLACE VIEW etc.database_definition
          SELECT c.table_catalog AS catalog_name,
             c.table_schema AS schema_name,
             c.table_name,
-            c.ordinal_position AS "position",
+            c.ordinal_position AS position,
             c.column_name AS name,
-            c.udt_name AS store_inode_type,
+            c.udt_name AS "storeInodeType",
                 CASE
                     WHEN c.is_nullable::text = 'YES'::text THEN true
                     ELSE false
-                END AS is_nullable,
-            c.column_default,
-            c.generation_expression,
+                END AS "isNullable",
+            c.column_default AS "columnDefault",
+            c.generation_expression AS "generationExpression",
                 CASE
                     WHEN c.is_updatable::text = 'YES'::text THEN true
                     ELSE false
-                END AS is_updatable
+                END AS "isUpdatable"
            FROM information_schema.columns c
         ), indexes AS (
          SELECT schema_ns.nspname AS schema_name,
@@ -480,7 +480,7 @@ CREATE OR REPLACE VIEW etc.database_definition
                     WHEN i.indisprimary THEN 2
                     WHEN i.indisunique THEN 1
                     ELSE 0
-                END AS index_inode_type,
+                END AS "indexInodeType",
             json_agg(c.column_name) AS columns
            FROM pg_namespace schema_ns
              JOIN pg_class index_class ON index_class.relnamespace = schema_ns.oid
@@ -497,7 +497,7 @@ CREATE OR REPLACE VIEW etc.database_definition
                 CASE
                     WHEN st.is_insertable_into::text = 'YES'::text THEN true
                     ELSE false
-                END AS is_insertable_into,
+                END AS "isInsertableInto",
             COALESCE(c.columns, '[]'::json) AS columns,
             COALESCE(i.indexes, '[]'::json) AS indexes
            FROM information_schema.tables st

@@ -1,15 +1,15 @@
-import { Switch, Match, createSignal, JSX, For } from "solid-js";
-import { postCreateTable } from "../bindings/GiantTeam.Organization.Api.Controllers";
-import { Inode, InodeTypeId } from "../bindings/GiantTeam.Organization.Etc.Models"
-import { TabularData } from "../bindings/GiantTeam.Postgres.Models";
-import { createQueryResource } from "../pages/organization/resources/QueryResource";
-import { AddIcon } from "../partials/Icons";
-import { OpenInodeDialog } from "../partials/OpenInodeDialog";
-import { SaveInodeDialog } from "../partials/SaveInodeDialog";
-import { toast } from "../partials/Toasts";
-import { ShowItem } from "../widgets/ShowItem";
-import { AppInfo } from "./AppInfo";
-import { AppProps } from "./AppProps";
+import { Switch, Match, createSignal, For, Show } from "solid-js";
+import { StoreType } from "../../bindings/GiantTeam.DatabaseDefinition.Models";
+import { postCreateTable } from "../../bindings/GiantTeam.Organization.Api.Controllers";
+import { Inode, InodeTypeId } from "../../bindings/GiantTeam.Organization.Etc.Models"
+import { AddOutlineIcon } from "../../partials/Icons";
+import { OpenInodeDialog } from "../../partials/OpenInodeDialog";
+import { SaveInodeDialog } from "../../partials/SaveInodeDialog";
+import { toast } from "../../partials/Toasts";
+import { ShowItem } from "../../widgets/ShowItem";
+import { AppInfo } from "../AppInfo";
+import { AppProps } from "../AppProps";
+import { TableManager } from "./TableManager";
 
 enum DialogState {
     Closed,
@@ -20,15 +20,9 @@ enum DialogState {
 export function TableApp(props: AppProps) {
     const [dialogState, setDialogState] = createSignal(DialogState.Closed);
 
-    const schemaName = () => {
-        return props.process.inode.path.split('/')[0];
-    }
-    const queryResource = createQueryResource({
-        organization: props.organization.organizationId,
-        sql: `
-        SELECT *
-        FROM "${schemaName()}"."${props.process.inode.uglyName}"
-        `
+    const tableManager = new TableManager({
+        organization: props.organization,
+        inode: props.process.inode,
     });
 
     return <>
@@ -46,9 +40,7 @@ export function TableApp(props: AppProps) {
                 </div>
             </>}>
                 <Match when={TableAppInfo.canHandle(props.process.inode)}>
-                    <ShowItem when={queryResource.data}>{tabularData => <>
-                        <Table data={tabularData} />
-                    </>}</ShowItem>
+                    <ManagedTable tableManager={tableManager} />
                 </Match>
             </Switch>
         </div>
@@ -102,33 +94,65 @@ export const TableAppInfo: AppInfo = {
 
 export default TableAppInfo;
 
-function Table({ data, rowLeader }: { data: TabularData, rowLeader?: (record: any[]) => JSX.Element }) {
-    return (
+function ManagedTable(props: { tableManager: TableManager }) {
+    return <Show when={props.tableManager.definition}><ShowItem when={props.tableManager.table}>{table =>
         <table>
             <thead>
                 <tr>
-                    {typeof rowLeader === 'function' && <th></th>}
-                    <For each={data.columns}>{col =>
-                        <th>{col}</th>
+                    <th>
+                        <input type='checkbox' />
+                    </th>
+                    <For each={table.columns}>{col =>
+                        <Show when={props.tableManager.data.columns.includes(col.name)}>
+                            <th>{col.name}</th>
+                        </Show>
                     }</For>
                     <th>
-                        <button type='button' onclick={e => prompt('Column Name')} title='Add a Column'>
-                            <AddIcon />
+                        <button type='button' onclick={e => {
+
+                            const columnName = prompt('Column Name');
+                            if (!columnName) return;
+
+                            props.tableManager.createColumn({
+                                name: columnName,
+                                storeType: StoreType.Text,
+                                defaultValueSql: '',
+                                isNullable: false,
+                                computedColumnSql: null,
+                                position: -1,
+                            });
+                        }} title='Add a Column'>
+                            <AddOutlineIcon />
                             <span class='sr-only'>Add Column</span>
                         </button>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <For each={data.rows ?? []}>{row =>
+                <ShowItem when={props.tableManager.data}>{data => <>
+                    <For each={data.rows}>{row =>
+                        <tr>
+                            <td>
+                                <input type='checkbox' checked={row.selected} onChange={e => row.setSelected(e.currentTarget.checked)} />
+                            </td>
+                            <For each={table.columns}>{column =>
+                                <Show when={data.columns.includes(column.name)}>
+                                    <td>{row.values[data.columns.indexOf(column.name)]?.toString()}</td>
+                                </Show>
+                            }</For>
+                        </tr>
+                    }</For>
                     <tr>
-                        {typeof rowLeader === 'function' && <td>{rowLeader(row)}</td>}
-                        <For each={data.columns}>{(_, columnIndex) =>
-                            <td>{row[columnIndex()]}</td>
-                        }</For>
+                        <td colspan={table.columns.length}>
+                            <button type='button'
+                                onClick={_ => props.tableManager.appendEmptyRow()}>
+                                Add Record
+                            </button>
+                        </td>
                     </tr>
-                }</For>
+                </>}</ShowItem>
+
             </tbody>
         </table>
-    );
+    }</ShowItem></Show>
 }
