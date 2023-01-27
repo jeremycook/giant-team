@@ -1,0 +1,32 @@
+@import url(./vars.css);
+
+* {
+    box-sizing: border-box;
+    font-family: var(--font-family-primary);
+    outline: none;
+}
+
+* {
+    font-size: 1em;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    font-size: 12pt;
+}
+
+body {
+    margin: 0;
+    line-height: 1.26;
+}
+
+pre,
+code {
+    font-family: var(--font-family-mono);
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}

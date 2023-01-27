@@ -23,7 +23,7 @@ namespace GiantTeam.Tools
         {
             "*Controller",
             "*Service",
-        }.Select(o => "^" + Regex.Escape(o).Replace("\\*\\*", ".*").Replace("\\*", ".+") + "$").ToArray();
+        }.Select(o => "^" + Regex.Escape(o).Replace("\\*", ".+") + "$").ToArray();
 
         static readonly Dictionary<Type, string> types = new()
         {
@@ -68,7 +68,7 @@ namespace GiantTeam.Tools
                 throw new InvalidOperationException("The input directory could not be determined.")
             , solutionDirectory.FullName);
 
-            string outFolder = Path.GetFullPath("./SolidUI/src/bindings/", solutionDirectory.FullName);
+            string outFolder = Path.GetFullPath("./VanillaUI/src/bindings/", solutionDirectory.FullName);
             Directory.CreateDirectory(outFolder);
 
             var inFiles = Directory
@@ -91,7 +91,9 @@ namespace GiantTeam.Tools
             foreach (var group in appAssemblies
                 .SelectMany(a => a.ExportedTypes)
                 .GroupBy(t => t.Namespace ?? string.Empty)
-                .ToDictionary(t => t.Key, t => t.ToArray()))
+                .ToDictionary(t =>
+                    t.Key.Replace(nameof(GiantTeam) + ".", ""),
+                    t => t.ToArray()))
             {
                 var sb = new StringBuilder();
 
