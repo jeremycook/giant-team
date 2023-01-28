@@ -11,7 +11,7 @@ export default function LogoutPage() {
 
         <h1>Logout</h1>
 
-        <On event={[UserEvent.loggedin, UserEvent.loggedout]}>{() => {
+        <On events={[UserEvent.loggedin, UserEvent.loggedout]}>{() => {
             if (user.isAuthenticated) {
                 return <>
                     <p>

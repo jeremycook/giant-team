@@ -1,0 +1,41 @@
+.site {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* .site > .site-navbar */
+
+.site-navbar {
+    background-color: var(--bg-muted);
+    box-shadow: var(--shadow) inset;
+}
+
+/* .site > .site-router */
+
+.site-router {
+    display: flex;
+    flex-grow: 1;
+}
+
+/* .site > .site-router > .site-main */
+
+.site-main {
+    flex-grow: 1;
+    padding: var(--100);
+}
+
+/* .site > .site-router > .site-card > card */
+
+.site-card {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: flex-start;
+    padding: var(--100) 0;
+}
+
+.site-card>.card {
+    width: fit-content;
+    box-shadow: var(--shadow);
+}

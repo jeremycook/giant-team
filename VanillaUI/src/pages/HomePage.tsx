@@ -1,10 +1,10 @@
-import MainLayout from "./_ui/MainLayout"
+import CardLayout from './_ui/CardLayout'
 
 export default function () {
-    return <MainLayout>
+    return <CardLayout>
         <h1>Welcome</h1>
         <p>
             More content coming soon!
         </p>
-    </MainLayout>
-}  
+    </CardLayout>
+}

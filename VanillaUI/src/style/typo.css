@@ -1,4 +1,6 @@
-﻿dl {
+﻿@import 'vars.css';
+
+dl {
     margin: 0 0 1rem;
 }
 
@@ -88,14 +90,13 @@ main::-webkit-scrollbar-thumb {
 
 a,
 button {
-    color: var(--a-color, #0284c7);
-    opacity: .8;
+    background: var(--a-bg);
+    color: var(--a-fg);
+    opacity: .9;
     text-decoration: none;
 }
 
 button {
-    background: none;
-    border: none;
     display: inline;
     margin: 0;
     padding: 0;
@@ -116,13 +117,32 @@ button:hover {
 a,
 button,
 label,
-.button,
 [role=button] {
     cursor: pointer;
 }
 
 label {
     display: inline-block;
+}
+
+form>button,
+.button {
+    background: var(--input-bg);
+    border-style: var(--b-style);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    padding: var(--25) var(--100);
+}
+
+.button:active,
+.button:focus,
+.button:hover {
+    background: var(--input-bg-active);
+}
+
+button.button[type=submit],
+button.button:not([type]) {
+    font-weight: bold;
 }
 
 /* Input */
@@ -142,11 +162,11 @@ input,
 select,
 textarea,
 .input {
-    background-color: var(--input-bg, #fbfbfb);
+    background: var(--input-bg);
     border-style: solid;
-    border-width: 1px;
+    color: var(--input-fg);
     display: inline-block;
-    padding: .25rem;
+    padding: var(--25);
     text-align: inherit;
     width: 100%;
 }
@@ -159,7 +179,7 @@ textarea:focus,
 textarea:hover,
 .required:focus,
 .required:hover {
-    background-color: var(--input-bg-active, #fff);
+    background: var(--input-bg-active);
 }
 
 input:required,
@@ -169,7 +189,7 @@ select:invalid,
 textarea:required,
 textarea:invalid,
 .required {
-    background-image: url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNSIgd2lkdGg9IjUiPjxwb2x5Z29uIHBvaW50cz0iMCwwIDAsNSA1LDAiIHN0eWxlPSJmaWxsOnJlZCIgLz48L3N2Zz4=');
+    background-image: url('required.svg');
     background-repeat: no-repeat;
     background-position: 1px 1px;
 }
@@ -177,7 +197,7 @@ textarea:invalid,
 input:disabled,
 select:disabled,
 textarea:disabled {
-    background-color: var(--input-bg-disabled, #eee);
+    background: var(--input-bg-muted);
 }
 
 input[type=checkbox],

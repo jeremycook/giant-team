@@ -1,18 +1,10 @@
-import NotFoundPage from "./_errors/NotFoundPage";
-import HomePage from "./HomePage"
-import LoginPage from "./login/LoginPage";
-import FoundPage from "./_errors/FoundPage";
 import Exception from "../helpers/Exception";
-import LogoutPage from "./login/LogoutPage";
+import NotFoundPage from "./_errors/NotFoundPage";
 import On from "../helpers/jsx/On";
 
-const routes: { [k: string]: (..._: any) => any } = {
-    '/': HomePage,
-    '/login': LoginPage,
-    '/logout': LogoutPage,
+export interface IRoutes {
+    [k: string]: (..._: any) => JSX.Element
 }
-
-const paths = Object.keys(routes);
 
 enum RouteEvent {
     redirect = 'route_redirect',
@@ -20,8 +12,8 @@ enum RouteEvent {
 
 class Route {
     /**
-     * Listen for local redirect events. 
-     */
+         * Listen for local redirect events. 
+         */
     addEventListener(name: RouteEvent, handler: EventListenerOrEventListenerObject) {
         document.addEventListener(name, handler);
     }
@@ -30,9 +22,9 @@ class Route {
      * Redirects to a local URL using history.pushState,
      * and dispatches the router redirect event to the document.
      */
-    redirect(href: string) {
+    redirect(href: string, state?: object) {
         console.debug('Redirecting from ${currentHref} to {targetHref}.', location.href, href);
-        history.pushState({}, '', href);
+        history.pushState(state ?? {}, '', href);
         document.dispatchEvent(new CustomEvent(RouteEvent.redirect));
     }
 
@@ -62,19 +54,36 @@ class Route {
 
 export const route = new Route();
 
-export default function Router() {
-    return <On event={[RouteEvent.redirect]}>{() => {
+export default function Router({ routes }: { routes: IRoutes }) {
+    // Sort paths most specific to least specific
+    const paths = Object.keys(routes);
+    paths.sort((l, r) => r.localeCompare(l))
+    const patterns = paths.map(p => new RegExp('^' + p + '$', 'g'));
+
+    return <On
+        events={[RouteEvent.redirect, { type: 'popstate', element: window }]}
+        class='site-router'
+    >{() => {
         const pathname = location.pathname;
 
-        if (paths.includes(pathname)) {
-            return routes[pathname]({ state: history.state ?? {} });
+        const match = patterns
+            .map((p, i) => {
+                const result = p.exec(pathname);
+                return result ? { i, result } : undefined
+            })
+            .find(x => x);
+
+        if (match) {
+            const path = paths[match.i];
+            const route = routes[path];
+            return () => route({ routeValues: match.result.groups ?? {}, state: history.state ?? {} });
         }
 
-        const canonicalPathname = pathname.toLowerCase();
-        if (paths.includes(canonicalPathname)) {
-            route.redirect(canonicalPathname);
-            return FoundPage({ href: canonicalPathname + location.search + location.hash });
-        }
+        // const canonicalPathname = pathname.toLowerCase();
+        // if (paths.includes(canonicalPathname)) {
+        //     route.redirect(canonicalPathname);
+        //     return FoundPage({ href: canonicalPathname + location.search + location.hash });
+        // }
 
         return NotFoundPage({ href: location.pathname + location.search + location.hash });
     }}</On>;

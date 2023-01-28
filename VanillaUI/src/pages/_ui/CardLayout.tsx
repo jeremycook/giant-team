@@ -1,11 +1,7 @@
-import MainLayout from "./MainLayout";
-
-export default function (...children: []) {
-    return (
-        <MainLayout>
-            <div class='card'>
-                {children}
-            </div>
-        </MainLayout>
-    );
+export default function (props: {}, ...children: []) {
+    return <main role='main' class='site-card' {...props}>
+        <div class='card'>
+            {children}
+        </div>
+    </main>
 };

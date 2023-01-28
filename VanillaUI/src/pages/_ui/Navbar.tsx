@@ -1,14 +1,17 @@
-import On from "../../helpers/jsx/On";
-import { user, UserEvent } from "../login/user";
-import A from "./A"
-import Icon from "./Icon"
+import On from '../../helpers/jsx/On';
+import { user, UserEvent } from '../login/user';
+import A from './A'
+import Icon from './Icon'
 
 function toggleNotifications() {
 
 }
 
 export function Navbar() {
-    return <On event={[UserEvent.loggedin, UserEvent.loggedout]}>{(e: Event) => {
+    return <On
+        events={[UserEvent.loggedin, UserEvent.loggedout]}
+        class='site-navbar navbar'
+    >{(e: Event) => {
         if (user.isAuthenticated) {
             return AuthenticatedNavbar();
         }
@@ -19,53 +22,30 @@ export function Navbar() {
 }
 
 function AuthenticatedNavbar() {
-    return <div class='grid cols-3'>
-        <div />
-        <div />
-        <div class='flex'>
-            <div class='ml-auto flex children:p-2 children:text-light'>
-                <A href='/'>
-                    <Icon icon="home-12-regular" />
-                    {/* <iconify-icon inline icon="fluent:home-12-filled"></iconify-icon> */}
-                    {/* <HomeIcon class='parent-active' />
-        <HomeOutlineIcon class='parent-inactive' /> */}
-                    <span> Home</span>
-                </A>
+    return <div class='navbar-trio'>
+        <div class='navbar-group' />
+        <div class='navbar-group' />
+        <div class='navbar-group'>
+            <A class='navbar-item' href='/'>
+                <Icon icon='home-12-regular' />
+                <span class='sr-only'> Home</span>
+            </A>
 
-                <A href='/login'>
-                    <Icon icon="home-12-filled" />
-                    {/* <iconify-icon inline icon="fluent:home-12-filled"></iconify-icon> */}
-                    {/* <HomeIcon class='parent-active' />
-        <HomeOutlineIcon class='parent-inactive' /> */}
-                    <span> Login</span>
-                </A>
+            <button class='navbar-item' onclick={() => toggleNotifications()}>
+                <Icon icon='alert-12-regular' />
+                <span class='sr-only'> Notifications</span>
+            </button>
 
-                <A href='/logout'>
-                    <Icon icon="home-12-filled" />
-                    {/* <iconify-icon inline icon="fluent:home-12-filled"></iconify-icon> */}
-                    {/* <HomeIcon class='parent-active' />
-        <HomeOutlineIcon class='parent-inactive' /> */}
-                    <span> Logout</span>
-                </A>
-
-                <hr />
-
-                <button onclick={() => toggleNotifications()}>
-                    {/* <AlertOutlineIcon /> */}
-                    <span class='sr-only'> Notifications</span>
+            <div class='navbar-item dropdown'>
+                <button class='dropdown-button' type='button' id='site-navbar-user-dropdown'>
+                    <Icon icon='person-12-regular' />
+                    <span class='sr-only'> Profile</span>
                 </button>
-                <div class='dropdown'>
-                    <button class='dropdown-button text-light' type='button' id='site-navbar-user-dropdown'>
-                        {/* <PersonIcon class='parent-active' />
-        <PersonOutlineIcon class='parent-inactive' /> */}
-                        <span class='sr-only'> Profile</span>
-                    </button>
-                    <div class='dropdown-anchor' aria-labelledby='site-navbar-user-dropdown'>
-                        <div class='dropdown-content stack bg-dark rounded shadow children:text-light position-right--2'>
-                            <strong class='stack-item'>Hi {user.username}!</strong>
-                            <A href='/my' class='stack-item'>My Profile</A>
-                            <A href='/logout' class='stack-item'>Logout</A>
-                        </div>
+                <div class='dropdown-anchor' aria-labelledby='site-navbar-user-dropdown'>
+                    <div class='dropdown-content'>
+                        <small>Hi {user.username}!</small>
+                        <A href='/my'>My Profile</A>
+                        <A href='/logout'>Logout</A>
                     </div>
                 </div>
             </div>
@@ -74,21 +54,22 @@ function AuthenticatedNavbar() {
 }
 
 function AnonymousNavbar() {
-    return <div class='site-navbar'>
-        <A href='/'>
-            {/* <HomeIcon class='parent-active' />
-        <HomeOutlineIcon class='parent-inactive' /> */}
-            {' Home'}
-        </A>
-        <A href='/login'>
-            {/* <PersonIcon class='parent-active' />
-        <PersonOutlineIcon class='parent-inactive' /> */}
-            {' Login'}
-        </A>
-        <A href='/join'>
-            {/* <SparklesIcon class='parent-active' />
-        <SparklesOutlineIcon class='parent-inactive' /> */}
-            {' Join'}
-        </A>
+    return <div class='navbar-trio'>
+        <div class='navbar-group' />
+        <div class='navbar-group'>
+            <A class='navbar-item' href='/'>
+                <Icon icon='home-12-regular' />
+                {' Home'}
+            </A>
+            <A class='navbar-item' href='/login'>
+                <Icon icon='person-12-regular' />
+                {' Login'}
+            </A>
+            <A class='navbar-item' href='/join'>
+                <Icon icon='sparkle-16-regular' />
+                {' Join'}
+            </A>
+        </div>
+        <div class='navbar-group' />
     </div>
 }

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "jsx": "react",
-    "jsxFactory": "JSX.factory",
-    "jsxFragmentFactory": "JSX.fragmentFactory",
+    "jsxFactory": "_h",
+    "jsxFragmentFactory": "_f",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",

@@ -9,15 +9,21 @@ export default function TextField({ name, options, data }: { name: string; optio
     const {
         type,
         label,
+        oninput,
+        autocomplete,
         ...attributes
     } = options;
+
 
     return (<>
         <input
             name={name}
             value={data[name]}
-            oninput={e => data[name] = e.currentTarget.value ?? ''}
-            autocomplete='off'
+            oninput={e => {
+                data[name] = e.currentTarget.value ?? '';
+                if (typeof oninput === 'function') oninput(e);
+            }}
+            autocomplete={autocomplete ?? 'off'}
             {...attributes} />
     </>);
 }

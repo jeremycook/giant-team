@@ -3,12 +3,17 @@ import { JSXElement, IntrinsicElements as jsxIntrinsicElements } from "./jsx";
 
 declare global {
     interface ParentNode {
-        append(...nodes: JSXElement[]): void;
+        append(...nodes: JSX.Element[]): void;
     }
 
+    interface ChildNode {
+        replaceWith(...nodes: JSX.Element[]): void;
+    }
+
+    var _h: typeof jsxElementFactory
+    var _f: typeof jsxFragmentFactory
     namespace JSX {
-        var factory: typeof jsxElementFactory
-        var fragmentFactory: typeof jsxFragmentFactory
+        type Element = JSXElement;
         interface IntrinsicElements extends jsxIntrinsicElements { }
         interface IntrinsicElements {
             'iconify-icon': any,
@@ -17,6 +22,5 @@ declare global {
 }
 
 const _global = (window /* browser */ || globalThis /* node */) as any;
-_global.JSX ??= {};
-_global.JSX.factory = jsxElementFactory;
-_global.JSX.fragmentFactory = jsxFragmentFactory;
+_global._h = jsxElementFactory;
+_global._f = jsxFragmentFactory;

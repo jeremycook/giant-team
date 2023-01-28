@@ -11,10 +11,10 @@ const dataOptions: FieldSetOptions = {
     remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
 
-export default function LoginPage({ state }: { state: { returnUrl?: string } }) {
+export default function LoginPage({ state }: { state: { username?: string, returnUrl?: string } }) {
 
     const data = {
-        username: '',
+        username: state.username ?? '',
         password: '',
         remainLoggedIn: false,
     };
@@ -41,18 +41,21 @@ export default function LoginPage({ state }: { state: { returnUrl?: string } }) 
                     route.redirect(returnUrl);
                 }
                 else {
-                    route.redirect('/profile');
+                    route.redirect('/my');
                 }
-
-                return; //
             } else {
                 toast.error(output.message);
             }
         }}>
+            <div class='form-grid'>
+                <FieldStack options={dataOptions} data={data} />
 
-            <FieldStack options={dataOptions} data={data} />
-
-            <button>Login</button>
+                <div />
+                <div class='flex gap-50'>
+                    <button class='button'>Login</button>
+                    <a class='button' href='/join'>Join</a>
+                </div>
+            </div>
         </form>
     </CardLayout>
 }

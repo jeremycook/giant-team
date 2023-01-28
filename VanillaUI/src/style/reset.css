@@ -1,4 +1,4 @@
-@import url(./vars.css);
+@import 'vars.css';
 
 * {
     box-sizing: border-box;
@@ -8,6 +8,10 @@
 
 * {
     font-size: 1em;
+    /* Elements opt-into having a border by setting the style to something. */
+    border-color: var(--b-color);
+    border-style: none;
+    border-width: var(--b-width);
 }
 
 html {
@@ -16,6 +20,8 @@ html {
 }
 
 body {
+    background: var(--bg);
+    color: var(--fg);
     margin: 0;
     line-height: 1.26;
 }
