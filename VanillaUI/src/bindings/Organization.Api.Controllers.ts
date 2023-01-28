@@ -1,3 +1,4 @@
+import { http } from '../helpers/http';
 import { postJson, DataResponse } from "../helpers/httpHelpers";
 import { Inode, OrganizationDetails } from "./Organization.Etc.Models";
 import { AlterDatabaseInput, AlterDatabaseOutput, CreateFolderInput, CreateSpaceInput, CreateTableInput, FetchInodeByPathInput, FetchInodeChildrenInput, FetchInodeInput, FetchInodeListInput, FetchOrganizationDetailsInput, FetchRecordsInput, FetchRecords, ImportDataInput, ImportDataOutput, QueryInput } from "./Organization.Services";
@@ -21,38 +22,77 @@ export interface UploadResult {
 export const postAlterDatabase = async (input: AlterDatabaseInput) =>
     await postJson('/api/organization/alter-database', input) as DataResponse<AlterDatabaseOutput>;
 
+export const alterDatabase = async (input: AlterDatabaseInput) =>
+    await http.postJson('/api/organization/alter-database', input) as AlterDatabaseOutput;
+
 export const postCreateFolder = async (input: CreateFolderInput) =>
     await postJson('/api/organization/create-folder', input) as DataResponse<Inode>;
+
+export const createFolder = async (input: CreateFolderInput) =>
+    await http.postJson('/api/organization/create-folder', input) as Inode;
 
 export const postCreateSpace = async (input: CreateSpaceInput) =>
     await postJson('/api/organization/create-space', input) as DataResponse<Inode>;
 
+export const createSpace = async (input: CreateSpaceInput) =>
+    await http.postJson('/api/organization/create-space', input) as Inode;
+
 export const postCreateTable = async (input: CreateTableInput) =>
     await postJson('/api/organization/create-table', input) as DataResponse<Inode>;
+
+export const createTable = async (input: CreateTableInput) =>
+    await http.postJson('/api/organization/create-table', input) as Inode;
 
 export const postFetchInodeByPath = async (input: FetchInodeByPathInput) =>
     await postJson('/api/organization/fetch-inode-by-path', input) as DataResponse<Inode>;
 
+export const fetchInodeByPath = async (input: FetchInodeByPathInput) =>
+    await http.postJson('/api/organization/fetch-inode-by-path', input) as Inode;
+
 export const postFetchInodeChildren = async (input: FetchInodeChildrenInput) =>
     await postJson('/api/organization/fetch-inode-children', input) as DataResponse<Inode[]>;
+
+export const fetchInodeChildren = async (input: FetchInodeChildrenInput) =>
+    await http.postJson('/api/organization/fetch-inode-children', input) as Inode[];
 
 export const postFetchInode = async (input: FetchInodeInput) =>
     await postJson('/api/organization/fetch-inode', input) as DataResponse<Inode>;
 
+export const fetchInode = async (input: FetchInodeInput) =>
+    await http.postJson('/api/organization/fetch-inode', input) as Inode;
+
 export const postFetchInodeList = async (input: FetchInodeListInput) =>
     await postJson('/api/organization/fetch-inode-list', input) as DataResponse<Inode[]>;
+
+export const fetchInodeList = async (input: FetchInodeListInput) =>
+    await http.postJson('/api/organization/fetch-inode-list', input) as Inode[];
 
 export const postFetchOrganizationDetails = async (input: FetchOrganizationDetailsInput) =>
     await postJson('/api/organization/fetch-organization-details', input) as DataResponse<OrganizationDetails>;
 
+export const fetchOrganizationDetails = async (input: FetchOrganizationDetailsInput) =>
+    await http.postJson('/api/organization/fetch-organization-details', input) as OrganizationDetails;
+
 export const postFetchRecords = async (input: FetchRecordsInput) =>
     await postJson('/api/organization/fetch-records', input) as DataResponse<FetchRecords>;
+
+export const fetchRecords = async (input: FetchRecordsInput) =>
+    await http.postJson('/api/organization/fetch-records', input) as FetchRecords;
 
 export const postImportData = async (input: ImportDataInput) =>
     await postJson('/api/organization/import-data', input) as DataResponse<ImportDataOutput>;
 
+export const importData = async (input: ImportDataInput) =>
+    await http.postJson('/api/organization/import-data', input) as ImportDataOutput;
+
 export const postQuery = async (input: QueryInput) =>
     await postJson('/api/organization/query', input) as DataResponse<TabularData>;
 
+export const query = async (input: QueryInput) =>
+    await http.postJson('/api/organization/query', input) as TabularData;
+
 export const postUpload = async () =>
     await postJson('/api/organization/upload') as DataResponse<UploadResult>;
+
+export const upload = async () =>
+    await http.postJson('/api/organization/upload') as UploadResult;

@@ -1,6 +1,7 @@
 ﻿using GiantTeam.Startup;
 using GiantTeam.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Namotion.Reflection;
 using System.Reflection;
 using System.Text;
@@ -220,8 +221,8 @@ namespace GiantTeam.Tools
                         // TODO: Check for ActionNameAttribute
                         string actionName = method.GetCustomAttribute<ActionNameAttribute>()?.Name ?? method.Name;
                         string actionSlug = TextTransformers.Dashify(method.Name);
+                        string httpMethod = method.GetCustomAttribute<HttpMethodAttribute>()?.HttpMethods.SingleOrDefault() ?? "POST";
 
-                        string functionName = actionName[..1].ToLower() + actionName[1..] + controllerName;
 
                         var parameters = method
                             .GetParameters()
@@ -262,12 +263,24 @@ namespace GiantTeam.Tools
                             path = $"/api/{controllerSlug}/{actionSlug}";
                         }
 
-                        string returnTypeSignature =
-                            $" as DataResponse<{(returnTypeName != string.Empty ? returnTypeName : "null")}>";
+                        {
+                            string functionName = (actionName[..1].ToLower() + actionName[1..]) + controllerName;
+                            string returnTypeSignature =
+                                $" as DataResponse<{(returnTypeName != string.Empty ? returnTypeName : "null")}>";
 
-                        sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}) =>\n");
-                        sb.Append($"    await postJson({string.Join(", ", parameters.Select(p => p.Name).Prepend($"'{path}'"))}){returnTypeSignature};");
-                        sb.Append($"\n\n");
+                            sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}) =>\n");
+                            sb.Append($"    await postJson({string.Join(", ", parameters.Select(p => p.Name).Prepend($"'{path}'"))}){returnTypeSignature};");
+                            sb.Append($"\n\n");
+                        }
+
+                        {
+                            string functionName = controllerName[..1].ToLower() + controllerName[1..];
+                            string returnTypeSignature = $" as {(returnTypeName != string.Empty ? returnTypeName : "void")}";
+
+                            sb.Append($"export const {functionName} = async ({string.Join(", ", parameters.Select(p => p.Name + ": " + p.Type))}) =>\n");
+                            sb.Append($"    await http.postJson({string.Join(", ", parameters.Select(p => p.Name).Prepend($"'{path}'"))}){returnTypeSignature};");
+                            sb.Append($"\n\n");
+                        }
                     }
                 }
 

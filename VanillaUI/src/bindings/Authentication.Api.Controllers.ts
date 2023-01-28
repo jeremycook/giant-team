@@ -1,3 +1,4 @@
+import { http } from '../helpers/http';
 import { postJson, DataResponse } from "../helpers/httpHelpers";
 import { JoinInput, JoinOutput } from "./UserManagement.Services";
 
@@ -25,11 +26,23 @@ export enum SessionStatus {
 export const postLogin = async (input: LoginInput) =>
     await postJson('/api/login', input) as DataResponse<null>;
 
+export const login = async (input: LoginInput) =>
+    await http.postJson('/api/login', input) as void;
+
 export const postLogout = async () =>
     await postJson('/api/logout') as DataResponse<null>;
+
+export const logout = async () =>
+    await http.postJson('/api/logout') as void;
 
 export const postRegister = async (input: JoinInput) =>
     await postJson('/api/register', input) as DataResponse<JoinOutput>;
 
+export const register = async (input: JoinInput) =>
+    await http.postJson('/api/register', input) as JoinOutput;
+
 export const postSession = async () =>
     await postJson('/api/session') as DataResponse<SessionOutput>;
+
+export const session = async () =>
+    await http.postJson('/api/session') as SessionOutput;

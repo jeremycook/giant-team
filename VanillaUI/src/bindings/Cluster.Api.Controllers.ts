@@ -1,3 +1,4 @@
+import { http } from '../helpers/http';
 import { postJson, DataResponse } from "../helpers/httpHelpers";
 import { CreateOrganizationInput, CreateOrganizationResult, FetchOrganizationsOutput, QueryDirectoryInput } from "./Cluster.Directory.Services";
 import { TabularData } from "./Postgres.Models";
@@ -8,8 +9,17 @@ import { TabularData } from "./Postgres.Models";
 export const postCreateOrganization = async (input: CreateOrganizationInput) =>
     await postJson('/api/cluster/create-organization', input) as DataResponse<CreateOrganizationResult>;
 
+export const createOrganization = async (input: CreateOrganizationInput) =>
+    await http.postJson('/api/cluster/create-organization', input) as CreateOrganizationResult;
+
 export const postFetchOrganizations = async () =>
     await postJson('/api/cluster/fetch-organizations') as DataResponse<FetchOrganizationsOutput>;
 
+export const fetchOrganizations = async () =>
+    await http.postJson('/api/cluster/fetch-organizations') as FetchOrganizationsOutput;
+
 export const postQueryDirectory = async (input: QueryDirectoryInput) =>
     await postJson('/api/cluster/query-directory', input) as DataResponse<TabularData>;
+
+export const queryDirectory = async (input: QueryDirectoryInput) =>
+    await http.postJson('/api/cluster/query-directory', input) as TabularData;

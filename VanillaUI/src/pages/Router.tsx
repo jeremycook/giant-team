@@ -3,7 +3,7 @@ import NotFoundPage from "./_errors/NotFoundPage";
 import On from "../helpers/jsx/On";
 
 export interface IRoutes {
-    [k: string]: (..._: any) => JSX.Element
+    [k: string]: (..._: any) => JSX.Element | Promise<JSX.Element>
 }
 
 enum RouteEvent {
