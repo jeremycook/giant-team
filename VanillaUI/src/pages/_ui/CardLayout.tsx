@@ -1,7 +1,9 @@
-export default function (props: {}, ...children: []) {
-    return <main role='main' class='site-card' {...props}>
-        <div class='card'>
-            {children}
-        </div>
-    </main>
-};
+import { Elem, ElemAttributes, html } from '../../helpers/html';
+
+export default function CardLayout(attributes?: ElemAttributes, ...children: Elem[]) {
+    return html('main', h => h.set(attributes)
+        .append(
+            html('div', h => h.set({ class: 'card' })
+                .append(...children))
+        ));
+}

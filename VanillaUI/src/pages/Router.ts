@@ -1,9 +1,11 @@
 import Exception from "../helpers/Exception";
 import NotFoundPage from "./_errors/NotFoundPage";
 import On from "../helpers/jsx/On";
+import { h } from '../helpers/h';
+import { Elem, html } from '../helpers/html';
 
 export interface IRoutes {
-    [k: string]: (..._: any) => JSX.Element | Promise<JSX.Element>
+    [k: string]: (..._: any) => Elem | Promise<Elem>
 }
 
 enum RouteEvent {
@@ -54,16 +56,15 @@ class Route {
 
 export const route = new Route();
 
-export default function Router({ routes }: { routes: IRoutes }) {
+export default async function Router(routes: IRoutes) {
     // Sort paths most specific to least specific
-    const paths = Object.keys(routes);
-    paths.sort((l, r) => r.localeCompare(l))
+    const paths = Object
+        .keys(routes)
+        .sort((l, r) => r.localeCompare(l));
+
     const patterns = paths.map(p => new RegExp('^' + p + '$', 'g'));
 
-    return <On
-        events={[RouteEvent.redirect, { type: 'popstate', element: window }]}
-        class='site-router'
-    >{() => {
+    async function renderPage() {
         const pathname = location.pathname;
 
         const match = patterns
@@ -76,7 +77,11 @@ export default function Router({ routes }: { routes: IRoutes }) {
         if (match) {
             const path = paths[match.i];
             const route = routes[path];
-            return () => route({ routeValues: match.result.groups ?? {}, state: history.state ?? {} });
+            if (route instanceof Promise) {
+                return await route({ routeValues: match.result.groups ?? {}, state: history.state ?? {} });
+            } else {
+                return route({ routeValues: match.result.groups ?? {}, state: history.state ?? {} });
+            }
         }
 
         // const canonicalPathname = pathname.toLowerCase();
@@ -86,7 +91,9 @@ export default function Router({ routes }: { routes: IRoutes }) {
         // }
 
         return NotFoundPage({ href: location.pathname + location.search + location.hash });
-    }}</On>;
+    }
+
+    return html('div', async h => await h.set({ class: 'site-router' }).appendAsync(renderPage()));
 }
 
 /** Handle local links without refreshing the entire page. */

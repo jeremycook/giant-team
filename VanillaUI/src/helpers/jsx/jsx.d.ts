@@ -10,6 +10,7 @@ type DOMElement = JSXElement;
 
 type FunctionMaybe<T = unknown> = ({ (): T }) | T;
 type JSXElement =
+  | Elem
   | Node
   | ArrayElement
   | FunctionElement
