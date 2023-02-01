@@ -1,8 +1,8 @@
-import { AnchorHTMLAttributes, JSXElement } from "../../helpers/jsx/jsx";
+import { BaseNode, h, HAttributes } from '../../helpers/h';
 
-export default function (
-    props: AnchorHTMLAttributes<HTMLAnchorElement>,
-    ...children: JSXElement[]
+export default function A(
+    props: HAttributes,
+    ...children: BaseNode[]
 ) {
     const currentPathname = location.pathname;
     const href = (props.href as string | undefined);
@@ -17,5 +17,5 @@ export default function (
         }
     }
 
-    return <a {...props}>{children}</a>;
+    return h('a', a => a.set(props), ...children);
 }

@@ -9,5 +9,5 @@ export function Organization(props: {
     processOperator: ProcessOperator,
     inodeProvider: InodeProvider
 }) {
-    return h('div', undefined, props.organization.rootInode.name);
+    return h('div', props.organization.rootInode.name);
 }

@@ -1,9 +1,10 @@
+import { toast } from '../pages/_ui/Toasts';
 import Exception from './Exception';
 import { parseJsonResponse } from './httpHelpers';
 import { log } from './log';
 
 export namespace http {
-    class HttpStatusException extends Exception {
+    class HttpException extends Exception {
         constructor(
             public source: any,
             public message: string,
@@ -13,6 +14,29 @@ export namespace http {
         ) {
             super(source, message, status, statusText, details);
         }
+    }
+
+    /** Returns true if the href is local. */
+    export function isLocal(href: string) {
+        if (href) {
+            if (href.startsWith('/') || href.startsWith('.')) {
+                return true; // OK
+            }
+
+            const compare = location.protocol + '//' + location.host + '/';
+            if (href.startsWith(compare)) {
+                return true; // Also OK
+            }
+        }
+
+        return false;
+    }
+
+
+    /** Throws if href is not local. */
+    export function assertLocal(href: string) {
+        if (!http.isLocal(href))
+            throw new Exception(assertLocal, 'The {href} argument must be local.', href);
     }
 
     export const postJson = async <TInput, TData>(url: string, input?: TInput): Promise<TData> => {
@@ -61,7 +85,7 @@ export namespace http {
                     }
 
                     // TODO: Throw HttpStatusException that can be caught and handle appropriately.
-                    throw new HttpStatusException(http.postJson, errorMessage, response.status, response.statusText, details);
+                    throw new HttpException(http.postJson, errorMessage, response.status, response.statusText, details);
                 }
                 else {
                     let errorMessage = await response.text();
@@ -77,16 +101,21 @@ export namespace http {
                         log.warn('Non-OK response in {MemberName}: {ErrorMessage}.', ['postJson', errorMessage]);
                     }
 
-                    throw new HttpStatusException(http.postJson, errorMessage, response.status, response.statusText);
+                    throw new HttpException(http.postJson, errorMessage, response.status, response.statusText);
                 }
             }
         }
         catch (err) {
-            const errorMessage = 'Unable to connect to the server. Please check your Internet connection or try again later.';
-            const status = undefined;
-            const statusText = undefined;
-            const details = err;
-            throw new HttpStatusException(http.postJson, errorMessage, status, statusText, details);
+            if (err instanceof Exception) {
+                // Let it by
+                throw err;
+            }
+            else {
+                // Probably a transient connection issue,
+                // log and provide a helpful error message.
+                const errorMessage = 'Unable to connect to the server. Please check your Internet connection or try again later.';
+                throw new Exception(postJson, errorMessage, err);
+            }
         }
     }
 }

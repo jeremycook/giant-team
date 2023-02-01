@@ -1,10 +1,9 @@
-import { html } from '../../helpers/html'
+import { h } from '../../helpers/h';
 import CardLayout from "../_ui/CardLayout"
 
 export default function NotFoundPage(props: { href: string }) {
     return CardLayout(
-        undefined,
-        html('h1', h => h.append('Page Not Found')),
-        html('p', h => h.append(`The page or resource you were looking for was not found at ${props.href}.`)),
+        h('h1', 'Page Not Found'),
+        h('p', `We did not find a page or resource at ${props.href}.`),
     );
 }

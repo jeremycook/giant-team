@@ -1,8 +1,9 @@
+import { h } from '../../helpers/h';
 import { postRegister } from '../../bindings/Authentication.Api.Controllers';
 import { route } from '../Router';
-import FieldStack, { FieldSetOptions } from '../_fields/FieldStack';
-import CardLayout from '../_ui/CardLayout';
 import { toast } from '../_ui/Toasts';
+import CardLayout from '../_ui/CardLayout';
+import FieldStack, { FieldSetOptions } from '../_fields/FieldStack';
 
 export default function JoinPage({ state }: { state: { username?: string, returnUrl?: string } }) {
     let touchedUsername = false;
@@ -18,7 +19,10 @@ export default function JoinPage({ state }: { state: { username?: string, return
     const dataOptions: FieldSetOptions = {
         name: {
             type: 'text', label: 'Name', required: true, oninput: (e) => {
-                if (!touchedUsername) e.currentTarget.form!.username.value = e.currentTarget.value?.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
+                if (!touchedUsername) {
+                    const ct = e.currentTarget as HTMLInputElement;
+                    ct.form!.username.value = ct.value?.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
+                }
             }
         },
         username: { type: 'text', label: 'Username', required: true, autocomplete: 'new-username', onfocus: () => touchedUsername = true },
@@ -27,7 +31,7 @@ export default function JoinPage({ state }: { state: { username?: string, return
         email: { type: 'text', label: 'Email', required: true },
     };
 
-    const onSubmitForm = async (e: SubmitEvent) => {
+    const onsubmit = async (e: Event) => {
         e.preventDefault();
 
         // Client-side validation
@@ -52,29 +56,17 @@ export default function JoinPage({ state }: { state: { username?: string, return
         }
     };
 
-    return (
-        <CardLayout>
+    return CardLayout(
+        h('h1', 'Join'),
+        h('p', 'Register a new user account.'),
 
-            <h1>Join</h1>
+        h('form.form-grid', x => x.set({ onsubmit }),
+            ...FieldStack({ data, options: dataOptions }),
 
-            <p>
-                Register a new user account.
-            </p>
-
-            <form onSubmit={onSubmitForm} class='form-grid'>
-
-                <FieldStack data={data} options={dataOptions} />
-
-                <div />
-                <div class='flex gap-50'>
-                    <button class='button'>
-                        Join Now
-                    </button>
-                    <a class='button' href='/login'>Login</a>
-                </div>
-
-            </form>
-
-        </CardLayout>
-    );
+            h('.flex.gap-50',
+                h('button.button', 'Join Now'),
+                h('a.button', x => x.set({ href: '/login' }), 'Login'),
+            ),
+        ),
+    )
 }

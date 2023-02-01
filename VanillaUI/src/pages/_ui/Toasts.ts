@@ -1,4 +1,4 @@
-import { JSXElement } from "../../helpers/jsx/jsx";
+import { BaseNode } from '../../helpers/h';
 
 type NotificationTypeEnum = 'info' | 'success' | 'warning' | 'error';
 
@@ -11,7 +11,7 @@ const NotificationType = {
 
 type Notification = {
     type: NotificationTypeEnum;
-    content: JSXElement;
+    content: BaseNode;
     read: boolean;
     autoDismissAfter?: Date;
 };
@@ -31,7 +31,7 @@ type Notification = {
 //     })
 // };
 
-const push = (type: NotificationTypeEnum, content: JSXElement) => {
+const push = (type: NotificationTypeEnum, content: BaseNode) => {
     const offset = Math.max(2000, Math.ceil(75 * (content?.toString().length ?? 0)));
     const autoDismissAfter = new Date(Date.now() + offset);
 
@@ -66,16 +66,16 @@ const push = (type: NotificationTypeEnum, content: JSXElement) => {
 export const toast = {
     // show,
     push,
-    info: (content: JSXElement) => {
+    info: (content: BaseNode) => {
         push(NotificationType.Info, content);
     },
-    success: (content: JSXElement) => {
+    success: (content: BaseNode) => {
         push(NotificationType.Success, content);
     },
-    warning: (content: JSXElement) => {
+    warning: (content: BaseNode) => {
         push(NotificationType.Warning, content);
     },
-    error: (content: JSXElement) => {
+    error: (content: BaseNode) => {
         push(NotificationType.Error, content);
     },
 }

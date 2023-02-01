@@ -2,7 +2,7 @@
 
 * {
     box-sizing: border-box;
-    font-family: var(--font-family-primary);
+    font-family: var(--font-family);
     outline: none;
 }
 
@@ -28,7 +28,8 @@ body {
 
 pre,
 code {
-    font-family: var(--font-family-mono);
+    font-family: var(--monoe-font-family);
+    font-size: var(--mono-font-size);
 }
 
 iframe {

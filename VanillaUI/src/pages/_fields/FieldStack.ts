@@ -1,3 +1,4 @@
+import { h } from '../../helpers/h';
 import BooleanField, { BooleanFieldOptions } from "./BooleanField";
 import PasswordField, { PasswordFieldOptions } from "./PasswordFields";
 import TextField, { TextFieldOptions } from "./TextField";
@@ -22,12 +23,10 @@ export default function FieldStack({ data, options: fieldSetOptions }: { data: R
         Component: lookup[options.type] as any,
     }));
 
-    return (<>
-        {fields.map(({ name, options, Component }) => (<>
-            <label for={name}>{options.label ?? name}</label>
-            <div>
-                <Component name={name} options={options} data={data} />
-            </div>
-        </>))}
-    </>)
+    return fields.flatMap(({ name, options, Component }) => ([
+        h('label', options.label ?? name),
+        h('div',
+            Component({ name: name, options: options, data: data }),
+        ),
+    ]));
 }

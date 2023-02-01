@@ -1,0 +1,3 @@
+[submodule "VanillaUI/please-pipe"]
+	path = VanillaUI/please-pipe
+	url = git@github.com:jeremycook/please-pipe.git
