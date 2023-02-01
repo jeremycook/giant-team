@@ -13,8 +13,9 @@ const dataOptions: FieldSetOptions = {
     remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
 
-export default function LoginPage({ state }: { state: { username?: string, returnUrl?: string } }) {
+export default function LoginPage() {
 
+    const state = route.state as { username?: string, returnUrl?: string };
     const data = {
         username: state.username ?? '',
         password: '',

@@ -3,8 +3,6 @@ import CardLayout from "../_ui/CardLayout";
 import { user } from "./user";
 
 export default function LogoutPage() {
-    // user.logout()
-
     setTimeout(() => user.logout(), 1000);
 
     return CardLayout(

@@ -32,6 +32,11 @@ class Route {
         return this._state as Pipe<RouteState>;
     }
 
+    /** Returns state as T. */
+    get state() {
+        return this._state.value.state;
+    }
+
     /** Redirects to a local URL using history.pushState, and pipes the change through this.pipe. */
     redirect(href: string, state?: object) {
         console.debug('State-redirect from {currentHref} to {targetHref}.', location.href, href);
@@ -63,14 +68,14 @@ export default function Router(routes: IRoutes) {
         .sort((l, r) => r.localeCompare(l));
 
     const routeRegexes = paths
-        .map(p => ({ route: routes[p], regex: new RegExp('^' + p + '$', 'g') }));
+        .map(p => ({ page: routes[p], regex: new RegExp('^' + p + '$', 'g') }));
 
     function findRoute(pathname: string) {
-        for (const { route, regex } of routeRegexes) {
+        for (const { page, regex } of routeRegexes) {
             regex.lastIndex = 0;
             const result = regex.exec(pathname);
             if (result)
-                return { route, routeValues: result.groups ?? {} }
+                return { page, routeValues: result.groups ?? {} }
         }
         return undefined;
     }
@@ -81,14 +86,16 @@ export default function Router(routes: IRoutes) {
         const match = findRoute(pathname);
 
         if (match) {
+            const page = match.page;
             try {
-                if (match.route instanceof Node) {
-                    return match.route({ routeValues: match.routeValues });
+                if (page instanceof Node) {
+                    return page({ routeValues: match.routeValues });
                 }
                 else {
-                    return await match.route({ routeValues: match.routeValues });
+                    return await page({ routeValues: match.routeValues });
                 }
             } catch (error) {
+                debugger;
                 return ErrorPage({ error: error });
             }
         }

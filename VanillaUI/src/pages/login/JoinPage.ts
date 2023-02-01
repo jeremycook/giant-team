@@ -5,9 +5,10 @@ import { toast } from '../_ui/Toasts';
 import CardLayout from '../_ui/CardLayout';
 import FieldStack, { FieldSetOptions } from '../_fields/FieldStack';
 
-export default function JoinPage({ state }: { state: { username?: string, returnUrl?: string } }) {
+export default function JoinPage() {
     let touchedUsername = false;
 
+    const state = route.state as { username?: string, returnUrl?: string };
     const data = {
         name: '',
         username: state.username ?? '',

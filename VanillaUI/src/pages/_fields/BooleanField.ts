@@ -21,7 +21,7 @@ export default function BooleanField({ name, options, data }: { name: string; op
                 onchange: _ => data[name] = true,
                 required: true,
                 ...attributes,
-            }), ' Yes'),
+            })), ' Yes',
             h('input', x => x.set({
                 type: 'radio',
                 name: name,
@@ -29,7 +29,7 @@ export default function BooleanField({ name, options, data }: { name: string; op
                 onchange: _ => data[name] = false,
                 required: true,
                 ...attributes,
-            }), ' No'),
+            })), ' No',
         )
     )
 }
