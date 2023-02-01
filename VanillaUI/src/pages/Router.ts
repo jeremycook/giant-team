@@ -26,6 +26,18 @@ class Route {
                 pathname: location.pathname,
                 state: e.state ?? {},
             }));
+
+        // Handle local links without refreshing the entire page.
+        document.addEventListener('click', e => {
+            const target = e.target instanceof Element
+                ? e.target.closest('a')
+                : undefined;
+
+            if (target && http.isLocal(target.href)) {
+                e.preventDefault();
+                this.redirect(target.href);
+            }
+        })
     }
 
     get pipe() {
@@ -39,7 +51,7 @@ class Route {
 
     /** Redirects to a local URL using history.pushState, and pipes the change through this.pipe. */
     redirect(href: string, state?: object) {
-        console.debug('State-redirect from {currentHref} to {targetHref}.', location.href, href);
+        console.debug('Redirecting', location.href, href);
 
         history.pushState(state ?? {}, '', href);
 
@@ -55,13 +67,6 @@ class Route {
 export const route = new Route();
 
 export default function Router(routes: IRoutes) {
-
-    // const promiseRejectionReason = new State<any>(undefined);
-
-    // window.addEventListener('unhandledrejection', function (event) {
-    //     promiseRejectionReason.value = event.reason;
-    // });
-
     // Sort paths most specific to least specific
     const paths = Object
         .keys(routes)
@@ -113,14 +118,3 @@ export default function Router(routes: IRoutes) {
     return h('.site-router', child);
 }
 
-/** Handle local links without refreshing the entire page. */
-document.addEventListener('click', e => {
-    const target = e.target instanceof Element
-        ? e.target.closest('a')
-        : undefined;
-
-    if (target && http.isLocal(target.href)) {
-        e.preventDefault();
-        route.redirect(target.href);
-    }
-})

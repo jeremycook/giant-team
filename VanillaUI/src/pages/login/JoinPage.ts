@@ -19,7 +19,7 @@ export default function JoinPage() {
 
     const dataOptions: FieldSetOptions = {
         name: {
-            type: 'text', label: 'Name', required: true, oninput: (e) => {
+            type: 'text', label: 'Name', required: true, autofocus: true, oninput: (e) => {
                 if (!touchedUsername) {
                     const ct = e.currentTarget as HTMLInputElement;
                     ct.form!.username.value = ct.value?.toLowerCase().replaceAll(/[^a-z0-9_]+/g, '_').replace(/^[^a-z]+/, '').replace(/[_]+$/, '');
@@ -64,6 +64,7 @@ export default function JoinPage() {
         h('form.form-grid', x => x.set({ onsubmit }),
             ...FieldStack({ data, options: dataOptions }),
 
+            h('div'),
             h('.flex.gap-50',
                 h('button.button', 'Join Now'),
                 h('a.button', x => x.set({ href: '/login' }), 'Login'),

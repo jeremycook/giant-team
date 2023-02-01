@@ -7,9 +7,17 @@ import LoginPage from './login/LoginPage';
 import LogoutPage from './login/LogoutPage';
 import MyPage from './my/MyPage';
 import OrganizationPage from './organization/OrganizationPage';
-import Router, { IRoutes } from "./Router";
+import Router, { IRoutes, route } from "./Router";
 
 export default function Site() {
+
+    route.pipe.subscribe(_ => setTimeout(() => {
+        const els = document.querySelectorAll('[autofocus]');
+        if (els.length > 0) {
+            (els[0] as unknown as HTMLOrSVGElement).focus();
+        }
+    }, 100))
+
     const routes: IRoutes = {
         '/': HomePage,
         '/join': JoinPage,

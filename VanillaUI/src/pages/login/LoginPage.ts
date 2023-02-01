@@ -8,7 +8,7 @@ import { toast } from "../_ui/Toasts";
 import { user } from "./user";
 
 const dataOptions: FieldSetOptions = {
-    username: { type: 'text', label: 'Username', required: true, autocomplete: 'username' },
+    username: { type: 'text', label: 'Username', required: true, autocomplete: 'username', autofocus: true },
     password: { type: 'password', label: 'Password', autocomplete: 'current-password' },
     remainLoggedIn: { type: 'boolean', label: 'Remember me' },
 };
@@ -56,50 +56,11 @@ export default function LoginPage() {
         h('form.form-grid', x => x.set({ onsubmit }),
             ...FieldStack({ data, options: dataOptions }),
 
+            h('div'),
             h('.flex.gap-50',
                 h('button.button', 'Login'),
                 h('a.button', x => x.set({ href: '/join' }), 'Join'),
             ),
         ),
     )
-
-    // return <CardLayout>
-    //     <h1>Login</h1>
-    //     <form onsubmit={async e => {
-    //         e.preventDefault();
-
-    //         const output = await postLogin({
-    //             username: data.username,
-    //             password: data.password,
-    //             remainLoggedIn: data.remainLoggedIn,
-    //             elevated: true,
-    //         });
-
-    //         if (output.ok) {
-    //             toast.success(`Welcome back ${data.username}!`);
-
-    //             await user.refresh();
-
-    //             const returnUrl = state.returnUrl;
-    //             if (returnUrl && route.isLocal(returnUrl)) {
-    //                 route.redirect(returnUrl);
-    //             }
-    //             else {
-    //                 route.redirect('/my');
-    //             }
-    //         } else {
-    //             toast.error(output.message);
-    //         }
-    //     }}>
-    //         <div class='form-grid'>
-    //             <FieldStack options={dataOptions} data={data} />
-
-    //             <div />
-    //             <div class='flex gap-50'>
-    //                 <button class='button'>Login</button>
-    //                 <a class='button' href='/join'>Join</a>
-    //             </div>
-    //         </div>
-    //     </form>
-    // </CardLayout>
 }

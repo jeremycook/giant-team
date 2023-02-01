@@ -3,7 +3,7 @@
 * {
     box-sizing: border-box;
     font-family: var(--font-family);
-    outline: none;
+    outline-color: var(--outline-color);
 }
 
 * {
