@@ -1,4 +1,3 @@
-import { h } from '../helpers/h';
 import { http } from '../helpers/http';
 import { Pipe, State } from '../helpers/Pipe';
 import ErrorPage from './_errors/ErrorPage';
@@ -66,11 +65,6 @@ export interface IRouteDictionary {
     [k: string]: (..._: any) => Node | Promise<Node>
 }
 
-export class RouteDictionary implements IRouteDictionary {
-    [k: string]: (..._: any) => Node | Promise<Node>;
-
-}
-
 export class Router {
     private _routeRegexes: { page: (..._: any) => Node | Promise<Node>; regex: RegExp; }[];
     private _pipe: Pipe<Promise<Node>>;
@@ -81,7 +75,7 @@ export class Router {
             .sort((l, r) => r.localeCompare(l))
             .map(p => ({ page: routes[p], regex: new RegExp('^' + p + '$', 'g') }));
 
-        this._pipe = route.pipe.map(x => this._renderPage(x))
+        this._pipe = route.pipe.project(x => this._renderPage(x))
     }
 
     get pipe(): Pipe<Promise<Node>> {

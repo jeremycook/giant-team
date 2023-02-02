@@ -60,7 +60,7 @@ export function parseValue(value: string | number | null) {
 /** Revive JSON with {@link parseValue}.
  * @example JSON.parse(someJson, jsonParseValueReviver)
  */
-export function parseValueJsonReviver(this: any, key: string, value: any) {
+export function parseValueJsonReviver(this: any, _: string, value: any) {
     return parseValue(value);
 }
 

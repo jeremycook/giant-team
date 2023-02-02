@@ -1,35 +1,50 @@
 .site {
     height: 100vh;
     display: flex;
-    flex-direction: column;
 }
 
-/* .site > .site-navbar */
+/* .site (.site-desktop + .site-toast) */
+
+.site-desktop {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.site-toast {
+    background: var(--bg-muted);
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    min-width: 300px;
+}
+
+/* .site-desktop (.site-navbar + .site-router) */
 
 .site-navbar {
     background-color: var(--bg-muted);
     box-shadow: var(--shadow) inset;
 }
 
-/* .site > .site-router */
-
 .site-router {
-    display: flex;
     flex-grow: 1;
+    display: flex;
+    overflow: auto;
 }
 
-/* .site > .site-router > .site-main */
+/* .site-router .site-main */
 
 .site-main {
     flex-grow: 1;
     padding: var(--100);
 }
 
-/* .site > .site-router > .site-card > card */
+/* .site-router .site-card > card */
 
 .site-card {
-    display: flex;
     flex-grow: 1;
+    display: flex;
     justify-content: center;
     align-items: flex-start;
     padding: var(--100) 0;

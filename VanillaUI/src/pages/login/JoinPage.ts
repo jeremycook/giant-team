@@ -1,7 +1,7 @@
 import { h } from '../../helpers/h';
 import { postRegister } from '../../bindings/Authentication.Api.Controllers';
 import { route } from '../Router';
-import { toast } from '../_ui/Toasts';
+import { toast } from '../_ui/Toast';
 import CardLayout from '../_ui/CardLayout';
 import FieldStack, { FieldSetOptions } from '../_fields/FieldStack';
 

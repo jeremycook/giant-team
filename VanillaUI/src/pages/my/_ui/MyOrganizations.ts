@@ -4,24 +4,20 @@ import { f, BaseNode } from '../../../helpers/h';
 import { OrganizationCard } from './OrganizationCard';
 
 
-export default function MyOrganizations(renderer?: (organization: Organization) => BaseNode) {
+export default async function MyOrganizations(renderer?: (organization: Organization) => BaseNode) {
 
-    const ref = document.createComment('');
+    const response = await postFetchOrganizations();
 
-    const response = postFetchOrganizations()
-        .then(response => {
-            const organizations = response.ok
-                ? response.data.organizations
-                : [];
+    const organizations = response.ok
+        ? response.data.organizations
+        : [];
 
-            if (typeof renderer === 'undefined') {
-                renderer = ((organization: Organization) => OrganizationCard({ organization }));
-            }
+    if (typeof renderer === 'undefined') {
+        renderer = ((organization: Organization) => OrganizationCard({ organization }));
+    }
 
-            const elements = organizations.flatMap(org => renderer!(org));
-            const fragment = f(...elements);
-            ref.after(fragment);
-        });
+    const elements = organizations.flatMap(org => renderer!(org));
+    const fragment = f(...elements);
 
-    return ref;
+    return fragment;
 }

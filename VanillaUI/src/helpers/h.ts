@@ -1,11 +1,13 @@
 import Exception from './Exception';
-import { Pipe, PipeConstructor } from './Pipe';
+import { Pipe, PipeCollection, PipeConstructor } from './Pipe';
 
 export type BaseNode =
     | string
     | Node
     | Pipe<BaseNode>
+    | PipeCollection<BaseNode>
     | Promise<BaseNode>
+    | ReadonlyArray<BaseNode>
     | (() => BaseNode);
 
 export type BuildableElement<T extends Element> =
@@ -96,7 +98,10 @@ function pipeRerenderer(pipe: Pipe<BaseNode>, begin: Comment, end: Comment) {
 }
 
 export function appendNode(parent: ParentNode, child: BaseNode) {
-    if (child instanceof Promise) {
+    if (Array.isArray(child)) {
+        child.forEach(childChild => appendNode(parent, childChild));
+    }
+    else if (child instanceof Promise) {
         const placeholder = document.createComment('appendNode-placeholder');
         parent.append(placeholder);
         child.then(promiseResult => {
@@ -179,6 +184,11 @@ export class ElementBuilder<T extends Element> {
         }
         return this;
     }
+
+    on<K extends keyof ElementEventMap>(type: K | string, listener: (this: T, ev: ElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions) {
+        this.element.addEventListener(type, listener, options);
+        return this;
+    }
 }
 
 export function h<TagName extends keyof HTMLElementTagNameMap>(
@@ -241,9 +251,7 @@ export function n(value: string | Node) {
 export function f(...children: BaseNode[]): DocumentFragment {
     const parent = document.createDocumentFragment();
 
-    for (const child of children) {
-        appendNode(parent, child);
-    }
+    appendNode(parent, children);
 
     return parent;
 }

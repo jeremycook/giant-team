@@ -7,7 +7,7 @@ export default function LogoutPage() {
 
     return CardLayout(
         h('h1', 'Logout'),
-        user.pipe.map(u => u.isAuthenticated
+        user.pipe.project(u => u.isAuthenticated
             ? h('p', 'One moment please, logging out…')
             : f(
                 h('p', 'You have been logged out.'),

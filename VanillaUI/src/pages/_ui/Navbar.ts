@@ -6,30 +6,28 @@ function toggleNotifications() {
 
 }
 
-export function Navbar(user: User) {
-    return h('div', navbar => navbar.set({ class: 'site-navbar navbar' }),
-        user.pipe.map(u => u.isAuthenticated
-            ? AuthenticatedNavbar(user)
-            : AnonymousNavbar())
-    )
+export function SiteNavbarUI(user: User) {
+    return user.pipe.project(u => u.isAuthenticated
+        ? AuthenticatedNavbar(user)
+        : AnonymousNavbar())
 }
 
 function AuthenticatedNavbar(user: User) {
-    return h('.navbar-trio',
+    return h('.navbar',
         h('.navbar-group'),
         h('.navbar-group'),
         h('.navbar-group',
             h('a.navbar-item', x => x.set({ href: '/' }),
-                Icon({ icon: 'home-12-regular' }),
+                Icon('home-12-regular'),
                 h('span.sr-only', 'Home'),
             ),
             h('button.navbar-item', x => x.set({ onclick: _ => toggleNotifications() }),
-                Icon({ icon: 'alert-12-regular' }),
+                Icon('alert-12-regular'),
                 h('span.sr-only', 'Notifications'),
             ),
             h('.navbar-item.dropdown',
                 h('button', x => x.set({ type: 'button', id: 'site-navbar-user-dropdown' }),
-                    Icon({ icon: 'person-12-regular' }),
+                    Icon('person-12-regular'),
                     h('span.sr-only', 'Profile'),
                 ),
                 h('.dropdown-anchor', x => x.set({ 'aria-labelledby': 'site-navbar-user-dropdown' }),
@@ -49,13 +47,13 @@ function AnonymousNavbar() {
         h('.navbar-group'),
         h('.navbar-group',
             h('a.navbar-item', x => x.set({ href: '/' }),
-                Icon({ icon: 'home-12-regular' }), ' Home',
+                Icon('home-12-regular'), ' Home',
             ),
             h('a.navbar-item', x => x.set({ href: '/login' }),
-                Icon({ icon: 'person-12-regular' }), ' Login',
+                Icon('person-12-regular'), ' Login',
             ),
             h('a.navbar-item', x => x.set({ href: '/join' }),
-                Icon({ icon: 'sparkle-16-regular' }), ' Join',
+                Icon('sparkle-16-regular'), ' Join',
             ),
         ),
         h('.navbar-group'),
