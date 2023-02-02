@@ -40,7 +40,7 @@ class Route {
         return this._state as Pipe<RouteState>;
     }
 
-    /** Returns state as T. */
+    /** Returns state. */
     get state() {
         return this._state.value.state;
     }
@@ -122,9 +122,3 @@ export class Router {
         return NotFoundPage({ href: location.pathname + location.search + location.hash });
     }
 }
-
-
-export default function RouterUI(router: Router) {
-    return h('.site-router', router.pipe);
-}
-

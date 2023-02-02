@@ -28,7 +28,7 @@ function AuthenticatedNavbar(user: User) {
                 h('span.sr-only', 'Notifications'),
             ),
             h('.navbar-item.dropdown',
-                h('button.navbar-item', x => x.set({ type: 'button', id: 'site-navbar-user-dropdown' }),
+                h('button', x => x.set({ type: 'button', id: 'site-navbar-user-dropdown' }),
                     Icon({ icon: 'person-12-regular' }),
                     h('span.sr-only', 'Profile'),
                 ),

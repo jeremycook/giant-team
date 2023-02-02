@@ -7,7 +7,7 @@ import LoginPage from './login/LoginPage';
 import LogoutPage from './login/LogoutPage';
 import MyPage from './my/MyPage';
 import OrganizationPage from './organization/OrganizationPage';
-import RouterUI, { IRouteDictionary, route, Router } from "./Router";
+import { IRouteDictionary, route, Router } from "./Router";
 
 export default function Site() {
 
@@ -35,6 +35,6 @@ export default function Site() {
 
     return h('.site',
         Navbar(user),
-        RouterUI(router),
+        h('.site-router', router.pipe),
     );
 }
