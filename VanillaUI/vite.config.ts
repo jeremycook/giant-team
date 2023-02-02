@@ -3,6 +3,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
   plugins: [
+    // TODO: create/use a plugin that strips unused CSS variables like those in colors.css
     basicSsl(),
   ],
   server: {

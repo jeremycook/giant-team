@@ -9,18 +9,15 @@ interface RouteState {
 }
 
 class Route {
-    private _state = new State(Object.freeze({
+    private static readonly _noState = Object.freeze({});
+    private _state = new State({
         pathname: location.pathname,
-        state: history.state ?? {},
-    }));
+        state: history.state ?? Route._noState,
+    });
 
     constructor() {
         // Update pipe state after pushing state to history.
-        window.addEventListener('popstate', e =>
-            this._state.value = Object.freeze({
-                pathname: location.pathname,
-                state: e.state ?? {},
-            }));
+        window.addEventListener('popstate', _ => this._setState());
 
         // Handle local links without refreshing the entire page.
         document.addEventListener('click', e => {
@@ -51,10 +48,14 @@ class Route {
         history.pushState(state ?? {}, '', href);
 
         // Update pipe state after pushing state to history.
-        this._state.value = Object.freeze({
+        this._setState();
+    }
+
+    private _setState() {
+        this._state.value = {
             pathname: location.pathname,
-            state: history.state ?? {},
-        });
+            state: history.state ?? Route._noState,
+        };
     }
 }
 
@@ -75,10 +76,10 @@ export class Router {
             .sort((l, r) => r.localeCompare(l))
             .map(p => ({ page: routes[p], regex: new RegExp('^' + p + '$', 'g') }));
 
-        this._pipe = route.pipe.project(x => this._renderPage(x))
+        this._pipe = route.pipe.project(routeState => this._renderPage(routeState))
     }
 
-    get pipe(): Pipe<Promise<Node>> {
+    get pagePipe(): Pipe<Promise<Node>> {
         return this._pipe;
     }
 
@@ -100,9 +101,9 @@ export class Router {
         if (match) {
             const page = match.page;
             try {
+                console.log(pathname);
                 return await page({ routeValues: match.routeValues });
             } catch (error) {
-                debugger;
                 return ErrorPage({ error: error });
             }
         }

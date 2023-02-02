@@ -23,7 +23,7 @@ export default function Site() {
 
     const router = new Router(route, routes);
 
-    router.pipe.subscribe(async pipe => {
+    router.pagePipe.subscribe(async pipe => {
         // Autofocus after page renders
         await pipe.value;
         setTimeout(() => {
@@ -37,7 +37,7 @@ export default function Site() {
     return h('.site',
         h('.site-desktop',
             h('.site-navbar', NavbarUI(user)),
-            h('.site-router', router.pipe),
+            h('.site-router', router.pagePipe),
         ),
         h('.site-toast', ToastUI(toast)),
     )

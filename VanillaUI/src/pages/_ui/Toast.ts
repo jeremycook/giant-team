@@ -85,10 +85,13 @@ export const toast = new Toast();
 
 export function ToastUI(toast: Toast) {
     return toast.messagesPipe.map(message =>
-        h('.toast',
+        h('.toast.toast-type-' + message.type,
             h('.toast-header',
+                h('button', x => x.on('click', _ => message.read = !message.read),
+                    Icon(message.readPipe.project(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular')),
+                    h('.sr-only', message.readPipe.project(read => read ? 'Read' : 'Unread'))
+                ),
                 message.type,
-                h('button', x => x.on('click', _ => message.read = !message.read), Icon(message.readPipe.project(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular'))),
             ),
             h('.toast-content', message.content),
         )

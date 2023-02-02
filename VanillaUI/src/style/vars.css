@@ -1,4 +1,6 @@
-﻿:root {
+﻿@import 'colors.css';
+
+:root {
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     --mono-font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
     --mono-font-size: 11pt;
@@ -9,6 +11,11 @@
     --bg-active: hsl(0, 0%, 96%);
     --bg-muted: hsl(0, 0%, 85%);
     --fg: hsl(0, 0%, 13%);
+
+    --fg-info: var(--teal-500);
+    --fg-success: var(--green-600);
+    --fg-warning: var(--amber-500);
+    --fg-error: var(--red-500);
 
     --b-color: hsl(0, 0%, 75%);
     --b-style: solid;
