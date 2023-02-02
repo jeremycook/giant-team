@@ -4,10 +4,6 @@ import { Pipe, State } from '../helpers/Pipe';
 import ErrorPage from './_errors/ErrorPage';
 import NotFoundPage from "./_errors/NotFoundPage";
 
-export interface IRoutes {
-    [k: string]: (..._: any) => Node | Promise<Node>
-}
-
 interface RouteState {
     pathname: string,
     state: { [k: string]: any },
@@ -66,17 +62,34 @@ class Route {
 /** The global route object. */
 export const route = new Route();
 
-export default function Router(routes: IRoutes) {
-    // Sort paths most specific to least specific
-    const paths = Object
-        .keys(routes)
-        .sort((l, r) => r.localeCompare(l));
+export interface IRouteDictionary {
+    [k: string]: (..._: any) => Node | Promise<Node>
+}
 
-    const routeRegexes = paths
-        .map(p => ({ page: routes[p], regex: new RegExp('^' + p + '$', 'g') }));
+export class RouteDictionary implements IRouteDictionary {
+    [k: string]: (..._: any) => Node | Promise<Node>;
 
-    function findRoute(pathname: string) {
-        for (const { page, regex } of routeRegexes) {
+}
+
+export class Router {
+    private _routeRegexes: { page: (..._: any) => Node | Promise<Node>; regex: RegExp; }[];
+    private _pipe: Pipe<Promise<Node>>;
+
+    constructor(route: Route, routes: IRouteDictionary) {
+        this._routeRegexes = Object
+            .keys(routes)
+            .sort((l, r) => r.localeCompare(l))
+            .map(p => ({ page: routes[p], regex: new RegExp('^' + p + '$', 'g') }));
+
+        this._pipe = route.pipe.map(x => this._renderPage(x))
+    }
+
+    get pipe(): Pipe<Promise<Node>> {
+        return this._pipe;
+    }
+
+    private _findRoute(pathname: string) {
+        for (const { page, regex } of this._routeRegexes) {
             regex.lastIndex = 0;
             const result = regex.exec(pathname);
             if (result)
@@ -85,20 +98,15 @@ export default function Router(routes: IRoutes) {
         return undefined;
     }
 
-    async function renderPage(state: RouteState) {
+    private async _renderPage(state: RouteState) {
         const pathname = state.pathname;
 
-        const match = findRoute(pathname);
+        const match = this._findRoute(pathname);
 
         if (match) {
             const page = match.page;
             try {
-                if (page instanceof Node) {
-                    return page({ routeValues: match.routeValues });
-                }
-                else {
-                    return await page({ routeValues: match.routeValues });
-                }
+                return await page({ routeValues: match.routeValues });
             } catch (error) {
                 debugger;
                 return ErrorPage({ error: error });
@@ -113,8 +121,10 @@ export default function Router(routes: IRoutes) {
 
         return NotFoundPage({ href: location.pathname + location.search + location.hash });
     }
+}
 
-    const child = route.pipe.map(renderPage);
-    return h('.site-router', child);
+
+export default function RouterUI(router: Router) {
+    return h('.site-router', router.pipe);
 }
 
