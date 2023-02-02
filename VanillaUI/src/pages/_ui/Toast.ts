@@ -1,6 +1,6 @@
 import { BaseNode, h } from '../../helpers/h';
 import { StateCollection, State, Pipe } from '../../helpers/Pipe';
-import Icon from './Icon';
+import Icon, { IconType } from './Icon';
 
 enum ToastType {
     Info = 'Info',
@@ -88,8 +88,8 @@ export function ToastUI(toast: Toast) {
         h('.toast.toast-type-' + message.type,
             h('.toast-header',
                 h('button', x => x.on('click', _ => message.read = !message.read),
-                    Icon(message.readPipe.project(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular')),
-                    h('.sr-only', message.readPipe.project(read => read ? 'Read' : 'Unread'))
+                    Icon(message.readPipe.project<IconType>(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular')),
+                    h('.sr-only', message.readPipe.project<BaseNode>(read => read ? 'Read' : 'Unread'))
                 ),
                 message.type,
             ),

@@ -11,7 +11,7 @@ const iconLookup = {
     'sparkle-16-regular': () => import('@iconify-icons/fluent/sparkle-16-regular'),
 }
 
-type IconType = keyof typeof iconLookup;
+export type IconType = keyof typeof iconLookup;
 
 // Iconify doesn't provide dimensions when for *-16-* icons
 // so that must be the default.

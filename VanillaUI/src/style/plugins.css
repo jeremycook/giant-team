@@ -165,22 +165,22 @@ svg.icon {
 
 .toast-type-Info .toast-header,
 .toast-type-Info .toast-header * {
-    color: var(--info);
+    color: var(--fg-info);
 }
 
 .toast-type-Success .toast-header,
 .toast-type-Success .toast-header * {
-    color: var(--success);
+    color: var(--fg-success);
 }
 
 .toast-type-Warning .toast-header,
 .toast-type-Warning .toast-header * {
-    color: var(--warning);
+    color: var(--fg-warning);
 }
 
 .toast-type-Error .toast-header,
 .toast-type-Error .toast-header * {
-    color: var(--error);
+    color: var(--fg-error);
 }
 
 

@@ -1,11 +1,10 @@
 import Exception from './Exception';
-import { Pipe, PipeCollection, PipeConstructor } from './Pipe';
+import { Pipe } from './Pipe';
 
 export type BaseNode =
     | string
     | Node
     | Pipe<BaseNode>
-    | PipeCollection<BaseNode>
     | Promise<BaseNode>
     | ReadonlyArray<BaseNode>
     | (() => BaseNode);
@@ -41,7 +40,7 @@ function appendPipe(parent: ParentNode, pipe: Pipe<BaseNode>) {
             if (begin.nextSibling === end) begin.after(result);
         });
     }
-    else if (pipeValue instanceof PipeConstructor) {
+    else if (pipeValue instanceof Pipe) {
         // First rendering of a Pipe-Pipe
         const result = f(pipeValue);
         if (begin.nextSibling === end) begin.after(result);
@@ -75,7 +74,7 @@ function pipeRerenderer(pipe: Pipe<BaseNode>, begin: Comment, end: Comment) {
                 begin.after(fragment);
             });
         }
-        else if (source instanceof PipeConstructor) {
+        else if (source instanceof Pipe) {
             // Rerendering
             const value = source.value as BaseNode;
             const fragment = f(value);
@@ -109,7 +108,7 @@ export function appendNode(parent: ParentNode, child: BaseNode) {
             placeholder.replaceWith(fragment)
         });
     }
-    else if (child instanceof PipeConstructor) {
+    else if (child instanceof Pipe) {
         appendPipe(parent, child);
     }
     else switch (typeof child) {
@@ -261,7 +260,7 @@ const svgNS = 'http://www.w3.org/2000/svg';
 /** Create an SVG element. */
 export function svg<TagName extends keyof SVGElementTagNameMap>(
     tagName: TagName,
-    ...children: (SVGElement | Pipe<SVGElement> | Promise<SVGElement> | (() => (SVGElement | Promise<SVGElement>)))[]): SVGElementTagNameMap[TagName] {
+    ...children: (SVGElement | Promise<SVGElement> | (() => (SVGElement | Promise<SVGElement>)))[]): SVGElementTagNameMap[TagName] {
     const parent = document.createElementNS(svgNS, tagName);
 
     for (const child of children) {
