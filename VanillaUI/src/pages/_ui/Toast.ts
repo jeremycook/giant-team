@@ -1,5 +1,5 @@
 import { BaseNode, h } from '../../helpers/h';
-import { StateCollection, State, Pipe } from '../../helpers/Pipe';
+import { State, Pipe } from '../../helpers/Pipe';
 import Icon, { IconType } from './Icon';
 
 enum ToastType {
@@ -51,17 +51,17 @@ export class ToastMessage {
 }
 
 export class Toast {
-    private _messages = new StateCollection<ToastMessage>();
+    private _state = new State<ToastMessage[]>([]);
 
     constructor() {
     }
 
     get messagesPipe() {
-        return this._messages;
+        return this._state;
     }
 
     push(message: ToastMessage) {
-        this._messages.value = [message, ...this._messages.value];
+        this._state.value = [message, ...this._state.value];
     }
 
     info(content: BaseNode) {
@@ -89,7 +89,7 @@ export function ToastUI(toast: Toast) {
             h('.toast-header',
                 h('button', x => x.on('click', _ => message.read = !message.read),
                     Icon(message.readPipe.project<IconType>(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular')),
-                    h('.sr-only', message.readPipe.project<BaseNode>(read => read ? 'Read' : 'Unread'))
+                    h('.sr-only', message.readPipe.project<BaseNode>(read => read ? 'Mark message as unread' : 'Mark message as read'))
                 ),
                 message.type,
             ),

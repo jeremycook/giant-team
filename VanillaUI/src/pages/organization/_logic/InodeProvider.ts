@@ -1,51 +1,86 @@
-import { postFetchInodeList } from '../../../bindings/Organization.Api.Controllers';
-import { OrganizationDetails, Inode } from '../../../bindings/Organization.Etc.Models';
+import { fetchInodeList } from '../../../bindings/Organization.Api.Controllers';
+import { OrganizationDetails, Inode, InodeTypeId } from '../../../bindings/Organization.Etc.Models';
+import Exception from '../../../helpers/Exception';
 import { log } from '../../../helpers/log';
+import { State } from '../../../helpers/Pipe';
 
+export class InodeModel {
+    _inode: string;
+    _parentInodeId: string;
+    _inodeTypeId: string;
+    _name: State<string>;
+    _uglyName: string;
+    _created: Date;
+    _path: string;
+
+    constructor(data: Inode) {
+        this._inode = data.inodeId;
+        this._parentInodeId = data.parentInodeId;
+        this._inodeTypeId = data.inodeTypeId;
+        this._name = new State(data.name);
+        this._uglyName = data.uglyName;
+        this._created = data.created ?? new Date();
+        this._path = data.path;
+    }
+
+    get inodeId(): string {
+        return this._inode;
+    }
+    get parentInodeId(): string {
+        return this._parentInodeId;
+    }
+    get inodeTypeId(): InodeTypeId {
+        return this.inodeTypeId;
+    }
+    get name(): State<string> {
+        return this._name;
+    }
+    get uglyName(): string {
+        return this._uglyName;
+    }
+    get created(): Date {
+        return this._created;
+    }
+    get path(): string {
+        return this._path;
+    }
+}
 
 export class InodeProvider {
-    public organization: OrganizationDetails;
-    public inodes: Inode[];
+    private _organization: OrganizationDetails;
+    private _state = new State<InodeModel[]>([]);
+    private _inodes = this._state.asArray();
 
     constructor(
-        props: {
-            organization: OrganizationDetails;
-            inodes: Inode[];
-        }) {
-        this.organization = props.organization;
-        this.inodes = props.inodes;
+        { organization }: { organization: OrganizationDetails }) {
+        this._organization = organization;
+        this.refresh();
     }
 
+    /** Returns the root inode (path is ''). */
     get root() {
-        return this.getInode('');
+        return this.inode('');
     }
 
-    getInode(path: string) {
-        const inode = this.inodes.find(i => i.path === path);
+    /** Returns the inode at {@link path} or throws. */
+    inode(path: string): InodeModel {
+        const inode = this._inodes.value.find(i => i.path === path);
         if (!inode)
-            throw Error('Inode not found at ' + path);
+            throw new Exception(this.inode, 'Inode not found at {path}.', path);
         return inode;
     }
-
-    getDirectoryContents(path: string): readonly Inode[] {
-        const parentInodeId = this.getInode(path).inodeId;
-        const inodeList = this.inodes.filter(i => i.parentInodeId === parentInodeId && i.parentInodeId !== i.inodeId);
+    /** Returns the children of the inode at {@link path}. */
+    children(path: string): InodeModel[] {
+        const parentInodeId = this.inode(path).inodeId;
+        const inodeList = this._inodes.value
+            .filter(i => i.parentInodeId === parentInodeId && i.parentInodeId !== i.inodeId);
         return inodeList;
     }
 
-    async refresh(path: string = '') {
-        const response = await postFetchInodeList({
-            organizationId: this.organization.organizationId,
-            path: path,
-        });
-
-        if (!response.ok) {
-            // TODO: Notify the user?
-            log.warn('InodeProvider HTTP response not ok for {organizationId}.', this.organization.organizationId);
-            return;
-        }
-
-        this.inodes = response.data;
-        // TODO: DISPATCH EVENT
+    /** Refresh inodes from the server that are at or under {@link path}. */
+    async refresh(path: string = ''): Promise<void> {
+        await fetchInodeList({ organizationId: this._organization.organizationId, path })
+            .then(inodes => this._state.value = inodes.map(x => new InodeModel(x)))
+            .catch(reason => log.error('Suppressed error fetching inode list.', reason));
     }
 }
