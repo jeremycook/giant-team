@@ -52,12 +52,13 @@ export class ToastMessage {
 
 export class Toast {
     private _state = new State<ToastMessage[]>([]);
+    private _messagePipe = this._state.asArray();
 
     constructor() {
     }
 
     get messagesPipe() {
-        return this._state;
+        return this._messagePipe;
     }
 
     push(message: ToastMessage) {
@@ -84,16 +85,30 @@ export class Toast {
 export const toast = new Toast();
 
 export function ToastUI(toast: Toast) {
-    return toast.messagesPipe.map(message =>
-        h('.toast.toast-type-' + message.type,
-            h('.toast-header',
-                h('button', x => x.on('click', _ => message.read = !message.read),
-                    Icon(message.readPipe.project<IconType>(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular')),
-                    h('.sr-only', message.readPipe.project<BaseNode>(read => read ? 'Mark message as unread' : 'Mark message as read'))
+    return h('div',
+        toast.messagesPipe.filter(x => x.readPipe).map<ToastMessage, BaseNode>(message =>
+            h('.toast.toast-type-' + message.type,
+                h('.toast-header',
+                    h('button', x => x.on('click', _ => message.read = !message.read),
+                        Icon(message.readPipe.project<IconType>(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular')),
+                        h('.sr-only', message.readPipe.project<BaseNode>(read => read ? 'Mark message as unread' : 'Mark message as read'))
+                    ),
+                    message.type,
                 ),
-                message.type,
-            ),
-            h('.toast-content', message.content),
-        )
+                h('.toast-content', message.content),
+            )
+        ),
+        toast.messagesPipe.filter(x => x.readPipe.project(read => !read)).map<ToastMessage, BaseNode>(message =>
+            h('.toast.toast-type-' + message.type,
+                h('.toast-header',
+                    h('button', x => x.on('click', _ => message.read = !message.read),
+                        Icon(message.readPipe.project<IconType>(read => read ? 'mail-read-16-regular' : 'mail-unread-16-regular')),
+                        h('.sr-only', message.readPipe.project<BaseNode>(read => read ? 'Mark message as unread' : 'Mark message as read'))
+                    ),
+                    message.type,
+                ),
+                h('.toast-content', message.content),
+            )
+        ),
     )
 }

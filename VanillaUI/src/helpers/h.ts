@@ -1,10 +1,11 @@
 import Exception from './Exception';
-import { Pipe } from './Pipe';
+import { Pipe, PipeArray } from './Pipe';
 
 export type BaseNode =
     | string
     | Node
     | Pipe<BaseNode>
+    | PipeArray<BaseNode>
     | Promise<BaseNode>
     | ReadonlyArray<BaseNode>
     | (() => BaseNode);
@@ -23,7 +24,7 @@ export type HAttributes =
 
 let commentNumber = 1;
 
-function appendPipe(parent: ParentNode, pipe: Pipe<BaseNode>) {
+function appendPipe(parent: ParentNode, pipe: Pipe<BaseNode> | PipeArray<BaseNode>) {
     const commentNum = commentNumber++;
 
     const begin = document.createComment('appendPipe-' + commentNum);
@@ -60,7 +61,7 @@ function appendPipe(parent: ParentNode, pipe: Pipe<BaseNode>) {
     return begin;
 }
 
-function pipeRerenderer(pipe: Pipe<BaseNode>, begin: Comment, end: Comment) {
+function pipeRerenderer(pipe: Pipe<BaseNode> | PipeArray<BaseNode>, begin: Comment, end: Comment) {
     return pipe.subscribe(innerPipe => {
         const source = innerPipe.value;
 
