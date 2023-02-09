@@ -149,7 +149,15 @@ svg.icon {
     top: .1em;
 }
 
-/* .toast.toast-type-* > (.toast-header + .toast-content) */
+/* .toast-group > .toast-group-header */
+
+.toast-group-header {
+    font-weight: bold;
+    padding: var(--100) var(--100) 0;
+    text-align: center;
+}
+
+/* .toast-group > .toast.toast-type-?, ... > (.toast-header + .toast-content) */
 
 .toast {
     border-bottom-style: var(--b-style);
