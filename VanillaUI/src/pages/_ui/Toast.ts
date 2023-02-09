@@ -86,7 +86,7 @@ export const toast = new Toast();
 
 export function ToastUI(toast: Toast) {
     return h('div',
-        toast.messagesPipe.group(x => x.readPipe).map(([read, items]) =>
+        toast.messagesPipe.filter(x => x.readPipe.project(read => !read)).group(x => x.readPipe).map(([read, items]) =>
             h('.toast-group',
                 h('.toast-group-header', read ? 'Read' : 'Unread'),
                 items.map(message =>
