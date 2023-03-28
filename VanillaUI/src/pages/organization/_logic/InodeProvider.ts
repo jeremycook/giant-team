@@ -2,7 +2,7 @@ import { fetchInodeList } from '../../../bindings/Organization.Api.Controllers';
 import { OrganizationDetails, Inode, InodeTypeId } from '../../../bindings/Organization.Etc.Models';
 import Exception from '../../../helpers/Exception';
 import { log } from '../../../helpers/log';
-import { State } from '../../../helpers/Pipe';
+import { Pipe, PipeArray, State } from '../../../helpers/Pipe';
 
 export class InodeModel {
     _inode: string;
@@ -63,18 +63,22 @@ export class InodeProvider {
     }
 
     /** Returns the inode at {@link path} or throws. */
-    inode(path: string): InodeModel {
-        const inode = this._inodes.value.find(i => i.path === path);
-        if (!inode)
-            throw new Exception(this.inode, 'Inode not found at {path}.', path);
+    inode(path: string): Pipe<InodeModel> {
+        const inode = this._inodes
+            .filter(i => State.bool(i.path === path))
+            .first();
         return inode;
     }
+
     /** Returns the children of the inode at {@link path}. */
-    children(path: string): InodeModel[] {
-        const parentInodeId = this.inode(path).inodeId;
-        const inodeList = this._inodes.value
-            .filter(i => i.parentInodeId === parentInodeId && i.parentInodeId !== i.inodeId);
-        return inodeList;
+    children(path: string): PipeArray<InodeModel> {
+        const inodeList = this._inodes
+            .combineWith(this.inode(path))
+            .project(([x, parent]) => x
+                .filter(i => parent.project(parent => parent.inodeId === i.parentInodeId && i.parentInodeId !== i.inodeId))
+            );
+        // Memory leak?
+        return inodeList.value;
     }
 
     /** Refresh inodes from the server that are at or under {@link path}. */
