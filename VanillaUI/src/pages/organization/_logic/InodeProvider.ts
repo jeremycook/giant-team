@@ -1,6 +1,5 @@
 import { fetchInodeList } from '../../../bindings/Organization.Api.Controllers';
 import { OrganizationDetails, Inode, InodeTypeId } from '../../../bindings/Organization.Etc.Models';
-import Exception from '../../../helpers/Exception';
 import { log } from '../../../helpers/log';
 import { Pipe, PipeArray, State } from '../../../helpers/Pipe';
 
